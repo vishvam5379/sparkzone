@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Login – SparkZone{% endblock %}
+
+{% block content %}
+<div style="margin-top:70px;min-height:calc(100vh - 70px);display:flex;align-items:center;justify-content:center;padding:40px 24px;
+            background:radial-gradient(ellipse 60% 60% at 50% 30%, rgba(124,58,237,.1), transparent);">
+  <div style="width:100%;max-width:460px;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;background:linear-gradient(135deg,var(--accent2),var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;">SparkZone</div>
+      <h1 style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:800;margin-bottom:6px;">Welcome Back</h1>
+      <p style="color:var(--muted);font-size:.9rem;">Sign in to your gaming account</p>
+    </div>
+
+    <div class="form-card">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="login-email"><i class="fa-solid fa-envelope" style="margin-right:6px;color:var(--accent2);"></i>Email Address</label>
+          <input type="email" name="email" id="login-email" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="login-pass"><i class="fa-solid fa-lock" style="margin-right:6px;color:var(--accent2);"></i>Password</label>
+          <div style="position:relative;">
+            <input type="password" name="password" id="login-pass" placeholder="••••••••" required autocomplete="current-password" style="padding-right:44px;" />
+            <button type="button" onclick="togglePwd('login-pass', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:14px;margin-top:4px;">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        </button>
+      </form>
+      <div class="form-divider">or</div>
+      <p style="text-align:center;color:var(--muted);font-size:.9rem;">
+        Don't have an account?
+        <a href="{% url 'register' %}" style="color:var(--accent2);font-weight:600;">Create one free →</a>
+      </p>
+    </div>
+  </div>
+</div>
+<script>
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id);
+  const isPass = inp.type === 'password';
+  inp.type = isPass ? 'text' : 'password';
+  btn.innerHTML = isPass ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+}
+</script>
+{% endblock %}

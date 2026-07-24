@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}All Games – SparkZone{% endblock %}
+
+{% block extra_css %}
+.filters {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 20px 0; position: sticky; top: 70px; z-index: 100;
+}
+.filters-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.filter-search {
+  position: relative; flex: 1; min-width: 220px;
+}
+.filter-search input {
+  width: 100%; padding: 10px 16px 10px 42px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: .9rem; outline: none;
+  transition: border-color .2s;
+}
+.filter-search input:focus { border-color: var(--accent); }
+.filter-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.filter-select {
+  padding: 10px 16px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: .9rem; font-family: inherit;
+  outline: none; cursor: pointer;
+}
+.filter-select:focus { border-color: var(--accent); }
+.filter-btn { padding: 10px 20px; border-radius: 10px; font-size: .9rem; font-weight: 600; cursor: pointer; border: none; }
+.filter-btn-submit { background: var(--accent); color: #fff; }
+.filter-btn-clear { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+.filter-btn:hover { opacity: .85; }
+.games-count { color: var(--muted); font-size: .88rem; }
+.no-results {
+  text-align: center; padding: 80px 0; color: var(--muted);
+}
+.no-results i { font-size: 3.5rem; margin-bottom: 16px; color: var(--accent2); opacity: .5; }
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-gamepad"></i> Games</span>
+    <h1>All Gaming Stations</h1>
+    <p>Discover and book from our wide range of premium gaming setups</p>
+  </div>
+</div>
+
+<div class="filters">
+  <div class="container">
+    <form method="GET" action="{% url 'games' %}">
+      <div class="filters-inner">
+        <div class="filter-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" name="search" value="{{ search }}" placeholder="Search games…" id="search-input" />
+        </div>
+        <select name="category" class="filter-select" id="category-filter">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
+            {{ cat.categoryName }}
+          </option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="filter-btn filter-btn-submit">
+          <i class="fa-solid fa-filter"></i> Filter
+        </button>
+        <a href="{% url 'games' %}" class="filter-btn filter-btn-clear" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+          <i class="fa-solid fa-rotate-left"></i> Clear
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<section style="padding: 48px 0 80px;">
+  <div class="container">
+    <p class="games-count" style="margin-bottom:28px;">
+      Showing <strong style="color:var(--text);">{{ games|length }}</strong> gaming station{{ games|length|pluralize }}
+      {% if search %} for "<strong style="color:var(--accent2)">{{ search }}</strong>"{% endif %}
+    </p>
+    {% if games %}
+    <div class="grid-3">
+      {% for game in games %}
+      <div class="game-card">
+        <div class="game-card-img">
+          {% if game.image %}
+            <img src="{{ game.image.url }}" alt="{{ game.name }}" loading="lazy" />
+          {% else %}
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-size:3rem;">🎮</div>
+          {% endif %}
+          <span class="availability {% if game.availableSystems > 0 %}avail-yes{% else %}avail-no{% endif %}">
+            {% if game.availableSystems > 0 %}{{ game.availableSystems }} Available{% else %}Fully Booked{% endif %}
+          </span>
+        </div>
+        <div class="game-card-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div class="game-card-title">{{ game.name }}</div>
+            <span style="font-size:.75rem;background:rgba(124,58,237,.15);color:var(--accent2);border:1px solid rgba(124,58,237,.3);padding:3px 8px;border-radius:6px;white-space:nowrap;">{{ game.category.categoryName }}</span>
+          </div>
+          <div class="game-card-meta">
+            <span><i class="fa-solid fa-location-dot"></i> {{ game.city.name }}</span>
+            <span><i class="fa-solid fa-desktop"></i> {{ game.totalSystem }} Total / {{ game.availableSystems }} Free</span>
+          </div>
+          <p style="color:var(--muted);font-size:.85rem;line-height:1.6;flex:1;">{{ game.description|truncatechars:100 }}</p>
+          <div class="game-price">
+            ₹{{ game.pricePerHour|floatformat:0 }}
+            <span style="font-size:.75rem;color:var(--muted);font-weight:400;">/ hour</span>
+          </div>
+        </div>
+        <div class="game-card-footer" style="display:flex;gap:10px;">
+          <a href="{% url 'game_detail' game.id %}" class="btn btn-outline" style="flex:1;justify-content:center;padding:10px;">
+            <i class="fa-solid fa-circle-info"></i> Details
+          </a>
+          <a href="{% url 'booking' game.id %}" class="btn btn-primary" style="flex:1;justify-content:center;padding:10px;">
+            <i class="fa-solid fa-calendar-plus"></i> Book
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-results">
+      <div><i class="fa-solid fa-magnifying-glass-minus"></i></div>
+      <h3 style="margin-bottom:8px;color:var(--text);">No Games Found</h3>
+      <p>Try adjusting your search or filter criteria</p>
+      <a href="{% url 'games' %}" class="btn btn-primary" style="margin-top:24px;">Clear Filters</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

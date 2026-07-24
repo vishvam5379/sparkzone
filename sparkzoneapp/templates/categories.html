@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Categories – SparkZone{% endblock %}
+
+{% block extra_css %}
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 28px; padding: 56px 0 80px; }
+.cat-big-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden; position: relative;
+  transition: transform .3s, box-shadow .3s, border-color .3s;
+  cursor: pointer;
+}
+.cat-big-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 60px rgba(124,58,237,.25);
+  border-color: rgba(124,58,237,.4);
+}
+.cat-big-card-img { height: 220px; overflow: hidden; }
+.cat-big-card-img img { width:100%; height:100%; object-fit:cover; transition:transform .4s; }
+.cat-big-card:hover .cat-big-card-img img { transform:scale(1.08); }
+.cat-big-card-body { padding: 24px; }
+.cat-big-card-body h3 { font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; }
+.cat-big-card-body p { color: var(--muted); font-size: .88rem; line-height: 1.65; }
+.cat-big-card-footer {
+  padding: 0 24px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-layer-group"></i> Browse</span>
+    <h1>Game Categories</h1>
+    <p>Find your perfect gaming genre from our curated collection</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="cat-grid">
+    {% for cat in categories %}
+    <a href="{% url 'games' %}?category={{ cat.id }}" class="cat-big-card" style="text-decoration:none;color:inherit;">
+      <div class="cat-big-card-img">
+        {% if cat.image %}
+          <img src="{{ cat.image.url }}" alt="{{ cat.categoryName }}" />
+        {% else %}
+          <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-size:4rem;">🎮</div>
+        {% endif %}
+      </div>
+      <div class="cat-big-card-body">
+        <h3>{{ cat.categoryName }}</h3>
+        <p>{{ cat.description|truncatechars:120 }}</p>
+      </div>
+      <div class="cat-big-card-footer">
+        <span style="font-size:.85rem;color:var(--muted);">View all games →</span>
+        <span class="badge"><i class="fa-solid fa-arrow-right"></i></span>
+      </div>
+    </a>
+    {% empty %}
+    <div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--muted);">
+      <i class="fa-solid fa-layer-group" style="font-size:3rem;margin-bottom:16px;opacity:.5;"></i>
+      <p>No categories available yet.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SparkZone – Ultimate Gaming Experience{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}SparkZone – Book premium gaming stations, consoles and PC setups near you.{% endblock %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* ── Reset & Tokens ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #090b11;
+      --bg2:      #0f1319;
+      --bg3:      #161c26;
+      --card:     #141920;
+      --border:   rgba(255,255,255,.07);
+      --accent:   #7c3aed;
+      --accent2:  #a855f7;
+      --neon:     #00d4ff;
+      --neon2:    #0ea5e9;
+      --gold:     #f59e0b;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --danger:   #ef4444;
+      --success:  #10b981;
+      --radius:   14px;
+      --shadow:   0 8px 32px rgba(0,0,0,.5);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; display: block; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+    /* ── Utility ── */
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(124,58,237,.15); color: var(--accent2);
+      border: 1px solid rgba(124,58,237,.3);
+      padding: 4px 12px; border-radius: 999px; font-size: .75rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .05em;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px; border-radius: 10px; font-size: .95rem;
+      font-weight: 600; cursor: pointer; border: none; transition: all .25s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; box-shadow: 0 4px 20px rgba(124,58,237,.4);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,.55); }
+    .btn-neon {
+      background: transparent; color: var(--neon);
+      border: 1.5px solid var(--neon); box-shadow: 0 0 12px rgba(0,212,255,.2);
+    }
+    .btn-neon:hover { background: rgba(0,212,255,.1); box-shadow: 0 0 24px rgba(0,212,255,.35); transform: translateY(-2px); }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 0 24px;
+      background: rgba(9,11,17,.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 70px;
+    }
+    .nav-logo {
+      font-family: 'Orbitron', monospace; font-size: 1.5rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--accent2), var(--neon));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: .05em;
+    }
+    .nav-logo span { color: var(--neon); -webkit-text-fill-color: var(--neon); }
+    .nav-links {
+      display: flex; align-items: center; gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: .9rem; font-weight: 500; color: var(--muted);
+      transition: color .2s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+      height: 2px; background: var(--accent2);
+      transform: scaleX(0); transition: transform .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .nav-user {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 999px; padding: 6px 16px 6px 6px;
+    }
+    .nav-user-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--neon));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem;
+    }
+    .hamburger { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; }
+    @media(max-width: 768px) {
+      .nav-links, .nav-actions { display: none; }
+      .hamburger { display: block; }
+    }
+
+    /* ── Messages ── */
+    .messages {
+      position: fixed; top: 80px; right: 20px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px; max-width: 380px;
+    }
+    .message {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px; border-radius: 12px;
+      background: var(--bg3); border: 1px solid var(--border);
+      box-shadow: var(--shadow); font-size: .9rem;
+      animation: slideIn .35s ease;
+    }
+    @keyframes slideIn { from { opacity:0; transform: translateX(40px); } to { opacity:1; transform:translateX(0); } }
+    .message.success { border-left: 3px solid var(--success); }
+    .message.error   { border-left: 3px solid var(--danger); }
+    .message.warning { border-left: 3px solid var(--gold); }
+    .message-close { margin-left: auto; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; }
+
+    /* ── Section Header ── */
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-header h2 {
+      font-family: 'Orbitron', monospace; font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 700; margin: 12px 0 16px;
+      background: linear-gradient(135deg, #fff 40%, var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .section-header p { color: var(--muted); max-width: 520px; margin: 0 auto; line-height: 1.7; }
+
+    /* ── Cards ── */
+    .game-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      transition: transform .3s, box-shadow .3s, border-color .3s;
+      display: flex; flex-direction: column;
+    }
+    .game-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(124,58,237,.25);
+      border-color: rgba(124,58,237,.4);
+    }
+    .game-card-img { position: relative; overflow: hidden; height: 200px; }
+    .game-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+    .game-card:hover .game-card-img img { transform: scale(1.08); }
+    .game-card-img .availability {
+      position: absolute; top: 12px; right: 12px;
+      padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 600;
+    }
+    .avail-yes { background: rgba(16,185,129,.2); color: var(--success); border: 1px solid rgba(16,185,129,.3); }
+    .avail-no  { background: rgba(239,68,68,.2);  color: var(--danger);  border: 1px solid rgba(239,68,68,.3); }
+    .game-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+    .game-card-title { font-weight: 700; font-size: 1.05rem; }
+    .game-card-meta { display: flex; gap: 14px; flex-wrap: wrap; }
+    .game-card-meta span { font-size: .8rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+    .game-card-meta span i { color: var(--accent2); }
+    .game-price { font-size: 1.1rem; font-weight: 700; color: var(--neon); margin-top: auto; }
+    .game-card-footer { padding: 0 20px 20px; }
+
+    /* ── Grid ── */
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 80px; background: var(--bg2);
+      border-top: 1px solid var(--border); padding: 60px 0 30px;
+    }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+    .footer-brand p { color: var(--muted); line-height: 1.7; margin-top: 12px; font-size: .9rem; }
+    .footer-col h4 { font-weight: 600; margin-bottom: 16px; font-size: .95rem; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col ul a { color: var(--muted); font-size: .88rem; transition: color .2s; }
+    .footer-col ul a:hover { color: var(--accent2); }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; display: flex; align-items: center; justify-content: space-between; }
+    .footer-bottom p { color: var(--muted); font-size: .85rem; }
+    .social-links { display: flex; gap: 14px; }
+    .social-links a {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: var(--bg3); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); transition: all .2s;
+    }
+    .social-links a:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    @media(max-width: 768px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+    }
+    @media(max-width: 480px) { .footer-grid { grid-template-columns: 1fr; } }
+
+    /* ── Page Hero (inner pages) ── */
+    .page-hero {
+      margin-top: 70px; padding: 60px 0;
+      background: linear-gradient(135deg, rgba(124,58,237,.12) 0%, rgba(0,212,255,.06) 100%);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+    .page-hero h1 {
+      font-family: 'Orbitron', monospace; font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 40%, var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .page-hero p { color: var(--muted); margin-top: 10px; font-size: 1.05rem; }
+
+    /* ── Form styles ── */
+    .form-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 40px; max-width: 520px; margin: 0 auto;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: .88rem; font-weight: 500; color: var(--muted); }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%; padding: 12px 16px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: .95rem; font-family: inherit;
+      transition: border-color .2s, box-shadow .2s; outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,58,237,.15);
+    }
+    .form-group textarea { resize: vertical; min-height: 110px; }
+    .form-divider { text-align: center; margin: 24px 0; color: var(--muted); font-size: .85rem; position: relative; }
+    .form-divider::before, .form-divider::after {
+      content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--border);
+    }
+    .form-divider::before { left: 0; }
+    .form-divider::after { right: 0; }
+
+    /* ── Stars ── */
+    .stars { color: var(--gold); letter-spacing: 2px; }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="{% url 'index' %}" class="nav-logo">Spark<span>Zone</span></a>
+    <ul class="nav-links">
+      <li><a href="{% url 'index' %}">Home</a></li>
+      <li><a href="{% url 'games' %}">Games</a></li>
+      <li><a href="{% url 'categories' %}">Categories</a></li>
+      <li><a href="{% url 'contact' %}">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      {% if logged_in_user %}
+        <div class="nav-user">
+          <div class="nav-user-avatar">{{ logged_in_user.firstName.0 }}{{ logged_in_user.lastName.0 }}</div>
+          <span style="font-size:.88rem;font-weight:500;">{{ logged_in_user.firstName }}</span>
+        </div>
+        <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="padding:9px 18px;font-size:.85rem;">
+          <i class="fa-solid fa-calendar-check"></i> Bookings
+        </a>
+        <a href="{% url 'logout' %}" class="btn btn-outline" style="padding:9px 18px;font-size:.85rem;">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn btn-outline" style="padding:9px 20px;font-size:.9rem;">Login</a>
+        <a href="{% url 'register' %}" class="btn btn-primary" style="padding:9px 20px;font-size:.9rem;">Sign Up</a>
+      {% endif %}
+    </div>
+    <button class="hamburger"><i class="fa-solid fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- ── Flash Messages ── -->
+{% if messages %}
+<div class="messages" id="flash-messages">
+  {% for msg in messages %}
+  <div class="message {{ msg.tags }}">
+    {% if msg.tags == 'success' %}<i class="fa-solid fa-circle-check" style="color:var(--success)"></i>
+    {% elif msg.tags == 'error' %}<i class="fa-solid fa-circle-xmark" style="color:var(--danger)"></i>
+    {% else %}<i class="fa-solid fa-triangle-exclamation" style="color:var(--gold)"></i>{% endif %}
+    {{ msg }}
+    <button class="message-close" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── Main Content ── -->
+{% block content %}{% endblock %}
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div style="font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,var(--accent2),var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">SparkZone</div>
+        <p>Your ultimate destination for premium gaming experiences. Book your station, play your game, dominate the scoreboard.</p>
+        <div class="social-links" style="margin-top:20px;">
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+          <a href="#"><i class="fab fa-discord"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="{% url 'games' %}">All Games</a></li>
+          <li><a href="{% url 'categories' %}">Categories</a></li>
+          <li><a href="{% url 'my_bookings' %}">My Bookings</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <ul>
+          <li><a href="{% url 'register' %}">Register</a></li>
+          <li><a href="{% url 'login' %}">Login</a></li>
+          <li><a href="{% url 'contact' %}">Support</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:info@sparkzone.com"><i class="fa-solid fa-envelope"></i> info@sparkzone.com</a></li>
+          <li><a href="#"><i class="fa-solid fa-phone"></i> +91 98765 43210</a></li>
+          <li><a href="#"><i class="fa-solid fa-location-dot"></i> Ahmedabad, India</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 SparkZone. All rights reserved.</p>
+      <p>Built with <i class="fa-solid fa-heart" style="color:var(--danger)"></i> using Django</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Auto-dismiss messages after 5s
+  setTimeout(() => {
+    const msgs = document.getElementById('flash-messages');
+    if (msgs) msgs.style.display = 'none';
+  }, 5000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

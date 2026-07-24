@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Register – SparkZone{% endblock %}
+
+{% block content %}
+<div style="margin-top:70px;min-height:calc(100vh - 70px);display:flex;align-items:center;justify-content:center;padding:40px 24px;
+            background:radial-gradient(ellipse 60% 60% at 50% 30%, rgba(0,212,255,.06), transparent);">
+  <div style="width:100%;max-width:520px;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;background:linear-gradient(135deg,var(--accent2),var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;">SparkZone</div>
+      <h1 style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:800;margin-bottom:6px;">Create Account</h1>
+      <p style="color:var(--muted);font-size:.9rem;">Join thousands of gamers on SparkZone</p>
+    </div>
+
+    <div class="form-card">
+      <form method="POST">
+        {% csrf_token %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label for="reg-first"><i class="fa-solid fa-user" style="margin-right:6px;color:var(--accent2);"></i>First Name</label>
+            <input type="text" name="firstName" id="reg-first" placeholder="Vishvam" required />
+          </div>
+          <div class="form-group">
+            <label for="reg-last"><i class="fa-solid fa-user" style="margin-right:6px;color:var(--accent2);"></i>Last Name</label>
+            <input type="text" name="lastName" id="reg-last" placeholder="Sukhadiya" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="reg-email"><i class="fa-solid fa-envelope" style="margin-right:6px;color:var(--accent2);"></i>Email Address</label>
+          <input type="email" name="email" id="reg-email" placeholder="you@example.com" required />
+        </div>
+        <div class="form-group">
+          <label for="reg-pass"><i class="fa-solid fa-lock" style="margin-right:6px;color:var(--accent2);"></i>Password</label>
+          <div style="position:relative;">
+            <input type="password" name="password" id="reg-pass" placeholder="Min. 8 characters" required style="padding-right:44px;" />
+            <button type="button" onclick="togglePwd('reg-pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="reg-confirm"><i class="fa-solid fa-lock" style="margin-right:6px;color:var(--accent2);"></i>Confirm Password</label>
+          <div style="position:relative;">
+            <input type="password" name="confirm_password" id="reg-confirm" placeholder="Repeat password" required style="padding-right:44px;" />
+            <button type="button" onclick="togglePwd('reg-confirm',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Password strength indicator -->
+        <div id="strength-bar" style="display:none;margin-bottom:16px;">
+          <div style="height:4px;border-radius:2px;background:var(--bg3);overflow:hidden;">
+            <div id="strength-fill" style="height:100%;width:0%;transition:width .3s,background .3s;border-radius:2px;"></div>
+          </div>
+          <span id="strength-label" style="font-size:.75rem;color:var(--muted);margin-top:4px;display:block;"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:14px;margin-top:4px;">
+          <i class="fa-solid fa-rocket"></i> Create Account
+        </button>
+      </form>
+      <div class="form-divider">or</div>
+      <p style="text-align:center;color:var(--muted);font-size:.9rem;">
+        Already have an account?
+        <a href="{% url 'login' %}" style="color:var(--accent2);font-weight:600;">Sign in →</a>
+      </p>
+    </div>
+  </div>
+</div>
+<script>
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id);
+  const isPass = inp.type === 'password';
+  inp.type = isPass ? 'text' : 'password';
+  btn.innerHTML = isPass ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+}
+
+// Password strength
+const passInp = document.getElementById('reg-pass');
+const bar = document.getElementById('strength-bar');
+const fill = document.getElementById('strength-fill');
+const label = document.getElementById('strength-label');
+
+passInp.addEventListener('input', () => {
+  const val = passInp.value;
+  bar.style.display = val ? 'block' : 'none';
+  let strength = 0;
+  if (val.length >= 8) strength++;
+  if (/[A-Z]/.test(val)) strength++;
+  if (/[0-9]/.test(val)) strength++;
+  if (/[^A-Za-z0-9]/.test(val)) strength++;
+  const colors = ['#ef4444', '#f59e0b', '#10b981', '#00d4ff'];
+  const labels = ['Weak', 'Fair', 'Good', 'Strong'];
+  fill.style.width = (strength * 25) + '%';
+  fill.style.background = colors[strength - 1] || '#ef4444';
+  label.textContent = 'Password strength: ' + (labels[strength - 1] || 'Very Weak');
+});
+</script>
+{% endblock %}

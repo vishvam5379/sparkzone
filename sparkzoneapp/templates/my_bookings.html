@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings – SparkZone{% endblock %}
+
+{% block extra_css %}
+.bookings-table-wrap {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden; margin-top: 40px;
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  background: var(--bg3); padding: 16px 20px;
+  font-size: .8rem; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--muted); font-weight: 600; text-align: left;
+}
+td { padding: 18px 20px; border-top: 1px solid var(--border); vertical-align: middle; }
+tr:hover td { background: rgba(124,58,237,.04); }
+.status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 6px; font-size: .8rem; font-weight: 600;
+}
+.status-pending   { background:rgba(245,158,11,.12);  color:var(--gold);    border:1px solid rgba(245,158,11,.25); }
+.status-confirmed { background:rgba(16,185,129,.12);  color:var(--success); border:1px solid rgba(16,185,129,.25); }
+.status-cancelled { background:rgba(239,68,68,.12);   color:var(--danger);  border:1px solid rgba(239,68,68,.25); }
+.empty-state {
+  text-align: center; padding: 80px 40px; color: var(--muted);
+}
+.empty-state i { font-size: 3.5rem; margin-bottom: 20px; opacity: .4; }
+@media(max-width:700px) {
+  table { display:block; overflow-x:auto; white-space:nowrap; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-calendar-check"></i> My Account</span>
+    <h1>My Bookings</h1>
+    <p>Track all your gaming session reservations in one place</p>
+  </div>
+</div>
+
+<div class="container" style="padding-bottom:80px;">
+  {% if bookings %}
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:32px;">
+    <p style="color:var(--muted);">
+      <strong style="color:var(--text);">{{ bookings|length }}</strong> booking{{ bookings|length|pluralize }} found
+    </p>
+    <a href="{% url 'games' %}" class="btn btn-primary" style="padding:10px 22px;font-size:.9rem;">
+      <i class="fa-solid fa-plus"></i> Book More
+    </a>
+  </div>
+  <div class="bookings-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Game</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td style="color:var(--muted);font-size:.85rem;">{{ forloop.counter }}</td>
+          <td>
+            <a href="{% url 'game_detail' b.game.id %}" style="font-weight:600;color:var(--accent2);transition:color .2s;" onmouseover="this.style.color='var(--neon)'" onmouseout="this.style.color='var(--accent2)'">
+              {{ b.game.name }}
+            </a>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">{{ b.game.category.categoryName }}</div>
+          </td>
+          <td style="font-size:.9rem;">{{ b.bookingDate }}</td>
+          <td style="font-size:.9rem;font-family:'Orbitron',monospace;font-size:.82rem;">
+            {{ b.startTime }} – {{ b.endTime }}
+          </td>
+          <td style="font-weight:700;color:var(--neon);font-family:'Orbitron',monospace;font-size:.95rem;">
+            ₹{{ b.totalAmount|floatformat:2 }}
+          </td>
+          <td>
+            <span class="status-badge status-{{ b.status }}">
+              {% if b.status == 'pending' %}<i class="fa-solid fa-clock"></i>
+              {% elif b.status == 'confirmed' %}<i class="fa-solid fa-circle-check"></i>
+              {% else %}<i class="fa-solid fa-circle-xmark"></i>{% endif %}
+              {{ b.status|capfirst }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div><i class="fa-solid fa-calendar-xmark"></i></div>
+    <h3 style="color:var(--text);margin-bottom:10px;">No Bookings Yet</h3>
+    <p>You haven't made any bookings. Browse our games and book your first session!</p>
+    <a href="{% url 'games' %}" class="btn btn-primary" style="margin-top:28px;font-size:1rem;padding:13px 30px;">
+      <i class="fa-solid fa-gamepad"></i> Browse Games
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

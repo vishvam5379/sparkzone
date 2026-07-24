@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% block title %}{{ game.name }} – SparkZone{% endblock %}
+
+{% block extra_css %}
+.game-detail-hero {
+  margin-top: 70px; position: relative; height: 400px; overflow: hidden;
+}
+.game-detail-hero img { width:100%; height:100%; object-fit:cover; }
+.game-detail-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(9,11,17,1) 0%, rgba(9,11,17,.5) 50%, rgba(9,11,17,.2) 100%);
+}
+.game-detail-hero-info {
+  position: absolute; bottom: 0; left: 0; right: 0; padding: 40px;
+}
+.detail-grid { display: grid; grid-template-columns: 1fr 360px; gap: 32px; padding: 48px 0 80px; }
+@media(max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }
+
+.detail-main { display: flex; flex-direction: column; gap: 32px; }
+.info-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px;
+}
+.info-card h3 { font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+.info-card h3 i { color: var(--accent2); }
+.detail-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.detail-stat {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; text-align: center;
+}
+.detail-stat .val { font-family:'Orbitron',monospace; font-size:1.3rem; font-weight:700; color:var(--neon); }
+.detail-stat .key { font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-top:4px; }
+
+/* Gallery */
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.gallery img { border-radius: 10px; aspect-ratio:16/9; object-fit:cover; cursor:pointer; transition:transform .25s; }
+.gallery img:hover { transform:scale(1.03); }
+
+/* Book sidebar */
+.book-sidebar { position: sticky; top: 88px; height: fit-content; }
+.book-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,.4);
+}
+.book-card-header {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  padding: 24px; text-align: center;
+}
+.book-card-header .price { font-family:'Orbitron',monospace; font-size:2.2rem; font-weight:900; }
+.book-card-header .per { font-size:.85rem; opacity:.8; }
+.book-card-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.avail-indicator {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+  border-radius: 10px; font-size: .9rem; font-weight: 600;
+}
+.avail-indicator.yes { background:rgba(16,185,129,.1); color:var(--success); border:1px solid rgba(16,185,129,.25); }
+.avail-indicator.no  { background:rgba(239,68,68,.1);  color:var(--danger);  border:1px solid rgba(239,68,68,.25); }
+
+/* Reviews */
+.review-form { display: flex; flex-direction: column; gap: 14px; }
+.star-rating { display: flex; gap: 8px; }
+.star-rating input { display:none; }
+.star-rating label { font-size:1.6rem; color:var(--muted); cursor:pointer; transition:color .15s; }
+.star-rating label:hover,
+.star-rating label:hover ~ label { color:var(--gold); }
+.star-rating input:checked ~ label { color:var(--gold); }
+{% endblock %}
+
+{% block content %}
+<!-- Hero Image -->
+<div class="game-detail-hero">
+  {% if game.image %}
+    <img src="{{ game.image.url }}" alt="{{ game.name }}" />
+  {% else %}
+    <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));"></div>
+  {% endif %}
+  <div class="game-detail-hero-overlay"></div>
+  <div class="game-detail-hero-info">
+    <div class="container">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span class="badge"><i class="fa-solid fa-tag"></i> {{ game.category.categoryName }}</span>
+        <span class="badge" style="background:rgba(0,212,255,.1);color:var(--neon);border-color:rgba(0,212,255,.2);">
+          <i class="fa-solid fa-location-dot"></i> {{ game.city.name }}
+        </span>
+      </div>
+      <h1 style="font-family:'Orbitron',monospace;font-size:clamp(1.6rem,4vw,2.8rem);font-weight:900;">{{ game.name }}</h1>
+      {% if avg_rating %}
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+        <span class="stars">
+          {% for i in "12345" %}
+            {% if forloop.counter <= avg_rating %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star"></i>{% endif %}
+          {% endfor %}
+        </span>
+        <span style="color:var(--muted);font-size:.9rem;">{{ avg_rating }} ({{ reviews|length }} reviews)</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="detail-grid">
+
+    <!-- Left: Main Info -->
+    <div class="detail-main">
+
+      <!-- Stats -->
+      <div class="detail-stats">
+        <div class="detail-stat">
+          <div class="val">₹{{ game.pricePerHour|floatformat:0 }}</div>
+          <div class="key">Per Hour</div>
+        </div>
+        <div class="detail-stat">
+          <div class="val">{{ game.totalSystem }}</div>
+          <div class="key">Total Systems</div>
+        </div>
+        <div class="detail-stat">
+          <div class="val" style="color:{% if game.availableSystems > 0 %}var(--success){% else %}var(--danger){% endif %};">
+            {{ game.availableSystems }}
+          </div>
+          <div class="key">Available Now</div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="info-card">
+        <h3><i class="fa-solid fa-circle-info"></i> About This Station</h3>
+        <p style="color:var(--muted);line-height:1.75;">{{ game.description }}</p>
+      </div>
+
+      <!-- Address -->
+      <div class="info-card">
+        <h3><i class="fa-solid fa-location-dot"></i> Location</h3>
+        <p style="color:var(--muted);line-height:1.7;">{{ game.address }}</p>
+        <div style="margin-top:12px;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);font-size:.88rem;color:var(--muted);">
+          <i class="fa-solid fa-city" style="color:var(--accent2);margin-right:8px;"></i>
+          {{ game.city.name }}
+        </div>
+      </div>
+
+      <!-- Gallery -->
+      {% if game_images %}
+      <div class="info-card">
+        <h3><i class="fa-solid fa-images"></i> Gallery</h3>
+        <div class="gallery">
+          {% for gi in game_images %}
+          <img src="{{ gi.image.url }}" alt="Gallery image" />
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Reviews -->
+      <div class="info-card">
+        <h3><i class="fa-solid fa-star"></i> Reviews ({{ reviews|length }})</h3>
+        {% if reviews %}
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          {% for review in reviews %}
+          <div style="padding:18px;background:var(--bg3);border-radius:12px;border:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+              <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;">
+                {{ review.user.firstName.0 }}{{ review.user.lastName.0 }}
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:.9rem;">{{ review.user.firstName }} {{ review.user.lastName }}</div>
+                <div class="stars" style="font-size:.8rem;">
+                  {% for i in "12345" %}
+                    {% if forloop.counter <= review.rating %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star"></i>{% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            <p style="color:var(--muted);font-size:.88rem;line-height:1.65;">{{ review.comment }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--muted);text-align:center;padding:24px 0;">No reviews yet. Be the first to review!</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right: Booking Sidebar -->
+    <div class="book-sidebar">
+      <div class="book-card">
+        <div class="book-card-header">
+          <div class="price">₹{{ game.pricePerHour|floatformat:0 }}</div>
+          <div class="per">per hour</div>
+        </div>
+        <div class="book-card-body">
+          <div class="avail-indicator {% if game.availableSystems > 0 %}yes{% else %}no{% endif %}">
+            <i class="fa-solid {% if game.availableSystems > 0 %}fa-circle-check{% else %}fa-circle-xmark{% endif %}"></i>
+            {% if game.availableSystems > 0 %}
+              {{ game.availableSystems }} Systems Available
+            {% else %}
+              Fully Booked
+            {% endif %}
+          </div>
+          {% if game.availableSystems > 0 %}
+            {% if logged_in_user %}
+              <a href="{% url 'booking' game.id %}" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:14px;">
+                <i class="fa-solid fa-calendar-plus"></i> Book Now
+              </a>
+            {% else %}
+              <a href="{% url 'login' %}" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:14px;">
+                <i class="fa-solid fa-right-to-bracket"></i> Login to Book
+              </a>
+            {% endif %}
+          {% else %}
+            <button class="btn" style="width:100%;background:var(--bg3);color:var(--muted);cursor:not-allowed;justify-content:center;" disabled>
+              <i class="fa-solid fa-ban"></i> Currently Unavailable
+            </button>
+          {% endif %}
+          <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:.88rem;">
+              <span style="color:var(--muted);">Category</span>
+              <span style="font-weight:600;">{{ game.category.categoryName }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.88rem;">
+              <span style="color:var(--muted);">Total Systems</span>
+              <span style="font-weight:600;">{{ game.totalSystem }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.88rem;">
+              <span style="color:var(--muted);">Location</span>
+              <span style="font-weight:600;">{{ game.city.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% block title %}SparkZone – Ultimate Gaming Experience{% endblock %}
+
+{% block extra_css %}
+/* ── Hero ── */
+.hero {
+  margin-top: 70px; min-height: 92vh;
+  display: flex; align-items: center; position: relative; overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 40%, rgba(124,58,237,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 70%, rgba(0,212,255,.1) 0%, transparent 70%),
+    var(--bg);
+}
+.hero-grid-lines {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(124,58,237,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.hero-glow {
+  position: absolute; top: 20%; right: 5%; width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(124,58,237,.15) 0%, transparent 70%);
+  border-radius: 50%; animation: pulse 4s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:.7;} 50%{transform:scale(1.08);opacity:1;} }
+.hero-content { position: relative; z-index: 1; max-width: 680px; }
+.hero-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.hero-eyebrow::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
+.hero h1 {
+  font-family: 'Orbitron', monospace; font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+  font-weight: 900; line-height: 1.1; margin-bottom: 24px;
+}
+.hero h1 .line1 { color: #fff; }
+.hero h1 .line2 {
+  background: linear-gradient(135deg, var(--accent2) 0%, var(--neon) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub { color: var(--muted); font-size: 1.1rem; line-height: 1.7; margin-bottom: 36px; max-width: 500px; }
+.hero-cta { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 48px; }
+.hero-stats { display: flex; gap: 36px; flex-wrap: wrap; }
+.hero-stat { text-align: left; }
+.hero-stat .num { font-family:'Orbitron',monospace; font-size: 1.8rem; font-weight: 800; color: var(--neon); }
+.hero-stat .lbl { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+
+/* ── Floating game card preview ── */
+.hero-visual {
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  width: 42%; display: flex; flex-direction: column; gap: 16px; padding-right: 24px;
+}
+.float-card {
+  background: rgba(20,25,32,.85); backdrop-filter: blur(16px);
+  border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+  display: flex; gap: 14px; align-items: center;
+  animation: floatY 5s ease-in-out infinite;
+  box-shadow: 0 12px 40px rgba(0,0,0,.4);
+}
+.float-card:nth-child(2) { animation-delay: -2.5s; margin-left: 40px; }
+.float-card-icon {
+  width: 52px; height: 52px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; flex-shrink: 0;
+}
+.float-card-info .title { font-weight: 700; font-size: .95rem; }
+.float-card-info .sub { color: var(--muted); font-size: .8rem; margin-top: 2px; }
+.float-card-badge { margin-left: auto; font-size: .8rem; font-weight: 700; color: var(--neon); white-space: nowrap; }
+@keyframes floatY { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
+
+@media(max-width: 900px) {
+  .hero-visual { display: none; }
+  .hero-content { max-width: 100%; }
+}
+
+/* ── Category Strip ── */
+.cat-strip {
+  padding: 70px 0; background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.cat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden; position: relative;
+  cursor: pointer; transition: all .3s; text-align: center;
+}
+.cat-card::before {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(to top, rgba(124,58,237,.6) 0%, transparent 60%);
+  z-index: 1; opacity: 0; transition: opacity .3s;
+}
+.cat-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(124,58,237,.2); border-color: rgba(124,58,237,.4); }
+.cat-card:hover::before { opacity: 1; }
+.cat-card img { width: 100%; height: 180px; object-fit: cover; }
+.cat-card-name {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
+  padding: 16px 12px; font-weight: 700; font-size: .95rem;
+  background: linear-gradient(to top, rgba(9,11,17,.95) 0%, transparent 100%);
+}
+
+/* ── Featured Games ── */
+.featured { padding: 80px 0; }
+
+/* ── CTA Banner ── */
+.cta-banner {
+  margin: 0 0 80px; padding: 64px;
+  background: linear-gradient(135deg, rgba(124,58,237,.2) 0%, rgba(0,212,255,.1) 100%);
+  border: 1px solid rgba(124,58,237,.25); border-radius: 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 32px;
+  position: relative; overflow: hidden;
+}
+.cta-banner::before {
+  content:''; position:absolute; right:-80px; top:-80px;
+  width:300px; height:300px; border-radius:50%;
+  background: radial-gradient(circle, rgba(124,58,237,.2), transparent);
+}
+.cta-banner-text h2 {
+  font-family:'Orbitron',monospace; font-size:clamp(1.4rem,2.5vw,2rem); font-weight:800; margin-bottom:10px;
+  background:linear-gradient(135deg,#fff 40%,var(--neon));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.cta-banner-text p { color: var(--muted); max-width: 480px; line-height: 1.7; }
+@media(max-width:700px) {
+  .cta-banner { flex-direction:column; text-align:center; padding:40px 24px; }
+}
+
+/* ── Reviews ── */
+.reviews-section { padding: 80px 0; background: var(--bg2); border-top: 1px solid var(--border); }
+.review-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 14px;
+  transition: border-color .3s, transform .3s;
+}
+.review-card:hover { border-color: rgba(124,58,237,.3); transform: translateY(-3px); }
+.review-header { display: flex; align-items: center; gap: 14px; }
+.review-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--neon));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .9rem; flex-shrink: 0;
+}
+.review-name { font-weight: 600; }
+.review-game { font-size: .8rem; color: var(--muted); }
+.review-text { color: var(--muted); line-height: 1.65; font-size: .9rem; }
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid-lines"></div>
+  <div class="hero-glow"></div>
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="badge"><i class="fa-solid fa-bolt"></i> New Gaming Era</span>
+      </div>
+      <h1>
+        <span class="line1">Level Up Your</span><br>
+        <span class="line2">Gaming Experience</span>
+      </h1>
+      <p class="hero-sub">
+        Book premium gaming stations, consoles, and PC setups near you. From action to racing — SparkZone has it all.
+      </p>
+      <div class="hero-cta">
+        <a href="{% url 'games' %}" class="btn btn-primary" style="font-size:1rem;padding:14px 32px;">
+          <i class="fa-solid fa-gamepad"></i> Browse Games
+        </a>
+        <a href="{% url 'register' %}" class="btn btn-neon" style="font-size:1rem;padding:14px 32px;">
+          <i class="fa-solid fa-user-plus"></i> Join Free
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="num">500+</div><div class="lbl">Gaming Stations</div></div>
+        <div class="hero-stat"><div class="num">10K+</div><div class="lbl">Happy Gamers</div></div>
+        <div class="hero-stat"><div class="num">50+</div><div class="lbl">Game Titles</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="float-card">
+      <div class="float-card-icon">🎮</div>
+      <div class="float-card-info">
+        <div class="title">PS5 Gaming Zone</div>
+        <div class="sub">Available Now • 4 Systems</div>
+      </div>
+      <div class="float-card-badge">₹150/hr</div>
+    </div>
+    <div class="float-card">
+      <div class="float-card-icon">🖥️</div>
+      <div class="float-card-info">
+        <div class="title">PC Gaming Arena</div>
+        <div class="sub">8 Stations • RTX 4080</div>
+      </div>
+      <div class="float-card-badge">₹120/hr</div>
+    </div>
+    <div class="float-card" style="animation-delay:-1s;">
+      <div class="float-card-icon">🏎️</div>
+      <div class="float-card-info">
+        <div class="title">Racing Simulator</div>
+        <div class="sub">VR Ready • Pro Setup</div>
+      </div>
+      <div class="float-card-badge">₹200/hr</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Categories ── -->
+{% if categories %}
+<section class="cat-strip">
+  <div class="container">
+    <div class="section-header">
+      <span class="badge"><i class="fa-solid fa-layer-group"></i> Browse</span>
+      <h2>Game Categories</h2>
+      <p>Find your favourite gaming genre from our curated collection</p>
+    </div>
+    <div class="grid-4">
+      {% for cat in categories %}
+      <a href="{% url 'games' %}?category={{ cat.id }}" class="cat-card">
+        {% if cat.image %}
+          <img src="{{ cat.image.url }}" alt="{{ cat.categoryName }}" />
+        {% else %}
+          <div style="height:180px;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-size:3rem;">🎮</div>
+        {% endif %}
+        <div class="cat-card-name">{{ cat.categoryName }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── Featured Games ── -->
+<section class="featured">
+  <div class="container">
+    <div class="section-header">
+      <span class="badge"><i class="fa-solid fa-fire"></i> Hot Right Now</span>
+      <h2>Featured Games</h2>
+      <p>Our most popular gaming stations ready for you to book right now</p>
+    </div>
+    {% if games %}
+    <div class="grid-3">
+      {% for game in games %}
+      <div class="game-card">
+        <div class="game-card-img">
+          {% if game.image %}
+            <img src="{{ game.image.url }}" alt="{{ game.name }}" />
+          {% else %}
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-size:3rem;">🎮</div>
+          {% endif %}
+          <span class="availability {% if game.availableSystems > 0 %}avail-yes{% else %}avail-no{% endif %}">
+            {% if game.availableSystems > 0 %}{{ game.availableSystems }} Available{% else %}Full{% endif %}
+          </span>
+        </div>
+        <div class="game-card-body">
+          <div class="game-card-title">{{ game.name }}</div>
+          <div class="game-card-meta">
+            <span><i class="fa-solid fa-tag"></i> {{ game.category.categoryName }}</span>
+            <span><i class="fa-solid fa-location-dot"></i> {{ game.city.name }}</span>
+            <span><i class="fa-solid fa-desktop"></i> {{ game.totalSystem }} Systems</span>
+          </div>
+          <p style="color:var(--muted);font-size:.85rem;line-height:1.6;">{{ game.description|truncatechars:90 }}</p>
+          <div class="game-price">₹{{ game.pricePerHour|floatformat:0 }} <span style="font-size:.75rem;color:var(--muted);font-weight:400;">/ hour</span></div>
+        </div>
+        <div class="game-card-footer">
+          <a href="{% url 'game_detail' game.id %}" class="btn btn-primary" style="width:100%;justify-content:center;">
+            <i class="fa-solid fa-circle-info"></i> View & Book
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="text-align:center;margin-top:48px;">
+      <a href="{% url 'games' %}" class="btn btn-neon" style="font-size:1rem;padding:14px 36px;">
+        <i class="fa-solid fa-grid-2"></i> View All Games
+      </a>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:60px;color:var(--muted);">
+      <i class="fa-solid fa-gamepad" style="font-size:3rem;margin-bottom:16px;"></i>
+      <p>No games available yet. Check back soon!</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<div class="container">
+  <div class="cta-banner">
+    <div class="cta-banner-text">
+      <h2>Ready to Start Gaming?</h2>
+      <p>Create your free account today and get access to exclusive deals, priority bookings, and a community of gamers.</p>
+    </div>
+    <div style="display:flex;gap:14px;flex-shrink:0;">
+      <a href="{% url 'register' %}" class="btn btn-primary" style="font-size:1rem;padding:14px 32px;">
+        <i class="fa-solid fa-rocket"></i> Get Started Free
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ── Reviews ── -->
+{% if reviews %}
+<section class="reviews-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="badge"><i class="fa-solid fa-star"></i> Testimonials</span>
+      <h2>What Gamers Say</h2>
+      <p>Real reviews from our passionate gaming community</p>
+    </div>
+    <div class="grid-3">
+      {% for review in reviews %}
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">{{ review.user.firstName.0 }}{{ review.user.lastName.0 }}</div>
+          <div>
+            <div class="review-name">{{ review.user.firstName }} {{ review.user.lastName }}</div>
+            <div class="review-game">{{ review.game.name }}</div>
+          </div>
+          <div class="stars" style="margin-left:auto;">
+            {% for i in "12345" %}
+              {% if forloop.counter <= review.rating %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star"></i>{% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        <p class="review-text">{{ review.comment }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
