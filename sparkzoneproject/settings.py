@@ -1,11 +1,16 @@
 import os
 from pathlib import Path
+import dj_database_url
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-l@j!&aml_t*9^uvfu4#v-)cr4pn!+=-!7arp4)wf14#^y(^=s5'
+# Load environment variables from .env file if available
+load_dotenv(BASE_DIR / '.env')
 
-DEBUG = True
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-l@j!&aml_t*9^uvfu4#v-)cr4pn!+=-!7arp4)wf14#^y(^=s5')
+
+DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
 
 ALLOWED_HOSTS = ['*']
 
@@ -55,11 +60,17 @@ WSGI_APPLICATION = 'sparkzoneproject.wsgi.application'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
+# Database Configuration
+# Uses DATABASE_URL environment variable if set (Railway Postgres / Production)
+# Falls back to SQLite for local development when DATABASE_URL is not set
+default_db_url = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', default_db_url),
+        conn_max_age=int(os.getenv('CONN_MAX_AGE', 600)),
+        conn_health_checks=True,
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
