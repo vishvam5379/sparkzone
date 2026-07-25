@@ -60,6 +60,7 @@ tr:hover td { background: rgba(124,58,237,.04); }
           <th>Amount</th>
           <th>Payment</th>
           <th>Status</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -95,12 +96,32 @@ tr:hover td { background: rgba(124,58,237,.04); }
             {% endif %}
           </td>
           <td>
-            <span class="status-badge status-{{ b.status }}">
-              {% if b.status == 'pending' %}<i class="fa-solid fa-clock"></i>
-              {% elif b.status == 'confirmed' %}<i class="fa-solid fa-circle-check"></i>
-              {% else %}<i class="fa-solid fa-circle-xmark"></i>{% endif %}
-              {{ b.status|capfirst }}
-            </span>
+            {% if b.status == 'pending' %}
+              <span style="color:#f59e0b;font-weight:700;font-size:.82rem;padding:4px 10px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:8px;display:inline-block;">
+                <i class="fa-solid fa-hourglass-half"></i> Pending Approval
+              </span>
+            {% elif b.status == 'accepted' or b.status == 'confirmed' %}
+              <span style="color:var(--success);font-weight:700;font-size:.82rem;padding:4px 10px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:8px;display:inline-block;">
+                <i class="fa-solid fa-circle-check"></i> Accepted
+              </span>
+            {% elif b.status == 'rejected' %}
+              <span style="color:var(--danger);font-weight:700;font-size:.82rem;padding:4px 10px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:8px;display:inline-block;">
+                <i class="fa-solid fa-circle-xmark"></i> Rejected
+              </span>
+            {% else %}
+              <span style="color:var(--muted);font-weight:600;font-size:.82rem;padding:4px 10px;background:var(--bg3);border-radius:8px;display:inline-block;">
+                Cancelled
+              </span>
+            {% endif %}
+          </td>
+          <td>
+            {% if b.status == 'pending' or b.status == 'accepted' or b.status == 'confirmed' %}
+              <a href="{% url 'cancel_booking' b.id %}" onclick="return confirm('Are you sure you want to cancel this booking request?')" class="btn btn-outline" style="padding:4px 10px;font-size:.78rem;color:var(--danger);border-color:rgba(239,68,68,.3);border-radius:8px;" title="Cancel Request">
+                Cancel
+              </a>
+            {% else %}
+              <span style="color:var(--muted);font-size:.8rem;">-</span>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}

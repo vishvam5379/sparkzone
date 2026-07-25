@@ -57,8 +57,13 @@ class ShowGameImages(ModelAdmin):
 
 @admin.register(Booking)
 class ShowBooking(ModelAdmin):
-    list_display = ["user", "game", "slot", "bookingDate", "startTime", "endTime", "totalAmount", "status", "timestamp"]
+    list_display = ["user", "game", "slot", "bookingDate", "startTime", "endTime", "totalAmount", "status", "requested_at", "responded_at"]
     list_filter = ["status", "bookingDate"]
+
+@admin.register(Notification)
+class ShowNotification(ModelAdmin):
+    list_display = ["user", "title", "message", "is_read", "timestamp"]
+    list_filter = ["is_read", "timestamp"]
 
 @admin.register(Payment)
 class ShowPayments(ModelAdmin):

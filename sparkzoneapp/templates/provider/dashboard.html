@@ -39,9 +39,17 @@ table.provider-table tr:last-child td { border-bottom: none; }
         <h1>{{ provider.businessName }}</h1>
         <p><i class="fa-solid fa-location-dot" style="color:var(--accent2);margin-right:6px;"></i>{{ provider.address }}, {{ provider.city.name }} • Phone: {{ provider.phone }}</p>
       </div>
-      <a href="{% url 'provider_game_add' %}" class="btn btn-primary" style="padding:12px 24px;">
-        <i class="fa-solid fa-plus"></i> Add Gaming Station
-      </a>
+      <div style="display:flex;gap:12px;">
+        <a href="{% url 'provider_booking_requests' %}" class="btn btn-neon" style="padding:12px 20px;">
+          <i class="fa-solid fa-inbox"></i> Booking Requests
+          {% if pending_requests_count > 0 %}
+          <span style="background:var(--danger);color:#fff;font-size:.75rem;padding:2px 8px;border-radius:10px;margin-left:6px;font-weight:800;">{{ pending_requests_count }}</span>
+          {% endif %}
+        </a>
+        <a href="{% url 'provider_game_add' %}" class="btn btn-primary" style="padding:12px 20px;">
+          <i class="fa-solid fa-plus"></i> Add Gaming Station
+        </a>
+      </div>
     </div>
   </div>
 </div>
@@ -65,13 +73,13 @@ table.provider-table tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+    <a href="{% url 'provider_booking_requests' %}" class="stat-card" style="text-decoration:none;color:inherit;transition:transform .2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+      <div class="stat-icon"><i class="fa-solid fa-inbox"></i></div>
       <div>
         <div class="stat-val">{{ total_bookings_count }}</div>
-        <div class="stat-lbl">Customer Bookings</div>
+        <div class="stat-lbl">Booking Requests {% if pending_requests_count %}<strong style="color:#f59e0b;">({{ pending_requests_count }} pending)</strong>{% endif %}</div>
       </div>
-    </div>
+    </a>
 
     <div class="stat-card">
       <div class="stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>

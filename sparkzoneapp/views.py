@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
-from django.db import connection
+from django.db import connection, transaction as db_transaction
+from django.db.models import Q
+from django.utils import timezone
 from functools import wraps
 from .models import *
 import hashlib
@@ -15,6 +17,21 @@ def get_logged_in_user(request):
         except User.DoesNotExist:
             request.session.pop('user_id', None)
     return None
+
+def get_user_notifications(user):
+    if not user:
+        return [], 0
+    notifs = Notification.objects.filter(user=user).order_by('-timestamp')[:10]
+    unread_count = Notification.objects.filter(user=user, is_read=False).count()
+    return notifs, unread_count
+
+def render_with_notifs(request, template_name, context):
+    user = get_logged_in_user(request)
+    notifs, unread_count = get_user_notifications(user)
+    context['logged_in_user'] = user
+    context['user_notifications'] = notifs
+    context['unread_notifications_count'] = unread_count
+    return render(request, template_name, context)
 
 def provider_required(view_func):
     @wraps(view_func)
@@ -40,12 +57,10 @@ def index(request):
     categories = Category.objects.all()
     games = Game.objects.filter(status='active').select_related('category', 'city', 'provider').prefetch_related('images', 'slots').all()[:6]
     reviews = Reviews.objects.select_related('user', 'game').order_by('-timestamp')[:6]
-    user = get_logged_in_user(request)
-    return render(request, 'index.html', {
+    return render_with_notifs(request, 'index.html', {
         'categories': categories,
         'games': games,
         'reviews': reviews,
-        'logged_in_user': user,
     })
 
 # ─── Games Listing ──────────────────────────────────────────────────────────────
@@ -60,13 +75,11 @@ def games(request):
     if search:
         all_games = all_games.filter(name__icontains=search)
 
-    user = get_logged_in_user(request)
-    return render(request, 'games.html', {
+    return render_with_notifs(request, 'games.html', {
         'games': all_games,
         'categories': categories,
         'selected_category': category_id,
         'search': search,
-        'logged_in_user': user,
     })
 
 # ─── Game Detail ────────────────────────────────────────────────────────────────
@@ -98,21 +111,18 @@ def game_detail(request, game_id):
     if reviews.exists():
         avg_rating = round(sum(r.rating for r in reviews) / reviews.count(), 1)
 
-    return render(request, 'game_detail.html', {
+    return render_with_notifs(request, 'game_detail.html', {
         'game': game,
         'game_images': game_images,
         'reviews': reviews,
         'avg_rating': avg_rating,
-        'logged_in_user': user,
     })
 
 # ─── Categories ─────────────────────────────────────────────────────────────────
 def categories(request):
     all_cats = Category.objects.all()
-    user = get_logged_in_user(request)
-    return render(request, 'categories.html', {
+    return render_with_notifs(request, 'categories.html', {
         'categories': all_cats,
-        'logged_in_user': user,
     })
 
 # ─── Register ───────────────────────────────────────────────────────────────────
@@ -128,11 +138,11 @@ def register(request):
 
         if password != confirm:
             messages.error(request, 'Passwords do not match!')
-            return render(request, 'register.html', {'cities': cities, 'logged_in_user': None})
+            return render_with_notifs(request, 'register.html', {'cities': cities})
 
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already registered!')
-            return render(request, 'register.html', {'cities': cities, 'logged_in_user': None})
+            return render_with_notifs(request, 'register.html', {'cities': cities})
 
         hashed = hashlib.sha256(password.encode()).hexdigest()
         user = User.objects.create(
@@ -166,7 +176,7 @@ def register(request):
         messages.success(request, f'Account created successfully, {firstName}! Please log in with your credentials.')
         return redirect('login')
 
-    return render(request, 'register.html', {'cities': cities, 'logged_in_user': None})
+    return render_with_notifs(request, 'register.html', {'cities': cities})
 
 # ─── Login ──────────────────────────────────────────────────────────────────────
 def login_view(request):
@@ -186,7 +196,7 @@ def login_view(request):
             messages.error(request, 'Invalid email or password.')
             return redirect('login')
 
-    return render(request, 'login.html', {'logged_in_user': None})
+    return render_with_notifs(request, 'login.html', {})
 
 # ─── Logout ─────────────────────────────────────────────────────────────────────
 def logout_view(request):
@@ -204,22 +214,23 @@ def provider_dashboard(request):
     if not Game.objects.filter(provider=provider).exists():
         Game.objects.filter(provider__isnull=True).update(provider=provider)
 
-    games = Game.objects.filter(models.Q(provider=provider) | models.Q(provider__isnull=True)).select_related('category', 'city').prefetch_related('slots').order_by('-timestamp')
+    games = Game.objects.filter(Q(provider=provider) | Q(provider__isnull=True)).select_related('category', 'city').prefetch_related('slots').order_by('-timestamp')
     
     total_slots_count = Slot.objects.filter(game__provider=provider).count()
     total_bookings_count = Booking.objects.filter(game__provider=provider).count()
+    pending_requests_count = Booking.objects.filter(game__provider=provider, status='pending').count()
 
     total_earnings = sum(
         p.amount for p in Payment.objects.filter(booking__game__provider=provider, paymentStatus='completed')
     )
 
-    return render(request, 'provider/dashboard.html', {
+    return render_with_notifs(request, 'provider/dashboard.html', {
         'provider': provider,
         'games': games,
         'total_slots_count': total_slots_count,
         'total_bookings_count': total_bookings_count,
+        'pending_requests_count': pending_requests_count,
         'total_earnings': total_earnings,
-        'logged_in_user': user,
     })
 
 @provider_required
@@ -260,11 +271,10 @@ def provider_game_add(request):
         messages.success(request, f'Gaming Station "{name}" created successfully!')
         return redirect('provider_dashboard')
 
-    return render(request, 'provider/game_form.html', {
+    return render_with_notifs(request, 'provider/game_form.html', {
         'is_edit': False,
         'categories': categories,
         'cities': cities,
-        'logged_in_user': user,
     })
 
 @provider_required
@@ -291,12 +301,11 @@ def provider_game_edit(request, game_id):
         messages.success(request, f'Station "{game.name}" updated successfully!')
         return redirect('provider_dashboard')
 
-    return render(request, 'provider/game_form.html', {
+    return render_with_notifs(request, 'provider/game_form.html', {
         'is_edit': True,
         'game': game,
         'categories': categories,
         'cities': cities,
-        'logged_in_user': user,
     })
 
 @provider_required
@@ -305,7 +314,6 @@ def provider_game_delete(request, game_id):
     provider = user.provider_profile
     game = get_object_or_404(Game, id=game_id, provider=provider)
     
-    # Soft delete / toggle inactive if bookings exist, else delete
     if Booking.objects.filter(game=game).exists():
         game.status = 'inactive'
         game.save()
@@ -343,10 +351,9 @@ def provider_slot_manage(request, game_id):
         return redirect('provider_slot_manage', game_id=game_id)
 
     slots = Slot.objects.filter(game=game).order_by('slotDate', 'startTime')
-    return render(request, 'provider/slots.html', {
+    return render_with_notifs(request, 'provider/slots.html', {
         'game': game,
         'slots': slots,
-        'logged_in_user': user,
     })
 
 @provider_required
@@ -366,6 +373,101 @@ def provider_slot_delete(request, slot_id):
 
     return redirect('provider_slot_manage', game_id=game_id)
 
+# ─── PROVIDER BOOKING REQUESTS ─────────────────────────────────────────────────
+@provider_required
+def provider_booking_requests(request):
+    user = get_logged_in_user(request)
+    provider = user.provider_profile
+    requests_list = Booking.objects.filter(
+        game__provider=provider
+    ).select_related('user', 'game', 'slot').order_by('-timestamp')
+
+    return render_with_notifs(request, 'provider/booking_requests.html', {
+        'provider': provider,
+        'requests': requests_list,
+    })
+
+@provider_required
+def provider_booking_accept(request, booking_id):
+    user = get_logged_in_user(request)
+    provider = user.provider_profile
+
+    with db_transaction.atomic():
+        booking_obj = get_object_or_404(
+            Booking.objects.select_related('game', 'user', 'slot'),
+            id=booking_id,
+            game__provider=provider
+        )
+
+        if booking_obj.status != 'pending':
+            messages.warning(request, f'Booking is already {booking_obj.get_status_display()}.')
+            return redirect('provider_booking_requests')
+
+        slot_obj = None
+        if booking_obj.slot_id:
+            slot_obj = Slot.objects.select_for_update().filter(id=booking_obj.slot_id).first()
+
+        if slot_obj:
+            if slot_obj.is_full() or slot_obj.bookedCount >= slot_obj.capacity:
+                booking_obj.status = 'rejected'
+                booking_obj.responded_at = timezone.now()
+                booking_obj.save()
+                Notification.objects.create(
+                    user=booking_obj.user,
+                    booking=booking_obj,
+                    title="Booking Could Not Be Accepted",
+                    message=f"Sorry, the slot for {booking_obj.game.name} on {booking_obj.bookingDate} was filled by another booking."
+                )
+                messages.error(request, 'Slot capacity is full! Request automatically rejected.')
+                return redirect('provider_booking_requests')
+
+            slot_obj.bookedCount += 1
+            if slot_obj.bookedCount >= slot_obj.capacity:
+                slot_obj.status = 'booked'
+            slot_obj.save()
+
+        booking_obj.status = 'accepted'
+        booking_obj.responded_at = timezone.now()
+        booking_obj.save()
+
+        # Send Notification to Gamer
+        Notification.objects.create(
+            user=booking_obj.user,
+            booking=booking_obj,
+            title="Booking Request Accepted! 🎉",
+            message=f"Great news! Your booking request for {booking_obj.game.name} on {booking_obj.bookingDate} ({booking_obj.startTime.strftime('%H:%M')}-{booking_obj.endTime.strftime('%H:%M')}) was ACCEPTED by the provider!"
+        )
+
+    messages.success(request, f'Booking request for {booking_obj.user.firstName} accepted!')
+    return redirect('provider_booking_requests')
+
+@provider_required
+def provider_booking_reject(request, booking_id):
+    user = get_logged_in_user(request)
+    provider = user.provider_profile
+
+    with db_transaction.atomic():
+        booking_obj = get_object_or_404(
+            Booking.objects.select_related('game', 'user'),
+            id=booking_id,
+            game__provider=provider
+        )
+
+        booking_obj.status = 'rejected'
+        booking_obj.responded_at = timezone.now()
+        booking_obj.save()
+
+        # Send Notification to Gamer
+        Notification.objects.create(
+            user=booking_obj.user,
+            booking=booking_obj,
+            title="Booking Request Update",
+            message=f"Your booking request for {booking_obj.game.name} on {booking_obj.bookingDate} was not accepted by the provider."
+        )
+
+    messages.info(request, f'Booking request for {booking_obj.user.firstName} rejected.')
+    return redirect('provider_booking_requests')
+
 # ─── Booking ────────────────────────────────────────────────────────────────────
 def booking(request, game_id):
     game = get_object_or_404(Game, id=game_id)
@@ -381,8 +483,6 @@ def booking(request, game_id):
         paymentMethod = request.POST.get('paymentMethod', 'credit_card')
         slot_id = request.POST.get('slot_id')
 
-        slot_obj = Slot.objects.filter(id=slot_id, game=game).first() if slot_id else None
-
         from datetime import datetime
         fmt = '%H:%M'
         start = datetime.strptime(startTime, fmt)
@@ -392,46 +492,96 @@ def booking(request, game_id):
             messages.error(request, 'End time must be after start time.')
             return redirect('booking', game_id=game_id)
 
-        price_per_hr = slot_obj.get_price() if slot_obj else game.pricePerHour
-        totalAmount = hours * price_per_hr
+        with db_transaction.atomic():
+            slot_obj = None
+            if slot_id:
+                slot_obj = Slot.objects.select_for_update().filter(id=slot_id, game=game).first()
+                if slot_obj:
+                    if slot_obj.is_full():
+                        messages.error(request, 'Sorry, this slot is already fully booked! Please select another time slot.')
+                        return redirect('booking', game_id=game_id)
 
-        booking_obj = Booking.objects.create(
-            user=user,
-            game=game,
-            slot=slot_obj,
-            bookingDate=bookingDate,
-            startTime=startTime,
-            endTime=endTime,
-            totalAmount=totalAmount,
-            status='pending',
-        )
+                    # Prevent duplicate pending request by same user for same slot
+                    if Booking.objects.filter(user=user, slot=slot_obj, status__in=['pending', 'accepted', 'confirmed']).exists():
+                        messages.warning(request, 'You already have an active booking request for this time slot.')
+                        return redirect('my_bookings')
 
-        Payment.objects.create(
-            user=user,
-            booking=booking_obj,
-            amount=totalAmount,
-            paymentMethod=paymentMethod,
-            paymentStatus='completed'
-        )
+            price_per_hr = slot_obj.get_price() if slot_obj else game.pricePerHour
+            totalAmount = hours * price_per_hr
 
-        method_labels = {
-            'credit_card': 'Credit Card',
-            'upi': 'UPI',
-            'bank_transfer': 'Bank Transfer',
-            'debit_card': 'Debit Card',
-            'paypal': 'PayPal',
-            'other': 'Other'
-        }
-        method_name = method_labels.get(paymentMethod, 'Selected Method')
-        messages.success(request, f'Booking confirmed via {method_name}! Total: ₹{totalAmount:.2f}')
+            booking_obj = Booking.objects.create(
+                user=user,
+                game=game,
+                slot=slot_obj,
+                bookingDate=bookingDate,
+                startTime=startTime,
+                endTime=endTime,
+                totalAmount=totalAmount,
+                status='pending',
+            )
+
+            Payment.objects.create(
+                user=user,
+                booking=booking_obj,
+                amount=totalAmount,
+                paymentMethod=paymentMethod,
+                paymentStatus='completed'
+            )
+
+            # Notify Provider
+            if game.provider and hasattr(game.provider, 'user'):
+                Notification.objects.create(
+                    user=game.provider.user,
+                    booking=booking_obj,
+                    title="New Booking Request 🎮",
+                    message=f"{user.firstName} {user.lastName} requested to book {game.name} on {bookingDate} ({startTime}-{endTime})."
+                )
+
+        messages.success(request, 'Your booking request has been submitted and is pending provider approval!')
         return redirect('my_bookings')
 
     available_slots = Slot.objects.filter(game=game, status='available').order_by('slotDate', 'startTime')
-    return render(request, 'booking.html', {
+    return render_with_notifs(request, 'booking.html', {
         'game': game,
         'available_slots': available_slots,
-        'logged_in_user': user,
     })
+
+# ─── Cancel Booking (Gamer) ─────────────────────────────────────────────────────
+def cancel_booking(request, booking_id):
+    user = get_logged_in_user(request)
+    if not user:
+        return redirect('login')
+
+    with db_transaction.atomic():
+        booking_obj = get_object_or_404(Booking, id=booking_id, user=user)
+
+        if booking_obj.status in ['cancelled', 'rejected']:
+            messages.info(request, f'Booking is already {booking_obj.get_status_display()}.')
+            return redirect('my_bookings')
+
+        # If previously accepted, free up slot capacity
+        if booking_obj.status in ['accepted', 'confirmed'] and booking_obj.slot_id:
+            slot_obj = Slot.objects.select_for_update().filter(id=booking_obj.slot_id).first()
+            if slot_obj:
+                slot_obj.bookedCount = max(0, slot_obj.bookedCount - 1)
+                if slot_obj.bookedCount < slot_obj.capacity and slot_obj.status == 'booked':
+                    slot_obj.status = 'available'
+                slot_obj.save()
+
+        booking_obj.status = 'cancelled'
+        booking_obj.save()
+
+        # Notify Provider
+        if booking_obj.game.provider and hasattr(booking_obj.game.provider, 'user'):
+            Notification.objects.create(
+                user=booking_obj.game.provider.user,
+                booking=booking_obj,
+                title="Booking Cancelled",
+                message=f"{user.firstName} cancelled their booking request for {booking_obj.game.name} on {booking_obj.bookingDate}."
+            )
+
+    messages.success(request, 'Booking request cancelled successfully.')
+    return redirect('my_bookings')
 
 # ─── My Bookings ────────────────────────────────────────────────────────────────
 def my_bookings(request):
@@ -444,14 +594,12 @@ def my_bookings(request):
     for b in bookings:
         b.payment_info = payments.get(b.id)
 
-    return render(request, 'my_bookings.html', {
+    return render_with_notifs(request, 'my_bookings.html', {
         'bookings': bookings,
-        'logged_in_user': user,
     })
 
 # ─── Contact ────────────────────────────────────────────────────────────────────
 def contact(request):
-    user = get_logged_in_user(request)
     if request.method == 'POST':
         ContactUs.objects.create(
             name=request.POST.get('name'),
@@ -462,4 +610,4 @@ def contact(request):
         messages.success(request, 'Your message has been sent! We will get back to you soon.')
         return redirect('contact')
 
-    return render(request, 'contact.html', {'logged_in_user': user})
+    return render_with_notifs(request, 'contact.html', {})

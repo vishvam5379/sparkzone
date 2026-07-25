@@ -157,6 +157,9 @@ class Slot(models.Model):
             return self.price
         return self.game.pricePerHour
 
+    def is_full(self):
+        return self.bookedCount >= self.capacity or self.status == 'booked'
+
 class GameImages(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to="Games")
@@ -168,8 +171,9 @@ class GameImages(models.Model):
 
 class Booking(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('confirmed', 'Confirmed'),
+        ('pending', 'Pending Approval'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
         ('cancelled', 'Cancelled')
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
@@ -180,10 +184,24 @@ class Booking(models.Model):
     endTime = models.TimeField()
     totalAmount = models.FloatField()
     status = models.CharField(max_length=60, choices=STATUS_CHOICES, default='pending', db_index=True)
+    requested_at = models.DateTimeField(auto_now_add=True, db_index=True, null=True, blank=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
-        return f"{self.user.firstName} {self.user.lastName} / {self.startTime}-{self.endTime} / ₹{self.totalAmount}"
+        return f"{self.user.firstName} {self.user.lastName} / {self.game.name} / {self.get_status_display()}"
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
+    title = models.CharField(max_length=150)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False, db_index=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self):
+        return f"{self.user.firstName} - {self.title} ({'Read' if self.is_read else 'Unread'})"
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [

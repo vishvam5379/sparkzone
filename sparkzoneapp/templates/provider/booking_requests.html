@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Booking Requests – Provider Panel{% endblock %}
+
+{% block extra_css %}
+.req-table-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px; overflow-x: auto; margin-top: 24px;
+}
+table.req-table { width: 100%; border-collapse: collapse; text-align: left; }
+table.req-table th {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em;
+}
+table.req-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,.05); font-size: .9rem; vertical-align: middle; }
+table.req-table tr:last-child td { border-bottom: none; }
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+      <div>
+        <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-clock-rotate-left"></i> Requests Management</span>
+        <h1>Booking Requests</h1>
+        <p>Review, accept, or reject incoming slot booking requests from gamers</p>
+      </div>
+      <a href="{% url 'provider_dashboard' %}" class="btn btn-outline" style="padding:10px 20px;">
+        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="padding-bottom:80px;">
+  <div class="req-table-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h3 style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;">
+        <i class="fa-solid fa-inbox" style="color:var(--accent2);margin-right:8px;"></i>
+        Pending & Past Customer Requests ({{ requests|length }})
+      </h3>
+    </div>
+
+    {% if requests %}
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th>Gamer / Customer</th>
+          <th>Station Name</th>
+          <th>Booking Date & Time</th>
+          <th>Total Amount</th>
+          <th>Status</th>
+          <th>Requested At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent2),var(--neon));display:flex;align-items:center;justify-content:center;font-weight:800;color:#0f172a;font-size:.9rem;">
+                {{ r.user.firstName.0 }}{{ r.user.lastName.0 }}
+              </div>
+              <div>
+                <div style="font-weight:700;color:var(--text);">{{ r.user.firstName }} {{ r.user.lastName }}</div>
+                <div style="font-size:.78rem;color:var(--muted);">{{ r.user.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-weight:600;">{{ r.game.name }}</td>
+          <td>
+            <div style="font-weight:600;color:var(--neon);">{{ r.bookingDate|date:"D, d M Y" }}</div>
+            <div style="font-size:.8rem;color:var(--muted);">{{ r.startTime|time:"H:i" }} - {{ r.endTime|time:"H:i" }}</div>
+          </td>
+          <td style="font-weight:700;color:var(--neon);">₹{{ r.totalAmount|floatformat:0 }}</td>
+          <td>
+            {% if r.status == 'pending' %}
+              <span style="color:#f59e0b;font-weight:700;font-size:.82rem;padding:4px 10px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:8px;">
+                <i class="fa-solid fa-hourglass-half"></i> Pending Approval
+              </span>
+            {% elif r.status == 'accepted' %}
+              <span style="color:var(--success);font-weight:700;font-size:.82rem;padding:4px 10px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:8px;">
+                <i class="fa-solid fa-circle-check"></i> Accepted
+              </span>
+            {% elif r.status == 'rejected' %}
+              <span style="color:var(--danger);font-weight:700;font-size:.82rem;padding:4px 10px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:8px;">
+                <i class="fa-solid fa-circle-xmark"></i> Rejected
+              </span>
+            {% else %}
+              <span style="color:var(--muted);font-weight:600;font-size:.82rem;padding:4px 10px;background:var(--bg3);border-radius:8px;">
+                {{ r.get_status_display }}
+              </span>
+            {% endif %}
+          </td>
+          <td style="font-size:.8rem;color:var(--muted);">
+            {% if r.requested_at %}{{ r.requested_at|date:"d M, H:i" }}{% else %}{{ r.timestamp|date:"d M, H:i" }}{% endif %}
+          </td>
+          <td>
+            {% if r.status == 'pending' %}
+            <div style="display:flex;gap:8px;">
+              <a href="{% url 'provider_booking_accept' r.id %}" class="btn btn-primary" style="padding:6px 14px;font-size:.8rem;border-radius:8px;" title="Accept Request">
+                <i class="fa-solid fa-check"></i> Accept
+              </a>
+              <a href="{% url 'provider_booking_reject' r.id %}" class="btn btn-outline" onclick="return confirm('Reject this booking request?')" style="padding:6px 14px;font-size:.8rem;border-radius:8px;color:var(--danger);border-color:rgba(239,68,68,.3);" title="Reject Request">
+                <i class="fa-solid fa-xmark"></i> Reject
+              </a>
+            </div>
+            {% else %}
+            <span style="font-size:.8rem;color:var(--muted);">Decided</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:60px 0;color:var(--muted);">
+      <i class="fa-solid fa-inbox" style="font-size:3rem;margin-bottom:16px;opacity:.5;"></i>
+      <p>No booking requests received yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

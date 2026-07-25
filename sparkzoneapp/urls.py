@@ -10,6 +10,7 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('booking/<int:game_id>/', views.booking, name='booking'),
+    path('booking/<int:booking_id>/cancel/', views.cancel_booking, name='cancel_booking'),
     path('my-bookings/', views.my_bookings, name='my_bookings'),
     path('contact/', views.contact, name='contact'),
     path('health/', views.health_check, name='health_check'),
@@ -21,4 +22,7 @@ urlpatterns = [
     path('provider/games/<int:game_id>/delete/', views.provider_game_delete, name='provider_game_delete'),
     path('provider/games/<int:game_id>/slots/', views.provider_slot_manage, name='provider_slot_manage'),
     path('provider/slots/<int:slot_id>/delete/', views.provider_slot_delete, name='provider_slot_delete'),
+    path('provider/requests/', views.provider_booking_requests, name='provider_booking_requests'),
+    path('provider/requests/<int:booking_id>/accept/', views.provider_booking_accept, name='provider_booking_accept'),
+    path('provider/requests/<int:booking_id>/reject/', views.provider_booking_reject, name='provider_booking_reject'),
 ]
