@@ -142,10 +142,10 @@
       <!-- Gallery -->
       {% if game_images %}
       <div class="info-card">
-        <h3><i class="fa-solid fa-images"></i> Gallery</h3>
+        <h3><i class="fa-solid fa-images"></i> Gallery (Click image to expand)</h3>
         <div class="gallery">
           {% for gi in game_images %}
-          <img src="{{ gi.image.url }}" alt="Gallery image" />
+          <img src="{{ gi.image.url }}" alt="Gallery image" onclick="openLightbox('{{ gi.image.url }}')" title="Click to view full screen" style="cursor:pointer;" />
           {% endfor %}
         </div>
       </div>
@@ -231,4 +231,28 @@
     </div>
   </div>
 </div>
+
+<!-- Lightbox Fullscreen Modal -->
+<div id="lightbox-modal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);" onclick="closeLightbox()">
+  <span onclick="closeLightbox()" style="position:absolute;top:20px;right:28px;color:#fff;font-size:2.8rem;font-weight:700;cursor:pointer;z-index:100000;line-height:1;transition:transform .2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">&times;</span>
+  <img id="lightbox-img" src="" alt="Expanded Gallery View" style="max-width:92vw;max-height:88vh;border-radius:16px;box-shadow:0 20px 60px rgba(124,58,237,.6);border:2px solid var(--accent);object-fit:contain;" onclick="event.stopPropagation();" />
+</div>
+
+<script>
+function openLightbox(src) {
+  const modal = document.getElementById('lightbox-modal');
+  const img = document.getElementById('lightbox-img');
+  img.src = src;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  const modal = document.getElementById('lightbox-modal');
+  modal.style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeLightbox();
+});
+</script>
 {% endblock %}

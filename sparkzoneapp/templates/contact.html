@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
-{% block title %}Contact Us – SparkZone{% endblock %}
-{% block meta_desc %}Get in touch with SparkZone – we're happy to help with bookings, support, and partnerships.{% endblock %}
+{% block title %}Contact Us & Locations – SparkZone{% endblock %}
+{% block meta_desc %}Get in touch with SparkZone – find gaming arena locations in Ahmedabad, Mumbai, and Bengaluru.{% endblock %}
 
 {% block extra_css %}
 .contact-grid {
-  display: grid; grid-template-columns: 1fr 1.4fr; gap: 48px;
-  padding: 64px 0 80px; align-items: start;
+  display: grid; grid-template-columns: 1fr 1.3fr; gap: 48px;
+  padding: 56px 0 64px; align-items: start;
 }
 @media(max-width:768px) { .contact-grid { grid-template-columns: 1fr; } }
-.contact-info { display: flex; flex-direction: column; gap: 24px; }
+.contact-info { display: flex; flex-direction: column; gap: 20px; }
 .contact-item {
   display: flex; gap: 18px; align-items: flex-start;
   background: var(--card); border: 1px solid var(--border);
@@ -25,44 +25,51 @@
 }
 .contact-item h4 { font-weight: 600; margin-bottom: 4px; }
 .contact-item p { color: var(--muted); font-size: .88rem; line-height: 1.6; }
-.map-placeholder {
-  margin-top: 24px; border-radius: 16px; overflow: hidden;
-  border: 1px solid var(--border); height: 200px;
-  background: linear-gradient(135deg, rgba(124,58,237,.1), rgba(0,212,255,.06));
-  display: flex; align-items: center; justify-content: center;
-  color: var(--muted); flex-direction: column; gap: 10px;
+
+.locations-section { margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--border); }
+.location-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 24px; }
+.location-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px; transition: border-color .3s, transform .3s;
 }
+.location-card:hover { border-color: var(--neon); transform: translateY(-4px); }
+.location-card-city { font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:700; color:var(--neon); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.map-container {
+  margin-top: 24px; border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--border); height: 260px; width: 100%;
+}
+.map-container iframe { width: 100%; height: 100%; border: 0; }
 {% endblock %}
 
 {% block content %}
 <div class="page-hero">
   <div class="container">
-    <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-headset"></i> Support</span>
+    <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-headset"></i> Support & Locations</span>
     <h1>Get In Touch</h1>
-    <p>Have a question or need help? We're here for you 24/7</p>
+    <p>Visit our gaming arenas or drop us a message 24/7</p>
   </div>
 </div>
 
-<div class="container">
+<div class="container" style="padding-bottom: 80px;">
   <div class="contact-grid">
 
     <!-- Info side -->
     <div class="contact-info">
       <h2 style="font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:700;margin-bottom:4px;">We'd Love to Hear From You</h2>
-      <p style="color:var(--muted);line-height:1.7;margin-bottom:8px;">Whether it's a booking issue, partnership enquiry, or just a hello — reach out and our team will respond within 24 hours.</p>
+      <p style="color:var(--muted);line-height:1.7;margin-bottom:8px;">Whether it's a booking enquiry, tournament partnership, or station feedback — reach out to our team.</p>
 
       <div class="contact-item">
         <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
         <div>
-          <h4>Visit Us</h4>
-          <p>123 Gaming Street, Navrangpura<br>Ahmedabad, Gujarat 380009</p>
+          <h4>Headquarters & Flagship Arena</h4>
+          <p>SparkZone Gaming Hub, CG Road, Navrangpura<br>Ahmedabad, Gujarat 380009</p>
         </div>
       </div>
       <div class="contact-item">
         <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
         <div>
           <h4>Call Us</h4>
-          <p>+91 98765 43210<br>Mon – Sat, 10am – 8pm IST</p>
+          <p>+91 98765 43210<br>Mon – Sun, 9am – 11pm IST</p>
         </div>
       </div>
       <div class="contact-item">
@@ -73,9 +80,13 @@
         </div>
       </div>
 
-      <div class="map-placeholder">
-        <i class="fa-solid fa-map-location-dot" style="font-size:2.5rem;color:var(--accent2);"></i>
-        <span>Ahmedabad, Gujarat, India</span>
+      <!-- Embedded Google Map -->
+      <div class="map-container">
+        <iframe 
+          src="https://maps.google.com/maps?q=CG+Road+Ahmedabad+Gujarat&t=&z=13&ie=UTF8&iwloc=&output=embed" 
+          allowfullscreen="" 
+          loading="lazy">
+        </iframe>
       </div>
     </div>
 
@@ -110,6 +121,49 @@
             <i class="fa-solid fa-paper-plane"></i> Send Message
           </button>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arena Locations Section -->
+  <div class="locations-section">
+    <div class="section-header" style="text-align:left;margin-bottom:16px;">
+      <span class="badge"><i class="fa-solid fa-building-flag"></i> Our Arenas</span>
+      <h2>Gaming Arena Locations</h2>
+      <p>Visit any of our state-of-the-art gaming hubs across major cities</p>
+    </div>
+    <div class="location-cards">
+      <div class="location-card">
+        <div class="location-card-city">
+          <i class="fa-solid fa-map-pin"></i> Ahmedabad
+        </div>
+        <p style="color:var(--text);font-weight:600;margin-bottom:4px;">SparkZone Arena (CG Road)</p>
+        <p style="color:var(--muted);font-size:.88rem;line-height:1.6;">CG Road, Opp. Municipal Market, Navrangpura, Ahmedabad 380009</p>
+        <div style="margin-top:12px;font-size:.8rem;color:var(--neon);">
+          <i class="fa-solid fa-clock"></i> Open 24/7 • 20 RTX Rigs
+        </div>
+      </div>
+
+      <div class="location-card">
+        <div class="location-card-city">
+          <i class="fa-solid fa-map-pin"></i> Mumbai
+        </div>
+        <p style="color:var(--text);font-weight:600;margin-bottom:4px;">SparkZone Hub (Bandra West)</p>
+        <p style="color:var(--muted);font-size:.88rem;line-height:1.6;">Hill Road, Opp. Elco Market, Bandra West, Mumbai 400050</p>
+        <div style="margin-top:12px;font-size:.8rem;color:var(--neon);">
+          <i class="fa-solid fa-clock"></i> Open 24/7 • 25 RTX Rigs
+        </div>
+      </div>
+
+      <div class="location-card">
+        <div class="location-card-city">
+          <i class="fa-solid fa-map-pin"></i> Bengaluru
+        </div>
+        <p style="color:var(--text);font-weight:600;margin-bottom:4px;">SparkZone Lounge (Indiranagar)</p>
+        <p style="color:var(--muted);font-size:.88rem;line-height:1.6;">100 Feet Road, Near Toit, Indiranagar, Bengaluru 560038</p>
+        <div style="margin-top:12px;font-size:.8rem;color:var(--neon);">
+          <i class="fa-solid fa-clock"></i> Open 24/7 • 30 RTX Rigs
+        </div>
       </div>
     </div>
   </div>
