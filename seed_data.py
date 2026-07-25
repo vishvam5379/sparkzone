@@ -4,10 +4,10 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sparkzoneproject.settings')
 django.setup()
 
-from sparkzoneapp.models import Country, State, City, Category, Game
+from sparkzoneapp.models import Country, State, City, Category, Game, GameImages
 
 def seed():
-    print("Seeding initial location, category, and game data with high-res cover photos...")
+    print("Seeding initial location, category, and game data with uploaded local media photos...")
     
     # 1. Country & States & Cities
     india, _ = Country.objects.get_or_create(name="India")
@@ -20,11 +20,12 @@ def seed():
     mumbai, _ = City.objects.get_or_create(state=mh, name="Mumbai")
     bengaluru, _ = City.objects.get_or_create(state=ka, name="Bengaluru")
 
-    # 2. Categories with cover photo URLs
+    # 2. Categories with local uploaded media photos
     categories_data = [
         {
             "categoryName": "Action & Adventure",
             "description": "High-octane action, open-world exploration, and immersive storylines.",
+            "image": "Category/openworld.jfif",
             "image_url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80"
         },
         {
@@ -45,22 +46,26 @@ def seed():
             categoryName=cdata["categoryName"],
             defaults=cdata
         )
-        if not created and not cat.image_url:
+        if not cat.image and cdata.get("image"):
+            cat.image = cdata["image"]
+            cat.save()
+        if not cat.image_url:
             cat.image_url = cdata["image_url"]
             cat.save()
         category_objs[cdata["categoryName"]] = cat
 
-    # 3. Games with high-res cover photos
+    # 3. Games with local uploaded media photos & web fallbacks
     games_data = [
         {
             "name": "Grand Theft Auto VI",
             "category": category_objs["Action & Adventure"],
             "city": ahmedabad,
-            "description": "Experience the ultimate next-gen open world gaming station with RTX 4090 performance.",
+            "description": "Experience the ultimate next-gen open world gaming station with Vice City & RTX 4090 performance.",
             "address": "SparkZone Arena, CG Road, Ahmedabad",
             "pricePerHour": 250.0,
             "totalSystem": 10,
             "availableSystems": 8,
+            "image": "Game/GTA6IMAGE.jfif",
             "image_url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80"
         },
         {
@@ -114,11 +119,20 @@ def seed():
             name=gdata["name"],
             defaults=gdata
         )
-        if not created and not game.image_url:
+        if not game.image and gdata.get("image"):
+            game.image = gdata["image"]
+            game.save()
+        if not game.image_url:
             game.image_url = gdata["image_url"]
             game.save()
 
-    print("Seeding completed successfully with cover photos!")
+        # Add gallery images for GTA VI if present
+        if game.name == "Grand Theft Auto VI":
+            gallery_photos = ["Games/Brian.webp", "Games/Jason.webp", "Games/Raul.webp"]
+            for photo in gallery_photos:
+                GameImages.objects.get_or_create(game=game, image=photo)
+
+    print("Seeding completed successfully with local media photos!")
 
 if __name__ == "__main__":
     seed()
