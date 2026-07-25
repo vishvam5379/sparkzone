@@ -122,10 +122,83 @@
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; font-size: .85rem;
     }
-    .hamburger { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; }
+    /* ── Mobile Navigation & Overlay ── */
+    .hamburger { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; padding: 6px; }
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: 70px;
+      left: 0;
+      right: 0;
+      background: rgba(9, 11, 17, 0.96);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.8);
+      z-index: 9999;
+      animation: mobileMenuSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes mobileMenuSlide {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .mobile-menu.active {
+      display: flex;
+    }
+    .mobile-nav-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .mobile-nav-links a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+    }
+    .mobile-nav-links a:hover, .mobile-nav-links a:active {
+      background: rgba(124, 58, 237, 0.2);
+      border-color: var(--accent2);
+      color: #fff;
+    }
+    .mobile-nav-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 6px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .mobile-user-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 4px;
+    }
     @media(max-width: 768px) {
       .nav-links, .nav-actions { display: none; }
       .hamburger { display: block; }
+    }
+    @media(min-width: 769px) {
+      .mobile-menu { display: none !important; }
+    }
+    @media(max-width: 480px) {
+      #notif-dropdown { right: -10px !important; width: calc(100vw - 32px) !important; max-width: 340px !important; }
     }
 
     /* ── Messages ── */
@@ -331,7 +404,59 @@
         <a href="{% url 'register' %}" class="btn btn-primary" style="padding:9px 20px;font-size:.9rem;">Sign Up</a>
       {% endif %}
     </div>
-    <button class="hamburger"><i class="fa-solid fa-bars"></i></button>
+
+    <!-- Mobile Top Controls -->
+    <div style="display:flex;align-items:center;gap:10px;">
+      {% if logged_in_user %}
+      <div style="position:relative;" class="mobile-only-bell">
+        <button type="button" onclick="toggleNotifs()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;">
+          <i class="fa-solid fa-bell"></i>
+          {% if unread_notifications_count > 0 %}
+          <span style="position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:.68rem;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;">{{ unread_notifications_count }}</span>
+          {% endif %}
+        </button>
+      </div>
+      {% endif %}
+      <button class="hamburger" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Toggle navigation">
+        <i class="fa-solid fa-bars" id="hamburger-icon"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Dropdown Menu -->
+  <div class="mobile-menu" id="mobile-menu">
+    <ul class="mobile-nav-links">
+      <li><a href="{% url 'index' %}"><i class="fa-solid fa-house" style="color:var(--neon);width:20px;"></i> Home</a></li>
+      <li><a href="{% url 'games' %}"><i class="fa-solid fa-gamepad" style="color:var(--accent2);width:20px;"></i> Games</a></li>
+      <li><a href="{% url 'categories' %}"><i class="fa-solid fa-layer-group" style="color:var(--gold);width:20px;"></i> Categories</a></li>
+      <li><a href="{% url 'contact' %}"><i class="fa-solid fa-envelope" style="color:var(--success);width:20px;"></i> Contact</a></li>
+    </ul>
+    <div class="mobile-nav-actions">
+      {% if logged_in_user %}
+        <div class="mobile-user-card">
+          <div class="nav-user-avatar">{{ logged_in_user.firstName.0 }}{{ logged_in_user.lastName.0 }}</div>
+          <div style="overflow:hidden;">
+            <div style="font-weight:700;font-size:.9rem;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">{{ logged_in_user.firstName }} {{ logged_in_user.lastName }}</div>
+            <div style="font-size:.75rem;color:var(--muted);white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">{{ logged_in_user.email }}</div>
+          </div>
+        </div>
+        {% if logged_in_user.role == 'provider' %}
+          <a href="{% url 'provider_dashboard' %}" class="btn btn-neon" style="width:100%;justify-content:center;">
+            <i class="fa-solid fa-store"></i> Provider Panel
+          </a>
+        {% else %}
+          <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="width:100%;justify-content:center;">
+            <i class="fa-solid fa-calendar-check"></i> My Bookings
+          </a>
+        {% endif %}
+        <a href="{% url 'logout' %}" class="btn btn-outline" style="width:100%;justify-content:center;color:var(--danger);border-color:rgba(239,68,68,.3);" title="Logout">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn btn-outline" style="width:100%;justify-content:center;">Login</a>
+        <a href="{% url 'register' %}" class="btn btn-primary" style="width:100%;justify-content:center;">Sign Up</a>
+      {% endif %}
+    </div>
   </div>
 </nav>
 
@@ -404,10 +529,46 @@
 </footer>
 
 <script>
+  function toggleMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    const icon = document.getElementById('hamburger-icon');
+    if (!menu || !icon) return;
+    
+    const isOpen = menu.classList.contains('active');
+    if (isOpen) {
+      menu.classList.remove('active');
+      icon.classList.remove('fa-xmark');
+      icon.classList.add('fa-bars');
+    } else {
+      menu.classList.add('active');
+      icon.classList.remove('fa-bars');
+      icon.classList.add('fa-xmark');
+    }
+  }
+
   function toggleNotifs() {
     const dd = document.getElementById('notif-dropdown');
-    if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+    if (dd) dd.style.display = (dd.style.display === 'none' || dd.style.display === '') ? 'block' : 'none';
   }
+
+  // Close mobile menu and dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    const navbar = document.querySelector('.navbar');
+    const menu = document.getElementById('mobile-menu');
+    const icon = document.getElementById('hamburger-icon');
+    
+    if (navbar && !navbar.contains(e.target)) {
+      if (menu && menu.classList.contains('active')) {
+        menu.classList.remove('active');
+        if (icon) {
+          icon.classList.remove('fa-xmark');
+          icon.classList.add('fa-bars');
+        }
+      }
+      const dd = document.getElementById('notif-dropdown');
+      if (dd) dd.style.display = 'none';
+    }
+  });
 
   // Auto-dismiss messages after 5s
   setTimeout(() => {
