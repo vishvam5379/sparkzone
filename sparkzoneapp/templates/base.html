@@ -387,12 +387,16 @@
           <div class="nav-user-avatar">{{ logged_in_user.firstName.0 }}{{ logged_in_user.lastName.0 }}</div>
           <span style="font-size:.88rem;font-weight:500;">{{ logged_in_user.firstName }}</span>
         </div>
-        <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="padding:9px 18px;font-size:.85rem;">
-          <i class="fa-solid fa-calendar-check"></i> Bookings
-        </a>
-        {% if logged_in_user.role == 'provider' or logged_in_user.provider_profile %}
+        {% if '/provider/' in request.path %}
           <a href="{% url 'provider_dashboard' %}" class="btn btn-neon" style="padding:9px 18px;font-size:.85rem;">
             <i class="fa-solid fa-store"></i> Provider Panel
+          </a>
+          <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="padding:9px 18px;font-size:.85rem;">
+            <i class="fa-solid fa-calendar-check"></i> Bookings
+          </a>
+        {% else %}
+          <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="padding:9px 18px;font-size:.85rem;">
+            <i class="fa-solid fa-calendar-check"></i> Bookings
           </a>
         {% endif %}
         <a href="{% url 'logout' %}" class="btn btn-outline" style="padding:9px 18px;font-size:.85rem;" title="Logout">
