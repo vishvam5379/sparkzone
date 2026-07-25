@@ -159,12 +159,8 @@ def register(request):
                 is_verified=True
             )
 
-        request.session['user_id'] = user.id
-        messages.success(request, f'Welcome, {firstName}! Account created successfully.')
-
-        if role == 'provider':
-            return redirect('provider_dashboard')
-        return redirect('index')
+        messages.success(request, f'Account created successfully, {firstName}! Please log in with your credentials.')
+        return redirect('login')
 
     return render(request, 'register.html', {'cities': cities, 'logged_in_user': None})
 
