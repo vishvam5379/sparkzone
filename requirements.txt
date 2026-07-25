@@ -1,7 +1,7 @@
 gunicorn==22.0.0
-Django>=5.1.0,<7.0.0
-django-unfold==0.101.0
-Pillow==12.3.0
+Django>=5.0,<7.0
+django-unfold>=0.90.0,<1.0.0
+Pillow>=10.0.0
 asgiref>=3.9.1
 sqlparse>=0.5.0
 tzdata
