@@ -1,2 +1,1 @@
-release: python manage.py migrate
-web: gunicorn sparkzoneproject.wsgi:application
+web: python manage.py migrate && gunicorn sparkzoneproject.wsgi:application
