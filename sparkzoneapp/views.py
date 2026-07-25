@@ -134,6 +134,7 @@ def booking(request, game_id):
         bookingDate = request.POST.get('bookingDate')
         startTime = request.POST.get('startTime')
         endTime = request.POST.get('endTime')
+        paymentMethod = request.POST.get('paymentMethod', 'credit_card')
 
         # Calculate total hours & amount
         from datetime import datetime
@@ -156,7 +157,26 @@ def booking(request, game_id):
             totalAmount=totalAmount,
             status='pending',
         )
-        messages.success(request, f'Booking confirmed! Total: ₹{totalAmount:.2f}')
+
+        # Record payment transaction
+        Payment.objects.create(
+            user=user,
+            booking=booking_obj,
+            amount=totalAmount,
+            paymentMethod=paymentMethod,
+            paymentStatus='completed'
+        )
+
+        method_labels = {
+            'credit_card': 'Credit Card',
+            'upi': 'UPI',
+            'bank_transfer': 'Bank Transfer',
+            'debit_card': 'Debit Card',
+            'paypal': 'PayPal',
+            'other': 'Other'
+        }
+        method_name = method_labels.get(paymentMethod, 'Selected Method')
+        messages.success(request, f'Booking confirmed via {method_name}! Total: ₹{totalAmount:.2f}')
         return redirect('my_bookings')
 
     return render(request, 'booking.html', {
@@ -170,7 +190,11 @@ def my_bookings(request):
     if not user:
         return redirect('login')
 
-    bookings = Booking.objects.filter(user=user).select_related('game').order_by('-timestamp')
+    bookings = list(Booking.objects.filter(user=user).select_related('game', 'game__category').order_by('-timestamp'))
+    payments = {p.booking_id: p for p in Payment.objects.filter(booking__in=bookings)}
+    for b in bookings:
+        b.payment_info = payments.get(b.id)
+
     return render(request, 'my_bookings.html', {
         'bookings': bookings,
         'logged_in_user': user,

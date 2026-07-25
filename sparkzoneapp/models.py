@@ -102,12 +102,21 @@ class Booking(models.Model):
 
 
 class Payment(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('credit_card', 'Credit Card'),
+        ('upi', 'UPI'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('debit_card', 'Debit Card'),
+        ('paypal', 'PayPal'),
+        ('other', 'Other')
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
     amount = models.FloatField()
-    paymentMethod = models.CharField(max_length=60, choices=[('credit_card', 'Credit Card'), ('debit_card', 'Debit Card'), ('paypal', 'PayPal'), ('other', 'Other')])
+    paymentMethod = models.CharField(max_length=60, choices=PAYMENT_METHOD_CHOICES)
     paymentStatus = models.CharField(max_length=60, choices=[('pending', 'Pending'), ('completed', 'Completed'), ('failed', 'Failed')])
     paymentDate = models.DateTimeField(auto_now=True)
+
 
 
 class Reviews(models.Model):

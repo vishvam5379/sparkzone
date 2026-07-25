@@ -58,6 +58,7 @@ tr:hover td { background: rgba(124,58,237,.04); }
           <th>Date</th>
           <th>Time</th>
           <th>Amount</th>
+          <th>Payment</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -77,6 +78,21 @@ tr:hover td { background: rgba(124,58,237,.04); }
           </td>
           <td style="font-weight:700;color:var(--neon);font-family:'Orbitron',monospace;font-size:.95rem;">
             ₹{{ b.totalAmount|floatformat:2 }}
+          </td>
+          <td style="font-size:.85rem;color:var(--text);">
+            {% if b.payment_info %}
+              {% if b.payment_info.paymentMethod == 'credit_card' %}
+                <i class="fa-solid fa-credit-card" style="color:var(--accent2);margin-right:4px;"></i> Credit Card
+              {% elif b.payment_info.paymentMethod == 'upi' %}
+                <i class="fa-solid fa-qrcode" style="color:var(--accent2);margin-right:4px;"></i> UPI / QR
+              {% elif b.payment_info.paymentMethod == 'bank_transfer' %}
+                <i class="fa-solid fa-building-columns" style="color:var(--accent2);margin-right:4px;"></i> Bank Transfer
+              {% else %}
+                <i class="fa-solid fa-wallet" style="color:var(--accent2);margin-right:4px;"></i> {{ b.payment_info.get_paymentMethod_display }}
+              {% endif %}
+            {% else %}
+              <span style="color:var(--muted);">-</span>
+            {% endif %}
           </td>
           <td>
             <span class="status-badge status-{{ b.status }}">

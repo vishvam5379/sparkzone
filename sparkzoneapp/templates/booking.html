@@ -16,13 +16,32 @@
 .booking-game-preview .name { font-weight: 700; font-size: 1.05rem; }
 .booking-game-preview .meta { color: var(--muted); font-size: .85rem; margin-top: 4px; }
 .time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.price-calc {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 12px; padding: 18px; margin-top: 8px;
-  display: flex; justify-content: space-between; align-items: center;
+.payment-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px;
 }
-.price-calc .est { color: var(--muted); font-size: .88rem; }
-.price-calc .val { font-family:'Orbitron',monospace; font-size:1.3rem; font-weight:700; color:var(--neon); }
+.payment-card {
+  position: relative;
+  background: var(--bg3); border: 2px solid var(--border);
+  border-radius: 12px; padding: 14px 10px; text-align: center;
+  cursor: pointer; transition: all .2s ease; display: flex;
+  flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+}
+.payment-card:hover {
+  border-color: rgba(124,58,237,.5); background: rgba(124,58,237,.06);
+}
+.payment-card input[type="radio"] {
+  position: absolute; opacity: 0; pointer-events: none;
+}
+.payment-card.active {
+  border-color: var(--neon); background: rgba(124,58,237,.12);
+  box-shadow: 0 0 15px rgba(124,58,237,.25);
+}
+.payment-card i { font-size: 1.4rem; color: var(--accent2); }
+.payment-card.active i { color: var(--neon); }
+.payment-card .title { font-weight: 600; font-size: .88rem; color: var(--text); }
+@media(max-width: 550px) {
+  .payment-grid { grid-template-columns: 1fr; }
+}
 {% endblock %}
 
 {% block content %}
@@ -76,14 +95,36 @@
         </div>
       </div>
 
+      <!-- Payment Method Selection -->
+      <div class="form-group" style="margin-top:20px;">
+        <label><i class="fa-solid fa-wallet"></i> Select Payment Method</label>
+        <div class="payment-grid">
+          <label class="payment-card active" onclick="selectPayment(this)">
+            <input type="radio" name="paymentMethod" value="credit_card" checked />
+            <i class="fa-solid fa-credit-card"></i>
+            <span class="title">Credit Card</span>
+          </label>
+          <label class="payment-card" onclick="selectPayment(this)">
+            <input type="radio" name="paymentMethod" value="upi" />
+            <i class="fa-solid fa-qrcode"></i>
+            <span class="title">UPI / QR</span>
+          </label>
+          <label class="payment-card" onclick="selectPayment(this)">
+            <input type="radio" name="paymentMethod" value="bank_transfer" />
+            <i class="fa-solid fa-building-columns"></i>
+            <span class="title">Bank Transfer</span>
+          </label>
+        </div>
+      </div>
+
       <!-- Live price calc -->
-      <div class="price-calc" id="price-calc" style="display:none;">
+      <div class="price-calc" id="price-calc" style="display:none;margin-top:20px;">
         <span class="est"><i class="fa-solid fa-indian-rupee-sign"></i> Estimated Total</span>
         <span class="val" id="est-price">₹0</span>
       </div>
 
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:14px;margin-top:16px;">
-        <i class="fa-solid fa-calendar-check"></i> Confirm Booking
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:14px;margin-top:24px;">
+        <i class="fa-solid fa-calendar-check"></i> Confirm Booking & Pay
       </button>
     </form>
   </div>
@@ -101,6 +142,13 @@
   const endInp   = document.getElementById('endTime');
   const calcBox  = document.getElementById('price-calc');
   const estPrice = document.getElementById('est-price');
+
+  function selectPayment(element) {
+    document.querySelectorAll('.payment-card').forEach(card => card.classList.remove('active'));
+    element.classList.add('active');
+    const radio = element.querySelector('input[type="radio"]');
+    if (radio) radio.checked = true;
+  }
 
   function calcPrice() {
     if (!startInp.value || !endInp.value) return;
