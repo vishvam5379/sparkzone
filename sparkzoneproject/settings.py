@@ -19,8 +19,16 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 
 # CSRF Trusted Origins for Railway HTTPS domains
-csrf_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://*.up.railway.app,https://*.onrender.com,http://localhost,http://127.0.0.1')
+csrf_origins_env = os.getenv(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://web-production-71ccf.up.railway.app,https://*.up.railway.app,https://*.railway.app,https://*.onrender.com,http://localhost,http://127.0.0.1'
+)
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins_env.split(',') if o.strip()]
+
+railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN') or os.getenv('RAILWAY_STATIC_URL')
+if railway_domain:
+    clean_domain = railway_domain.replace('https://', '').replace('http://', '').strip('/')
+    CSRF_TRUSTED_ORIGINS.extend([f"https://{clean_domain}", f"http://{clean_domain}"])
 
 INSTALLED_APPS = [
     "unfold",
