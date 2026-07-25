@@ -4,6 +4,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate && gunicorn sparkzoneproject.wsgi:application"
+    "startCommand": "python manage.py migrate && python create_superuser.py && python seed_data.py && gunicorn sparkzoneproject.wsgi:application"
   }
 }
