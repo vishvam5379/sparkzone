@@ -391,9 +391,6 @@
           <a href="{% url 'provider_dashboard' %}" class="btn btn-neon" style="padding:9px 18px;font-size:.85rem;">
             <i class="fa-solid fa-store"></i> Provider Panel
           </a>
-          <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="padding:9px 18px;font-size:.85rem;">
-            <i class="fa-solid fa-calendar-check"></i> Bookings
-          </a>
         {% else %}
           <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="padding:9px 18px;font-size:.85rem;">
             <i class="fa-solid fa-calendar-check"></i> Bookings
@@ -443,12 +440,13 @@
             <div style="font-size:.75rem;color:var(--muted);white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">{{ logged_in_user.email }}</div>
           </div>
         </div>
-        <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="width:100%;justify-content:center;">
-          <i class="fa-solid fa-calendar-check"></i> My Bookings
-        </a>
-        {% if logged_in_user.role == 'provider' or logged_in_user.provider_profile %}
+        {% if '/provider/' in request.path %}
           <a href="{% url 'provider_dashboard' %}" class="btn btn-neon" style="width:100%;justify-content:center;">
             <i class="fa-solid fa-store"></i> Provider Panel
+          </a>
+        {% else %}
+          <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="width:100%;justify-content:center;">
+            <i class="fa-solid fa-calendar-check"></i> My Bookings
           </a>
         {% endif %}
         <a href="{% url 'logout' %}" class="btn btn-outline" style="width:100%;justify-content:center;color:var(--danger);border-color:rgba(239,68,68,.3);" title="Logout">
