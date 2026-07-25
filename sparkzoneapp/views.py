@@ -29,7 +29,7 @@ def health_check(request):
 def index(request):
     categories = Category.objects.all()
     games = Game.objects.select_related('category', 'city').prefetch_related('images').all()[:6]
-    reviews = Reviews.objects.select_related('user', 'game').all()[:6]
+    reviews = Reviews.objects.select_related('user', 'game').order_by('-timestamp')[:6]
     user = get_logged_in_user(request)
     return render(request, 'index.html', {
         'categories': categories,
@@ -62,12 +62,32 @@ def games(request):
 # ─── Game Detail ────────────────────────────────────────────────────────────────
 def game_detail(request, game_id):
     game = get_object_or_404(Game.objects.select_related('category', 'city'), id=game_id)
+    user = get_logged_in_user(request)
+
+    if request.method == 'POST':
+        if not user:
+            messages.warning(request, 'Please login to submit a review.')
+            return redirect('login')
+
+        rating = request.POST.get('rating', '5')
+        comment = request.POST.get('comment', '').strip()
+
+        if comment:
+            Reviews.objects.create(
+                user=user,
+                game=game,
+                rating=float(rating),
+                comment=comment
+            )
+            messages.success(request, 'Thank you! Your review has been submitted and featured on the home screen.')
+            return redirect('game_detail', game_id=game_id)
+
     game_images = GameImages.objects.filter(game=game)
-    reviews = Reviews.objects.filter(game=game).select_related('user')
+    reviews = Reviews.objects.filter(game=game).select_related('user').order_by('-timestamp')
     avg_rating = 0
     if reviews.exists():
         avg_rating = round(sum(r.rating for r in reviews) / reviews.count(), 1)
-    user = get_logged_in_user(request)
+
     return render(request, 'game_detail.html', {
         'game': game,
         'game_images': game_images,

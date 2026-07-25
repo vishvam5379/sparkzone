@@ -154,6 +154,43 @@
       <!-- Reviews -->
       <div class="info-card">
         <h3><i class="fa-solid fa-star"></i> Reviews ({{ reviews|length }})</h3>
+
+        <!-- Add Review Form -->
+        {% if logged_in_user %}
+        <div style="padding:20px;background:var(--bg3);border-radius:14px;border:1px solid var(--border);margin-bottom:24px;">
+          <h4 style="font-weight:700;margin-bottom:14px;font-size:1rem;color:var(--text);">
+            <i class="fa-solid fa-pen-to-square" style="color:var(--accent2);margin-right:8px;"></i> Leave a Review for {{ game.name }}
+          </h4>
+          <form method="POST">
+            {% csrf_token %}
+            <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:14px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="review-rating" style="font-size:.85rem;color:var(--muted);margin-bottom:6px;display:block;">Rating</label>
+                <select name="rating" id="review-rating" class="filter-select" style="width:100%;padding:10px 14px;" required>
+                  <option value="5">⭐⭐⭐⭐⭐ (5.0 Stars)</option>
+                  <option value="4">⭐⭐⭐⭐ (4.0 Stars)</option>
+                  <option value="3">⭐⭐⭐ (3.0 Stars)</option>
+                  <option value="2">⭐⭐ (2.0 Stars)</option>
+                  <option value="1">⭐ (1.0 Star)</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="review-comment" style="font-size:.85rem;color:var(--muted);margin-bottom:6px;display:block;">Comment</label>
+                <input type="text" name="comment" id="review-comment" placeholder="Share your experience playing {{ game.name }}..." required style="width:100%;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);outline:none;" />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="padding:10px 24px;font-size:.88rem;">
+              <i class="fa-solid fa-paper-plane"></i> Submit Review
+            </button>
+          </form>
+        </div>
+        {% else %}
+        <p style="color:var(--muted);font-size:.88rem;margin-bottom:20px;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);">
+          <i class="fa-solid fa-lock" style="color:var(--accent2);margin-right:6px;"></i>
+          <a href="{% url 'login' %}" style="color:var(--neon);font-weight:600;text-decoration:underline;">Log in</a> to write a review.
+        </p>
+        {% endif %}
+
         {% if reviews %}
         <div style="display:flex;flex-direction:column;gap:20px;">
           {% for review in reviews %}
