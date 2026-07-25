@@ -37,9 +37,32 @@ def provider_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         user = get_logged_in_user(request)
-        if not user or user.role != 'provider' or not hasattr(user, 'provider_profile'):
-            messages.error(request, 'Access denied. Provider account required.')
+        if not user:
+            messages.warning(request, 'Please log in to access the Provider Panel.')
             return redirect('login')
+
+        # Auto-initialize provider profile if user accesses provider features
+        try:
+            profile = user.provider_profile
+        except ProviderProfile.DoesNotExist:
+            profile = None
+
+        if not profile:
+            default_city = City.objects.first()
+            ProviderProfile.objects.get_or_create(
+                user=user,
+                defaults={
+                    'businessName': f"{user.firstName}'s Gaming Center",
+                    'phone': 9313858614,
+                    'address': 'CG Road, Navrangpura',
+                    'city': default_city,
+                    'is_verified': True
+                }
+            )
+            if user.role != 'provider':
+                user.role = 'provider'
+                user.save(update_fields=['role'])
+
         return view_func(request, *args, **kwargs)
     return wrapper
 
@@ -180,6 +203,12 @@ def register(request):
 
 # ─── Login ──────────────────────────────────────────────────────────────────────
 def login_view(request):
+    logged_user = get_logged_in_user(request)
+    if logged_user:
+        if logged_user.role == 'provider':
+            return redirect('provider_dashboard')
+        return redirect('index')
+
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
         password = request.POST.get('password')
