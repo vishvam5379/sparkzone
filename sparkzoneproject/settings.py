@@ -58,7 +58,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sparkzoneproject.wsgi.application'
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+# Session & Cookie Security Configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = int(os.getenv('SESSION_COOKIE_AGE', 1209600))  # 2 weeks (1,209,600 seconds)
+SESSION_SAVE_EVERY_REQUEST = True  # Enable sliding expiration (refreshes session age on every request)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_AGE = 31449600  # 1 year
+
+# Secure cookies in production (HTTPS)
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 
 # Database Configuration
 # Uses DATABASE_URL environment variable if set (Railway Postgres / Production)
