@@ -720,11 +720,28 @@ def my_bookings(request):
 # ─── Contact ────────────────────────────────────────────────────────────────────
 def contact(request):
     if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip().lower()
+        phone = request.POST.get('phone', '').strip()
+        message = request.POST.get('message', '').strip()
+
+        # Strict Email Format Validation
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            messages.error(request, 'Please enter a valid email address (e.g. name@domain.com).')
+            return render_with_notifs(request, 'contact.html', {})
+
+        # Strict 10-Digit Mobile Number Validation
+        if not re.match(r'^\d{10}$', phone):
+            messages.error(request, 'Mobile number must be exactly 10 digits.')
+            return render_with_notifs(request, 'contact.html', {})
+
+        phone_num = int(phone) if phone.isdigit() else 9313858614
         ContactUs.objects.create(
-            name=request.POST.get('name'),
-            email=request.POST.get('email'),
-            phone=request.POST.get('phone'),
-            message=request.POST.get('message'),
+            name=name,
+            email=email,
+            phone=phone_num,
+            message=message,
         )
         messages.success(request, 'Your message has been sent! We will get back to you soon.')
         return redirect('contact')
