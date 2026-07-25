@@ -70,8 +70,8 @@
 {% block content %}
 <!-- Hero Image -->
 <div class="game-detail-hero">
-  {% if game.image %}
-    <img src="{{ game.image.url }}" alt="{{ game.name }}" />
+  {% if game.get_image_url %}
+    <img src="{{ game.get_image_url }}" alt="{{ game.name }}" />
   {% else %}
     <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));"></div>
   {% endif %}

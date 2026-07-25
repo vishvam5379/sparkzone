@@ -61,8 +61,8 @@
 
   <!-- Game Preview -->
   <div class="booking-game-preview">
-    {% if game.image %}
-      <img src="{{ game.image.url }}" alt="{{ game.name }}" />
+    {% if game.get_image_url %}
+      <img src="{{ game.get_image_url }}" alt="{{ game.name }}" />
     {% else %}
       <div style="width:100px;height:70px;background:linear-gradient(135deg,var(--accent),var(--neon));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎮</div>
     {% endif %}

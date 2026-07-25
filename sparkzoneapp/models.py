@@ -53,14 +53,26 @@ class Category(models.Model):
     categoryName = models.CharField(max_length=100, db_index=True)
     description = models.TextField()
     image = models.ImageField(upload_to="Category", null=True, blank=True)
+    image_url = models.URLField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
         return self.categoryName
 
-    def categoryImage(self):
+    def get_image_url(self):
         if self.image:
-            return mark_safe('<img src={} width="200px">'.format(self.image.url))
+            try:
+                return self.image.url
+            except Exception:
+                pass
+        if self.image_url:
+            return self.image_url
+        return None
+
+    def categoryImage(self):
+        url = self.get_image_url()
+        if url:
+            return mark_safe('<img src={} width="200px">'.format(url))
         return mark_safe('<span>No Image</span>')
 
 class Game(models.Model):
@@ -73,14 +85,26 @@ class Game(models.Model):
     totalSystem = models.IntegerField(default=1)
     availableSystems = models.IntegerField(default=1)
     image = models.ImageField(upload_to="Game", null=True, blank=True)
+    image_url = models.URLField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
         return self.name
 
-    def GameImage(self):
+    def get_image_url(self):
         if self.image:
-            return mark_safe('<img src={} width="200px">'.format(self.image.url))
+            try:
+                return self.image.url
+            except Exception:
+                pass
+        if self.image_url:
+            return self.image_url
+        return None
+
+    def GameImage(self):
+        url = self.get_image_url()
+        if url:
+            return mark_safe('<img src={} width="200px">'.format(url))
         return mark_safe('<span>No Image</span>')
 
 class GameImages(models.Model):
