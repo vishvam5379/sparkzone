@@ -144,20 +144,24 @@ def register(request):
         )
 
         if role == 'provider':
-            businessName = request.POST.get('businessName', f"{firstName}'s Gaming Center").strip()
-            phone = request.POST.get('phone', '9876543210')
-            address = request.POST.get('address', 'Main Street').strip()
+            businessName = request.POST.get('businessName', '').strip() or f"{firstName}'s Gaming Center"
+            phone_val = request.POST.get('phone', '').strip()
+            phone = int(phone_val) if phone_val.isdigit() else 9313858614
+            address = request.POST.get('address', '').strip() or 'CG Road, Navrangpura'
             city_id = request.POST.get('city')
             city_obj = City.objects.filter(id=city_id).first() if city_id else cities.first()
 
-            ProviderProfile.objects.create(
+            provider_obj = ProviderProfile.objects.create(
                 user=user,
                 businessName=businessName,
-                phone=int(phone) if phone.isdigit() else 9876543210,
+                phone=phone,
                 address=address,
                 city=city_obj,
                 is_verified=True
             )
+
+            # Auto-assign unassigned games to this provider so they populate their queue
+            Game.objects.filter(provider__isnull=True).update(provider=provider_obj)
 
         messages.success(request, f'Account created successfully, {firstName}! Please log in with your credentials.')
         return redirect('login')
@@ -195,7 +199,12 @@ def logout_view(request):
 def provider_dashboard(request):
     user = get_logged_in_user(request)
     provider = user.provider_profile
-    games = Game.objects.filter(provider=provider).select_related('category', 'city').prefetch_related('slots').order_by('-timestamp')
+
+    # Ensure unassigned games are linked to this provider profile
+    if not Game.objects.filter(provider=provider).exists():
+        Game.objects.filter(provider__isnull=True).update(provider=provider)
+
+    games = Game.objects.filter(models.Q(provider=provider) | models.Q(provider__isnull=True)).select_related('category', 'city').prefetch_related('slots').order_by('-timestamp')
     
     total_slots_count = Slot.objects.filter(game__provider=provider).count()
     total_bookings_count = Booking.objects.filter(game__provider=provider).count()
