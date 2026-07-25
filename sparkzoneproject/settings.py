@@ -12,7 +12,15 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-l@j!&aml_t*9^uvfu4#v-)cr4p
 
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '*').split(',') if h.strip()]
+
+# Railway / Reverse Proxy HTTPS Detection
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
+# CSRF Trusted Origins for Railway HTTPS domains
+csrf_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://*.up.railway.app,https://*.onrender.com,http://localhost,http://127.0.0.1')
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins_env.split(',') if o.strip()]
 
 INSTALLED_APPS = [
     "unfold",
@@ -67,10 +75,13 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_AGE = 31449600  # 1 year
 
-# Secure cookies in production (HTTPS)
+# Secure cookies and headers in production (HTTPS)
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
 
 
 # Database Configuration

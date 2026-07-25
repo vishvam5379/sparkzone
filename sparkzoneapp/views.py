@@ -3,6 +3,9 @@ from django.contrib import messages
 from .models import *
 import hashlib
 
+from django.http import JsonResponse
+from django.db import connection
+
 # ─── Helper ────────────────────────────────────────────────────────────────────
 def get_logged_in_user(request):
     uid = request.session.get('user_id')
@@ -10,13 +13,22 @@ def get_logged_in_user(request):
         try:
             return User.objects.get(id=uid)
         except User.DoesNotExist:
-            pass
+            request.session.pop('user_id', None)
     return None
+
+# ─── Uptime Health Check Endpoint ──────────────────────────────────────────────
+def health_check(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        return JsonResponse({"status": "healthy", "database": "connected"}, status=200)
+    except Exception as e:
+        return JsonResponse({"status": "unhealthy", "database": str(e)}, status=500)
 
 # ─── Home ───────────────────────────────────────────────────────────────────────
 def index(request):
     categories = Category.objects.all()
-    games = Game.objects.select_related('category', 'city').all()[:6]
+    games = Game.objects.select_related('category', 'city').prefetch_related('images').all()[:6]
     reviews = Reviews.objects.select_related('user', 'game').all()[:6]
     user = get_logged_in_user(request)
     return render(request, 'index.html', {
@@ -30,7 +42,7 @@ def index(request):
 def games(request):
     category_id = request.GET.get('category')
     search = request.GET.get('search', '')
-    all_games = Game.objects.select_related('category', 'city').all()
+    all_games = Game.objects.select_related('category', 'city').prefetch_related('images').all()
     categories = Category.objects.all()
 
     if category_id:
@@ -49,7 +61,7 @@ def games(request):
 
 # ─── Game Detail ────────────────────────────────────────────────────────────────
 def game_detail(request, game_id):
-    game = get_object_or_404(Game, id=game_id)
+    game = get_object_or_404(Game.objects.select_related('category', 'city'), id=game_id)
     game_images = GameImages.objects.filter(game=game)
     reviews = Reviews.objects.filter(game=game).select_related('user')
     avg_rating = 0
@@ -76,9 +88,9 @@ def categories(request):
 # ─── Register ───────────────────────────────────────────────────────────────────
 def register(request):
     if request.method == 'POST':
-        firstName = request.POST.get('firstName')
-        lastName = request.POST.get('lastName')
-        email = request.POST.get('email')
+        firstName = request.POST.get('firstName', '').strip()
+        lastName = request.POST.get('lastName', '').strip()
+        email = request.POST.get('email', '').strip().lower()
         password = request.POST.get('password')
         confirm = request.POST.get('confirm_password')
 
@@ -101,7 +113,7 @@ def register(request):
 # ─── Login ──────────────────────────────────────────────────────────────────────
 def login_view(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        email = request.POST.get('email', '').strip().lower()
         password = request.POST.get('password')
         hashed = hashlib.sha256(password.encode()).hexdigest()
 
