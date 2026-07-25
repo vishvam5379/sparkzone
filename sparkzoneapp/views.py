@@ -148,6 +148,33 @@ def categories(request):
         'categories': all_cats,
     })
 
+import re
+
+# ─── Google OAuth Login Simulation ─────────────────────────────────────────────
+def google_login(request):
+    email = request.GET.get('email', 'google.user@sparkzone.in')
+    name = request.GET.get('name', 'Google Gamer')
+
+    name_parts = name.split(' ', 1)
+    first_name = name_parts[0]
+    last_name = name_parts[1] if len(name_parts) > 1 else 'User'
+
+    user, created = User.objects.get_or_create(
+        email=email.lower().strip(),
+        defaults={
+            'firstName': first_name,
+            'lastName': last_name,
+            'password': hashlib.sha256('GoogleOAuthSecret123'.encode()).hexdigest(),
+            'role': 'user'
+        }
+    )
+
+    request.session['user_id'] = user.id
+    messages.success(request, f'Successfully signed in with Google as {user.firstName}!')
+    if user.role == 'provider':
+        return redirect('provider_dashboard')
+    return redirect('index')
+
 # ─── Register ───────────────────────────────────────────────────────────────────
 def register(request):
     cities = City.objects.select_related('state').all()
@@ -158,14 +185,57 @@ def register(request):
         password = request.POST.get('password')
         confirm = request.POST.get('confirm_password')
         role = request.POST.get('role', 'user')
+        phone_val = request.POST.get('phone', '').strip()
+
+        # Strict Email Format Validation
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            messages.error(request, 'Please enter a valid email address (e.g. name@domain.com).')
+            return render_with_notifs(request, 'register.html', {'cities': cities})
+
+        # Strict 10-Digit Mobile Number Validation for Providers
+        if role == 'provider' or phone_val:
+            if not re.match(r'^\d{10}$', phone_val):
+                messages.error(request, 'Mobile number must be exactly 10 digits.')
+                return render_with_notifs(request, 'register.html', {'cities': cities})
 
         if password != confirm:
             messages.error(request, 'Passwords do not match!')
             return render_with_notifs(request, 'register.html', {'cities': cities})
 
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'Email already registered!')
-            return render_with_notifs(request, 'register.html', {'cities': cities})
+        existing_user = User.objects.filter(email=email).first()
+        if existing_user:
+            if role == 'provider':
+                has_prof = hasattr(existing_user, 'provider_profile') and existing_user.provider_profile is not None
+                if not has_prof:
+                    businessName = request.POST.get('businessName', '').strip() or f"{existing_user.firstName}'s Gaming Center"
+                    phone = int(phone_val) if phone_val.isdigit() else 9313858614
+                    address = request.POST.get('address', '').strip() or 'CG Road, Navrangpura'
+                    city_id = request.POST.get('city')
+                    city_obj = City.objects.filter(id=city_id).first() if city_id else cities.first()
+
+                    provider_obj = ProviderProfile.objects.create(
+                        user=existing_user,
+                        businessName=businessName,
+                        phone=phone,
+                        address=address,
+                        city=city_obj,
+                        is_verified=True
+                    )
+                    existing_user.role = 'provider'
+                    existing_user.save(update_fields=['role'])
+
+                    # Auto-assign unassigned games
+                    Game.objects.filter(provider__isnull=True).update(provider=provider_obj)
+
+                    messages.success(request, f'Provider profile successfully added to account {email}! Please log in.')
+                    return redirect('login')
+                else:
+                    messages.error(request, 'This email already has an active Provider account!')
+                    return render_with_notifs(request, 'register.html', {'cities': cities})
+            else:
+                messages.error(request, 'Email already registered!')
+                return render_with_notifs(request, 'register.html', {'cities': cities})
 
         hashed = hashlib.sha256(password.encode()).hexdigest()
         user = User.objects.create(
@@ -178,7 +248,6 @@ def register(request):
 
         if role == 'provider':
             businessName = request.POST.get('businessName', '').strip() or f"{firstName}'s Gaming Center"
-            phone_val = request.POST.get('phone', '').strip()
             phone = int(phone_val) if phone_val.isdigit() else 9313858614
             address = request.POST.get('address', '').strip() or 'CG Road, Navrangpura'
             city_id = request.POST.get('city')
@@ -193,7 +262,7 @@ def register(request):
                 is_verified=True
             )
 
-            # Auto-assign unassigned games to this provider so they populate their queue
+            # Auto-assign unassigned games
             Game.objects.filter(provider__isnull=True).update(provider=provider_obj)
 
         messages.success(request, f'Account created successfully, {firstName}! Please log in with your credentials.')
@@ -279,12 +348,14 @@ def provider_game_add(request):
         totalSystem = int(request.POST.get('totalSystem', 1))
         availableSystems = int(request.POST.get('availableSystems', 1))
         image_url = request.POST.get('image_url', '').strip()
+        operating_hours = request.POST.get('operating_hours', '09:00 AM - 10:00 PM').strip()
         status = request.POST.get('status', 'active')
+        image_file = request.FILES.get('image') or request.FILES.get('image_file')
 
         cat_obj = get_object_or_404(Category, id=category_id)
         city_obj = get_object_or_404(City, id=city_id)
 
-        Game.objects.create(
+        new_game = Game.objects.create(
             provider=provider,
             category=cat_obj,
             city=city_obj,
@@ -295,9 +366,17 @@ def provider_game_add(request):
             totalSystem=totalSystem,
             availableSystems=availableSystems,
             image_url=image_url if image_url else None,
+            image=image_file if image_file else None,
+            operating_hours=operating_hours if operating_hours else '09:00 AM - 10:00 PM',
             status=status
         )
-        messages.success(request, f'Gaming Station "{name}" created successfully!')
+
+        # Handle Gallery Device Photo Uploads
+        gallery_files = request.FILES.getlist('gallery_images')
+        for gf in gallery_files:
+            GameImages.objects.create(game=new_game, image=gf)
+
+        messages.success(request, f'Gaming Station "{name}" created successfully with photos!')
         return redirect('provider_dashboard')
 
     return render_with_notifs(request, 'provider/game_form.html', {
@@ -324,8 +403,19 @@ def provider_game_edit(request, game_id):
         game.totalSystem = int(request.POST.get('totalSystem', 1))
         game.availableSystems = int(request.POST.get('availableSystems', 1))
         game.image_url = request.POST.get('image_url', '').strip() or None
+        game.operating_hours = request.POST.get('operating_hours', '09:00 AM - 10:00 PM').strip() or '09:00 AM - 10:00 PM'
         game.status = request.POST.get('status', 'active')
+
+        image_file = request.FILES.get('image') or request.FILES.get('image_file')
+        if image_file:
+            game.image = image_file
+
         game.save()
+
+        # Handle Gallery Device Photo Uploads
+        gallery_files = request.FILES.getlist('gallery_images')
+        for gf in gallery_files:
+            GameImages.objects.create(game=game, image=gf)
 
         messages.success(request, f'Station "{game.name}" updated successfully!')
         return redirect('provider_dashboard')

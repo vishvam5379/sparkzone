@@ -8,6 +8,7 @@ urlpatterns = [
     path('categories/', views.categories, name='categories'),
     path('register/', views.register, name='register'),
     path('login/', views.login_view, name='login'),
+    path('google-login/', views.google_login, name='google_login'),
     path('logout/', views.logout_view, name='logout'),
     path('booking/<int:game_id>/', views.booking, name='booking'),
     path('booking/<int:booking_id>/cancel/', views.cancel_booking, name='cancel_booking'),

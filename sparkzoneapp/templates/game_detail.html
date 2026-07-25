@@ -83,6 +83,9 @@
         <span class="badge" style="background:rgba(0,212,255,.1);color:var(--neon);border-color:rgba(0,212,255,.2);">
           <i class="fa-solid fa-location-dot"></i> {{ game.city.name }}
         </span>
+        <span class="badge" style="background:rgba(245,158,11,.1);color:var(--gold);border-color:rgba(245,158,11,.2);">
+          <i class="fa-solid fa-clock"></i> Hours: {{ game.operating_hours|default:"09:00 AM - 10:00 PM" }}
+        </span>
       </div>
       <h1 style="font-family:'Orbitron',monospace;font-size:clamp(1.6rem,4vw,2.8rem);font-weight:900;">{{ game.name }}</h1>
       {% if avg_rating %}

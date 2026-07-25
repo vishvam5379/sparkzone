@@ -12,7 +12,7 @@
 
 <div class="container" style="padding-bottom:80px;max-width:720px;">
   <div class="form-card" style="max-width:100%;">
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="form-group">
         <label for="g-name"><i class="fa-solid fa-gamepad" style="margin-right:6px;color:var(--accent2);"></i>Game / Station Title</label>
@@ -53,6 +53,21 @@
         <input type="text" name="address" id="g-addr" placeholder="e.g. SparkZone Hub, CG Road, Navrangpura" required {% if is_edit %}value="{{ game.address }}"{% endif %} />
       </div>
 
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="form-group">
+          <label for="g-hours"><i class="fa-solid fa-clock" style="margin-right:6px;color:var(--accent2);"></i>Station Service / Operating Hours</label>
+          <input type="text" name="operating_hours" id="g-hours" placeholder="e.g. 09:00 AM - 11:00 PM" value="{% if is_edit and game.operating_hours %}{{ game.operating_hours }}{% else %}09:00 AM - 10:00 PM{% endif %}" />
+        </div>
+
+        <div class="form-group">
+          <label for="g-status"><i class="fa-solid fa-toggle-on" style="margin-right:6px;color:var(--accent2);"></i>Status</label>
+          <select name="status" id="g-status" class="filter-select" style="width:100%;">
+            <option value="active" {% if is_edit and game.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if is_edit and game.status == 'inactive' %}selected{% endif %}>Inactive</option>
+          </select>
+        </div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
         <div class="form-group">
           <label for="g-price"><i class="fa-solid fa-indian-rupee-sign" style="margin-right:6px;color:var(--accent2);"></i>Price / Hour</label>
@@ -70,18 +85,26 @@
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
+      <!-- Device Photo File Upload & Gallery Option -->
+      <div style="background:rgba(0,212,255,.05);border:1px dashed var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
+        <h4 style="font-weight:700;font-size:.92rem;margin-bottom:14px;color:var(--neon);">
+          <i class="fa-solid fa-images" style="margin-right:6px;"></i> Station Photos & Gallery Upload
+        </h4>
+
         <div class="form-group">
-          <label for="g-img"><i class="fa-solid fa-image" style="margin-right:6px;color:var(--accent2);"></i>Cover Image URL</label>
-          <input type="url" name="image_url" id="g-img" placeholder="https://images.unsplash.com/photo-..." {% if is_edit and game.image_url %}value="{{ game.image_url }}"{% endif %} />
+          <label for="g-file"><i class="fa-solid fa-upload" style="margin-right:6px;color:var(--accent2);"></i>Upload Cover Photo from Device</label>
+          <input type="file" name="image_file" id="g-file" accept="image/*" style="padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;" />
         </div>
 
         <div class="form-group">
-          <label for="g-status"><i class="fa-solid fa-toggle-on" style="margin-right:6px;color:var(--accent2);"></i>Status</label>
-          <select name="status" id="g-status" class="filter-select" style="width:100%;">
-            <option value="active" {% if is_edit and game.status == 'active' %}selected{% endif %}>Active</option>
-            <option value="inactive" {% if is_edit and game.status == 'inactive' %}selected{% endif %}>Inactive</option>
-          </select>
+          <label for="g-img"><i class="fa-solid fa-link" style="margin-right:6px;color:var(--accent2);"></i>Or Cover Image URL (Optional Fallback)</label>
+          <input type="url" name="image_url" id="g-img" placeholder="https://images.unsplash.com/photo-..." {% if is_edit and game.image_url %}value="{{ game.image_url }}"{% endif %} />
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="g-gallery"><i class="fa-solid fa-images" style="margin-right:6px;color:var(--accent2);"></i>Upload Additional Gallery Photos from Device (Multiple)</label>
+          <input type="file" name="gallery_images" id="g-gallery" accept="image/*" multiple style="padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;" />
+          <span style="font-size:.78rem;color:var(--muted);margin-top:4px;display:block;">Hold Ctrl / Cmd to select multiple photos from your phone or PC.</span>
         </div>
       </div>
 

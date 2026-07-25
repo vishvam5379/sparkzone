@@ -112,6 +112,7 @@ class Game(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
     image = models.ImageField(upload_to="Game", null=True, blank=True)
     image_url = models.URLField(max_length=2000, null=True, blank=True)
+    operating_hours = models.CharField(max_length=100, default="09:00 AM - 10:00 PM", null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
