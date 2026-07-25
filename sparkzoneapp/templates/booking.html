@@ -99,21 +99,76 @@
       <div class="form-group" style="margin-top:20px;">
         <label><i class="fa-solid fa-wallet"></i> Select Payment Method</label>
         <div class="payment-grid">
-          <label class="payment-card active" onclick="selectPayment(this)">
+          <label class="payment-card active" onclick="selectPayment('credit_card', this)">
             <input type="radio" name="paymentMethod" value="credit_card" checked />
             <i class="fa-solid fa-credit-card"></i>
             <span class="title">Credit Card</span>
           </label>
-          <label class="payment-card" onclick="selectPayment(this)">
+          <label class="payment-card" onclick="selectPayment('upi', this)">
             <input type="radio" name="paymentMethod" value="upi" />
             <i class="fa-solid fa-qrcode"></i>
             <span class="title">UPI / QR</span>
           </label>
-          <label class="payment-card" onclick="selectPayment(this)">
+          <label class="payment-card" onclick="selectPayment('bank_transfer', this)">
             <input type="radio" name="paymentMethod" value="bank_transfer" />
             <i class="fa-solid fa-building-columns"></i>
             <span class="title">Bank Transfer</span>
           </label>
+        </div>
+      </div>
+
+      <!-- Payment Details Boxes -->
+      <div id="credit_card_details" class="payment-details-box">
+        <div style="margin-top:14px;padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;">
+          <div style="font-weight:600;font-size:.9rem;margin-bottom:12px;color:var(--text);">
+            <i class="fa-solid fa-credit-card" style="color:var(--accent2);margin-right:6px;"></i> Enter Card Information
+          </div>
+          <div style="margin-bottom:10px;">
+            <input type="text" placeholder="Card Number (e.g. 4532 8901 2345 8921)" maxlength="19" style="width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <input type="text" placeholder="MM/YY" maxlength="5" style="width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;" />
+            <input type="password" placeholder="CVV" maxlength="4" style="width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;" />
+          </div>
+        </div>
+      </div>
+
+      <div id="upi_details" class="payment-details-box" style="display:none;">
+        <div style="margin-top:14px;padding:20px;background:var(--bg3);border:1px dashed var(--neon);border-radius:14px;text-align:center;">
+          <div style="font-weight:700;font-size:.95rem;color:var(--neon);margin-bottom:6px;">
+            <i class="fa-solid fa-qrcode"></i> Scan QR Code to Pay via UPI
+          </div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">Scan with Google Pay, PhonePe, Paytm, or any UPI App</p>
+          
+          <!-- Dynamic QR Code Container -->
+          <div style="background:#fff;padding:12px;display:inline-block;border-radius:14px;box-shadow:0 0 20px rgba(124,58,237,.3);">
+            <img id="upi-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=sparkzone@upi%26pn=SparkZone%20Gaming%26cu=INR" alt="UPI QR Code" style="width:180px;height:180px;display:block;border-radius:8px;" />
+          </div>
+
+          <!-- UPI ID Copy Row -->
+          <div style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:10px;">
+            <span style="font-family:'Orbitron',monospace;font-size:.88rem;color:var(--text);background:var(--card);padding:6px 14px;border-radius:8px;border:1px solid var(--border);">
+              sparkzone@upi
+            </span>
+            <button type="button" onclick="copyUpiId()" style="padding:6px 12px;font-size:.8rem;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;">
+              <i class="fa-solid fa-copy"></i> Copy UPI
+            </button>
+          </div>
+          <div id="copy-toast" style="font-size:.78rem;color:var(--success);margin-top:6px;display:none;">UPI ID copied to clipboard!</div>
+        </div>
+      </div>
+
+      <div id="bank_transfer_details" class="payment-details-box" style="display:none;">
+        <div style="margin-top:14px;padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;">
+          <div style="font-weight:600;font-size:.9rem;margin-bottom:10px;color:var(--text);">
+            <i class="fa-solid fa-building-columns" style="color:var(--accent2);margin-right:6px;"></i> Bank Account Details
+          </div>
+          <div style="font-size:.85rem;color:var(--muted);line-height:1.8;">
+            <div><strong>Bank Name:</strong> HDFC Bank</div>
+            <div><strong>Account Name:</strong> SparkZone Gaming Station</div>
+            <div><strong>Account No:</strong> 50100298374102</div>
+            <div><strong>IFSC Code:</strong> HDFC0001234</div>
+          </div>
         </div>
       </div>
 
@@ -138,16 +193,49 @@
 
 <script>
   const pricePerHour = {{ game.pricePerHour }};
+  const gameName = "{{ game.name|escapejs }}";
   const startInp = document.getElementById('startTime');
   const endInp   = document.getElementById('endTime');
   const calcBox  = document.getElementById('price-calc');
   const estPrice = document.getElementById('est-price');
 
-  function selectPayment(element) {
+  function selectPayment(method, element) {
     document.querySelectorAll('.payment-card').forEach(card => card.classList.remove('active'));
     element.classList.add('active');
     const radio = element.querySelector('input[type="radio"]');
     if (radio) radio.checked = true;
+
+    // Show selected details box
+    document.querySelectorAll('.payment-details-box').forEach(box => box.style.display = 'none');
+    const selectedBox = document.getElementById(method + '_details');
+    if (selectedBox) selectedBox.style.display = 'block';
+
+    updateUpiQr();
+  }
+
+  function updateUpiQr() {
+    let amount = 0;
+    if (startInp.value && endInp.value) {
+      const [sh,sm] = startInp.value.split(':').map(Number);
+      const [eh,em] = endInp.value.split(':').map(Number);
+      const hours = ((eh*60+em) - (sh*60+sm)) / 60;
+      if (hours > 0) {
+        amount = (hours * pricePerHour).toFixed(2);
+      }
+    }
+    const upiUri = `upi://pay?pa=sparkzone@upi&pn=SparkZone Gaming&am=${amount}&cu=INR&tn=${encodeURIComponent('Booking for ' + gameName)}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUri)}`;
+    const qrImg = document.getElementById('upi-qr-img');
+    if (qrImg) qrImg.src = qrUrl;
+  }
+
+  function copyUpiId() {
+    navigator.clipboard.writeText('sparkzone@upi');
+    const toast = document.getElementById('copy-toast');
+    if (toast) {
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
   }
 
   function calcPrice() {
@@ -161,6 +249,7 @@
     } else {
       calcBox.style.display = 'none';
     }
+    updateUpiQr();
   }
   startInp.addEventListener('change', calcPrice);
   endInp.addEventListener('change', calcPrice);
