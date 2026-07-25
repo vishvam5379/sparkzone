@@ -6,4 +6,6 @@ venv/
 .vscode/
 staticfiles/
 .env
+db.sqlite3
+*.sqlite3
 
