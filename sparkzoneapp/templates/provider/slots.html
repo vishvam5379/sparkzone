@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Manage Slots – {{ game.name }}{% endblock %}
+
+{% block extra_css %}
+.slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 24px; }
+.slot-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px; position: relative;
+}
+.slot-time { font-family: 'Orbitron', monospace; font-size: 1.1rem; font-weight: 700; color: var(--neon); margin-bottom: 4px; }
+.slot-date { font-size: .85rem; color: var(--text); font-weight: 600; }
+.slot-meta { font-size: .78rem; color: var(--muted); margin-top: 8px; display: flex; justify-content: space-between; }
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+      <div>
+        <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-clock"></i> Time Slots</span>
+        <h1>Slots for {{ game.name }}</h1>
+        <p>{{ game.address }} ({{ game.city.name }}) • Default Price: ₹{{ game.pricePerHour|floatformat:0 }}/hr</p>
+      </div>
+      <a href="{% url 'provider_dashboard' %}" class="btn btn-outline" style="padding:10px 20px;">
+        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="padding-bottom:80px;">
+  <div style="display:grid;grid-template-columns:1fr 2fr;gap:32px;">
+
+    <!-- Add Slot Form -->
+    <div class="form-card" style="max-width:100%;">
+      <h3 style="font-weight:700;margin-bottom:20px;font-size:1.1rem;">
+        <i class="fa-solid fa-plus" style="color:var(--accent2);margin-right:8px;"></i>
+        Create New Time Slot
+      </h3>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="s-date">Slot Date</label>
+          <input type="date" name="slotDate" id="s-date" required />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label for="s-start">Start Time</label>
+            <input type="time" name="startTime" id="s-start" required />
+          </div>
+          <div class="form-group">
+            <label for="s-end">End Time</label>
+            <input type="time" name="endTime" id="s-end" required />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label for="s-cap">Capacity</label>
+            <input type="number" name="capacity" id="s-cap" value="{{ game.totalSystem }}" required />
+          </div>
+          <div class="form-group">
+            <label for="s-price">Slot Price (₹)</label>
+            <input type="number" step="1" name="price" id="s-price" placeholder="Optional" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;margin-top:8px;">
+          <i class="fa-solid fa-calendar-plus"></i> Add Time Slot
+        </button>
+      </form>
+    </div>
+
+    <!-- Active Slots Listing -->
+    <div>
+      <h3 style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;">
+        <i class="fa-solid fa-list" style="color:var(--accent2);margin-right:8px;"></i>
+        Existing Time Slots ({{ slots|length }})
+      </h3>
+
+      {% if slots %}
+      <div class="slots-grid">
+        {% for s in slots %}
+        <div class="slot-card">
+          <div class="slot-time">{{ s.startTime|time:"H:i" }} - {{ s.endTime|time:"H:i" }}</div>
+          <div class="slot-date"><i class="fa-solid fa-calendar-day" style="color:var(--accent2);margin-right:6px;"></i>{{ s.slotDate|date:"D, d M Y" }}</div>
+          <div class="slot-meta">
+            <span>Capacity: {{ s.capacity }}</span>
+            <span style="font-weight:700;color:var(--neon);">₹{{ s.get_price|floatformat:0 }}</span>
+          </div>
+          <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:.75rem;padding:3px 8px;border-radius:6px;background:rgba(16,185,129,.15);color:var(--success);border:1px solid rgba(16,185,129,.3);">
+              {{ s.status|capfirst }}
+            </span>
+            <a href="{% url 'provider_slot_delete' s.id %}" onclick="return confirm('Delete this slot?')" style="color:var(--danger);font-size:.85rem;" title="Delete Slot">
+              <i class="fa-solid fa-trash"></i>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:60px 0;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:16px;margin-top:24px;">
+        <i class="fa-solid fa-calendar-xmark" style="font-size:3rem;margin-bottom:16px;opacity:.5;"></i>
+        <p>No time slots created yet for this station.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -80,6 +80,21 @@
   <div class="form-card" style="max-width:100%;">
     <form method="POST" id="booking-form">
       {% csrf_token %}
+      {% if available_slots %}
+      <div class="form-group" style="margin-bottom:20px;">
+        <label><i class="fa-solid fa-clock-rotate-left"></i> Available Provider Slots (Click to Auto-fill)</label>
+        <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;">
+          {% for s in available_slots %}
+          <div onclick="selectSlot('{{ s.id }}', '{{ s.slotDate|date:'Y-m-d' }}', '{{ s.startTime|time:'H:i' }}', '{{ s.endTime|time:'H:i' }}')" style="padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.borderColor='var(--neon)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="font-weight:700;font-size:.85rem;color:var(--neon);">{{ s.startTime|time:"H:i" }} - {{ s.endTime|time:"H:i" }}</div>
+            <div style="font-size:.75rem;color:var(--muted);">{{ s.slotDate|date:"D, d M" }} • ₹{{ s.get_price|floatformat:0 }}/hr</div>
+          </div>
+          {% endfor %}
+        </div>
+        <input type="hidden" name="slot_id" id="selected-slot-id" value="" />
+      </div>
+      {% endif %}
+
       <div class="form-group">
         <label for="bookingDate"><i class="fa-solid fa-calendar"></i> Booking Date</label>
         <input type="date" name="bookingDate" id="bookingDate" required min="{{ today }}" />
@@ -210,6 +225,15 @@
     const selectedBox = document.getElementById(method + '_details');
     if (selectedBox) selectedBox.style.display = 'block';
 
+    updateUpiQr();
+  }
+
+  function selectSlot(id, date, start, end) {
+    document.getElementById('selected-slot-id').value = id;
+    document.getElementById('bookingDate').value = date;
+    document.getElementById('startTime').value = start;
+    document.getElementById('endTime').value = end;
+    calcPrice();
     updateUpiQr();
   }
 

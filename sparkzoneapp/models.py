@@ -2,17 +2,25 @@ from django.utils.safestring import mark_safe
 from django.db import models
 
 class User(models.Model):
+    ROLE_CHOICES = [
+        ('user', 'Gamer / Customer'),
+        ('provider', 'Gaming Center Provider'),
+    ]
     firstName = models.CharField(max_length=60)
     lastName = models.CharField(max_length=60)
     email = models.EmailField(unique=True, db_index=True)
     password = models.CharField(max_length=128)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user', db_index=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
-        return f"{self.firstName} {self.lastName}"
+        return f"{self.firstName} {self.lastName} ({self.get_role_display()})"
 
     def get_full_name(self):
         return f"{self.firstName} {self.lastName}".strip()
+
+    def is_provider(self):
+        return self.role == 'provider'
 
 class Country(models.Model):
     name = models.CharField(max_length=100, db_index=True)
@@ -49,6 +57,18 @@ class UserProfile(models.Model):
             return mark_safe('<img src={} width="200px">'.format(self.profile.url))
         return mark_safe('<span>No Image</span>')
 
+class ProviderProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='provider_profile')
+    businessName = models.CharField(max_length=120)
+    phone = models.BigIntegerField()
+    address = models.TextField()
+    city = models.ForeignKey(City, on_delete=models.PROTECT, related_name='providers')
+    is_verified = models.BooleanField(default=True, db_index=True)
+    timestamp = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        return self.businessName
+
 class Category(models.Model):
     categoryName = models.CharField(max_length=100, db_index=True)
     description = models.TextField()
@@ -76,6 +96,11 @@ class Category(models.Model):
         return mark_safe('<span>No Image</span>')
 
 class Game(models.Model):
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+    ]
+    provider = models.ForeignKey(ProviderProfile, on_delete=models.PROTECT, null=True, blank=True, related_name='games')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='games')
     name = models.CharField(max_length=100, db_index=True)
     description = models.TextField()
@@ -84,6 +109,7 @@ class Game(models.Model):
     pricePerHour = models.FloatField(db_index=True)
     totalSystem = models.IntegerField(default=1)
     availableSystems = models.IntegerField(default=1)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
     image = models.ImageField(upload_to="Game", null=True, blank=True)
     image_url = models.URLField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
@@ -107,6 +133,30 @@ class Game(models.Model):
             return mark_safe('<img src={} width="200px">'.format(url))
         return mark_safe('<span>No Image</span>')
 
+class Slot(models.Model):
+    STATUS_CHOICES = [
+        ('available', 'Available'),
+        ('booked', 'Fully Booked'),
+        ('cancelled', 'Cancelled')
+    ]
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='slots')
+    slotDate = models.DateField(db_index=True)
+    startTime = models.TimeField()
+    endTime = models.TimeField()
+    capacity = models.IntegerField(default=1)
+    bookedCount = models.IntegerField(default=0)
+    price = models.FloatField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available', db_index=True)
+    timestamp = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        return f"{self.game.name} - {self.slotDate} ({self.startTime.strftime('%H:%M')}-{self.endTime.strftime('%H:%M')})"
+
+    def get_price(self):
+        if self.price is not None:
+            return self.price
+        return self.game.pricePerHour
+
 class GameImages(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to="Games")
@@ -124,6 +174,7 @@ class Booking(models.Model):
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='bookings')
+    slot = models.ForeignKey(Slot, on_delete=models.SET_NULL, null=True, blank=True, related_name='bookings')
     bookingDate = models.DateField(db_index=True)
     startTime = models.TimeField()
     endTime = models.TimeField()

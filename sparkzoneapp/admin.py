@@ -2,14 +2,20 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin
 from .models import *
 
-# Register your models here.
 @admin.register(User)
 class ShowUsers(ModelAdmin):
-    list_display = ["firstName", "lastName", "email", "timestamp"]
-    list_filter = ["timestamp"]
-    search_fields = ["firstName", "lastName"]
-    list_per_page = 10
-    list_display_links = ["firstName","lastName"]
+    list_display = ["firstName", "lastName", "email", "role", "timestamp"]
+    list_filter = ["role", "timestamp"]
+    search_fields = ["firstName", "lastName", "email"]
+    list_per_page = 15
+    list_display_links = ["firstName", "lastName"]
+
+@admin.register(ProviderProfile)
+class ShowProviderProfile(ModelAdmin):
+    list_display = ["businessName", "user", "phone", "city", "is_verified", "timestamp"]
+    list_filter = ["is_verified", "city"]
+    search_fields = ["businessName", "user__firstName", "user__email"]
+    list_editable = ["is_verified"]
 
 @admin.register(Country)
 class ShowCountry(ModelAdmin):
@@ -34,9 +40,16 @@ class ShowCategory(ModelAdmin):
 
 @admin.register(Game)
 class ShowGame(ModelAdmin):
-    list_display = ["category", "name", "address", "city", "pricePerHour", "totalSystem", "availableSystems", "image", "GameImage", "timestamp"]
-    list_filter = ["category__categoryName"]
-    list_editable = ["availableSystems", "image"]
+    list_display = ["name", "provider", "category", "city", "pricePerHour", "totalSystem", "availableSystems", "status", "timestamp"]
+    list_filter = ["status", "category__categoryName", "city"]
+    list_editable = ["status", "availableSystems"]
+    search_fields = ["name", "address"]
+
+@admin.register(Slot)
+class ShowSlot(ModelAdmin):
+    list_display = ["game", "slotDate", "startTime", "endTime", "capacity", "bookedCount", "price", "status", "timestamp"]
+    list_filter = ["status", "slotDate", "game"]
+    list_editable = ["status"]
 
 @admin.register(GameImages)
 class ShowGameImages(ModelAdmin):
@@ -44,7 +57,8 @@ class ShowGameImages(ModelAdmin):
 
 @admin.register(Booking)
 class ShowBooking(ModelAdmin):
-    list_display = ["user", "game", "bookingDate", "startTime", "endTime", "totalAmount", "status", "timestamp"]
+    list_display = ["user", "game", "slot", "bookingDate", "startTime", "endTime", "totalAmount", "status", "timestamp"]
+    list_filter = ["status", "bookingDate"]
 
 @admin.register(Payment)
 class ShowPayments(ModelAdmin):
@@ -57,4 +71,4 @@ class ShowReviews(ModelAdmin):
 
 @admin.register(ContactUs)
 class ShowContacts(ModelAdmin):
-    list_display = ["name", "email", "phone", "message", "timestamp"]
+    list_display = ["name", "email", "phone", "message", "timestamp"]

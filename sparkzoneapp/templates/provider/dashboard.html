@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}Provider Dashboard – SparkZone{% endblock %}
+
+{% block extra_css %}
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-bottom: 36px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 18px;
+}
+.stat-icon {
+  width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(124,58,237,.25), rgba(0,212,255,.15));
+  border: 1px solid rgba(124,58,237,.3);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--neon); font-size: 1.4rem;
+}
+.stat-val { font-family: 'Orbitron', monospace; font-size: 1.6rem; font-weight: 800; color: var(--text); }
+.stat-lbl { font-size: .85rem; color: var(--muted); margin-top: 2px; }
+
+.table-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px; overflow-x: auto;
+}
+table.provider-table { width: 100%; border-collapse: collapse; text-align: left; }
+table.provider-table th {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em;
+}
+table.provider-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,.05); font-size: .9rem; vertical-align: middle; }
+table.provider-table tr:last-child td { border-bottom: none; }
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+      <div>
+        <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-store"></i> Provider Panel</span>
+        <h1>{{ provider.businessName }}</h1>
+        <p><i class="fa-solid fa-location-dot" style="color:var(--accent2);margin-right:6px;"></i>{{ provider.address }}, {{ provider.city.name }} • Phone: {{ provider.phone }}</p>
+      </div>
+      <a href="{% url 'provider_game_add' %}" class="btn btn-primary" style="padding:12px 24px;">
+        <i class="fa-solid fa-plus"></i> Add Gaming Station
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="padding-bottom:80px;">
+  <!-- Stats -->
+  <div class="dashboard-grid">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-gamepad"></i></div>
+      <div>
+        <div class="stat-val">{{ games|length }}</div>
+        <div class="stat-lbl">Gaming Stations</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+      <div>
+        <div class="stat-val">{{ total_slots_count }}</div>
+        <div class="stat-lbl">Active Time Slots</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+      <div>
+        <div class="stat-val">{{ total_bookings_count }}</div>
+        <div class="stat-lbl">Customer Bookings</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+      <div>
+        <div class="stat-val">₹{{ total_earnings|floatformat:0 }}</div>
+        <div class="stat-lbl">Total Earnings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Games Management Table -->
+  <div class="table-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h3 style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;">
+        <i class="fa-solid fa-list-check" style="color:var(--accent2);margin-right:8px;"></i>
+        Your Gaming Stations & Rigs
+      </h3>
+      <a href="{% url 'provider_game_add' %}" class="btn btn-neon" style="font-size:.85rem;padding:8px 18px;">
+        + New Game
+      </a>
+    </div>
+
+    {% if games %}
+    <table class="provider-table">
+      <thead>
+        <tr>
+          <th>Station Name</th>
+          <th>Category</th>
+          <th>Price / Hr</th>
+          <th>Systems</th>
+          <th>Status</th>
+          <th>Time Slots</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in games %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:12px;">
+              {% if g.get_image_url %}
+                <img src="{{ g.get_image_url }}" alt="{{ g.name }}" style="width:50px;height:38px;border-radius:8px;object-fit:cover;" />
+              {% else %}
+                <div style="width:50px;height:38px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;">🎮</div>
+              {% endif %}
+              <div style="font-weight:700;color:var(--text);">{{ g.name }}</div>
+            </div>
+          </td>
+          <td><span class="badge" style="font-size:.75rem;">{{ g.category.categoryName }}</span></td>
+          <td style="font-weight:700;color:var(--neon);">₹{{ g.pricePerHour|floatformat:0 }}</td>
+          <td>{{ g.totalSystem }} Total / {{ g.availableSystems }} Free</td>
+          <td>
+            {% if g.status == 'active' %}
+              <span style="color:var(--success);font-weight:600;font-size:.82rem;"><i class="fa-solid fa-circle-dot"></i> Active</span>
+            {% else %}
+              <span style="color:var(--danger);font-weight:600;font-size:.82rem;"><i class="fa-solid fa-circle-dot"></i> Inactive</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'provider_slot_manage' g.id %}" class="btn btn-outline" style="padding:6px 12px;font-size:.8rem;border-radius:8px;">
+              <i class="fa-solid fa-clock"></i> Slots ({{ g.slots.count }})
+            </a>
+          </td>
+          <td>
+            <div style="display:flex;gap:8px;">
+              <a href="{% url 'provider_game_edit' g.id %}" class="btn btn-outline" style="padding:6px 10px;font-size:.8rem;border-radius:8px;" title="Edit Station">
+                <i class="fa-solid fa-pen-to-square"></i> Edit
+              </a>
+              <a href="{% url 'provider_game_delete' g.id %}" class="btn btn-outline" onclick="return confirm('Are you sure you want to delete or deactivate this station?')" style="padding:6px 10px;font-size:.8rem;border-radius:8px;color:var(--danger);border-color:rgba(239,68,68,.3);" title="Delete Station">
+                <i class="fa-solid fa-trash"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:48px 0;color:var(--muted);">
+      <i class="fa-solid fa-gamepad" style="font-size:3rem;margin-bottom:16px;opacity:.5;"></i>
+      <p style="margin-bottom:16px;">You haven't listed any gaming stations yet.</p>
+      <a href="{% url 'provider_game_add' %}" class="btn btn-primary">+ Add Your First Gaming Station</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
