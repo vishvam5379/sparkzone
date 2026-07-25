@@ -73,7 +73,7 @@ class Category(models.Model):
     categoryName = models.CharField(max_length=100, db_index=True)
     description = models.TextField()
     image = models.ImageField(upload_to="Category", null=True, blank=True)
-    image_url = models.URLField(null=True, blank=True)
+    image_url = models.URLField(max_length=2000, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
@@ -111,7 +111,7 @@ class Game(models.Model):
     availableSystems = models.IntegerField(default=1)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
     image = models.ImageField(upload_to="Game", null=True, blank=True)
-    image_url = models.URLField(null=True, blank=True)
+    image_url = models.URLField(max_length=2000, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
