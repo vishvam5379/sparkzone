@@ -681,6 +681,37 @@ def booking(request, game_id):
             messages.error(request, 'End time must be after start time.')
             return redirect('booking', game_id=game_id)
 
+        # Credit Card Backend Validation
+        if paymentMethod == 'credit_card':
+            card_number = request.POST.get('card_number', '').replace(' ', '').strip()
+            card_expiry = request.POST.get('card_expiry', '').strip()
+            card_cvv = request.POST.get('card_cvv', '').strip()
+
+            if not card_number or not card_number.isdigit() or len(card_number) not in (15, 16):
+                messages.error(request, 'Please enter a valid 15 or 16 digit credit card number.')
+                return redirect('booking', game_id=game_id)
+
+            if not card_expiry or '/' not in card_expiry:
+                messages.error(request, 'Please enter a valid MM/YY expiry date.')
+                return redirect('booking', game_id=game_id)
+            else:
+                try:
+                    exp_month, exp_year = [int(x) for x in card_expiry.split('/')]
+                    if not (1 <= exp_month <= 12):
+                        raise ValueError()
+                    full_year = 2000 + exp_year if exp_year < 100 else exp_year
+                    now = timezone.now()
+                    if full_year < now.year or (full_year == now.year and exp_month < now.month):
+                        messages.error(request, 'Credit card has already expired.')
+                        return redirect('booking', game_id=game_id)
+                except Exception:
+                    messages.error(request, 'Invalid MM/YY expiry date format.')
+                    return redirect('booking', game_id=game_id)
+
+            if not card_cvv or not card_cvv.isdigit() or len(card_cvv) not in (3, 4):
+                messages.error(request, 'CVV must be 3 or 4 digits.')
+                return redirect('booking', game_id=game_id)
+
         with db_transaction.atomic():
             slot_obj = None
             if slot_id:
