@@ -93,9 +93,22 @@ if not DEBUG:
 
 
 # Database Configuration
-# Uses DATABASE_URL environment variable if set (Railway Postgres / Production)
-# Falls back to SQLite for local development when DATABASE_URL is not set
-default_db_url = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+# Uses DATABASE_URL environment variable if set (Railway / Neon / Supabase Postgres)
+# Falls back to SQLite for local development or Vercel serverless environment
+IS_VERCEL = os.getenv('VERCEL') == '1' or 'VERCEL' in os.environ or os.path.exists('/var/task')
+
+if IS_VERCEL and not os.getenv('DATABASE_URL'):
+    db_path = Path('/tmp/db.sqlite3')
+    source_db = BASE_DIR / 'db.sqlite3'
+    if source_db.exists() and not db_path.exists():
+        try:
+            import shutil
+            shutil.copy2(source_db, db_path)
+        except Exception:
+            pass
+    default_db_url = f"sqlite:///{db_path}"
+else:
+    default_db_url = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
 
 DATABASES = {
     'default': dj_database_url.config(
