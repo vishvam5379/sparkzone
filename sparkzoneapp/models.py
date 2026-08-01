@@ -89,7 +89,7 @@ class Category(models.Model):
             url = self.image_url
             if 'images.unsplash.com' in url and 'auto=format' not in url:
                 sep = '&' if '?' in url else '?'
-                url = f"{url}{sep}auto=format&fit=crop&w=480&q=65"
+                url = f"{url}{sep}auto=format&fit=crop&w=400&q=60"
             return url
         return None
 
@@ -97,7 +97,7 @@ class Category(models.Model):
         url = self.get_image_url()
         if url and 'images.unsplash.com' in url:
             base = url.split('?')[0]
-            return f"{base}?auto=format&fit=crop&w=360&q=65 360w, {base}?auto=format&fit=crop&w=640&q=65 640w"
+            return f"{base}?auto=format&fit=crop&w=360&q=60 360w, {base}?auto=format&fit=crop&w=480&q=60 480w"
         return ""
 
     def categoryImage(self):
@@ -139,7 +139,7 @@ class Game(models.Model):
             url = self.image_url
             if 'images.unsplash.com' in url and 'auto=format' not in url:
                 sep = '&' if '?' in url else '?'
-                url = f"{url}{sep}auto=format&fit=crop&w=480&q=65"
+                url = f"{url}{sep}auto=format&fit=crop&w=400&q=60"
             return url
         return None
 
@@ -147,7 +147,7 @@ class Game(models.Model):
         url = self.get_image_url()
         if url and 'images.unsplash.com' in url:
             base = url.split('?')[0]
-            return f"{base}?auto=format&fit=crop&w=360&q=65 360w, {base}?auto=format&fit=crop&w=640&q=65 640w"
+            return f"{base}?auto=format&fit=crop&w=360&q=60 360w, {base}?auto=format&fit=crop&w=480&q=60 480w"
         return ""
 
     def GameImage(self):

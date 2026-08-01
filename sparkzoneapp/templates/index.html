@@ -154,7 +154,7 @@
   <div class="container">
     <div class="hero-content">
       <div class="hero-eyebrow">
-        <span class="badge"><i class="fa-solid fa-bolt"></i> New Gaming Era</span>
+        <span class="badge"><svg class="svg-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> New Gaming Era</span>
       </div>
       <h1>
         <span class="line1">Level Up Your</span><br>
@@ -165,10 +165,10 @@
       </p>
       <div class="hero-cta">
         <a href="{% url 'games' %}" class="btn btn-primary" style="font-size:1rem;padding:14px 32px;">
-          <i class="fa-solid fa-gamepad"></i> Browse Games
+          <svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4m-2-2v4m10-2h.01m-2.5-1.5h.01m5 3h.01"/></svg> Browse Games
         </a>
         <a href="{% url 'register' %}" class="btn btn-neon" style="font-size:1rem;padding:14px 32px;">
-          <i class="fa-solid fa-user-plus"></i> Join Free
+          <svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg> Join Free
         </a>
       </div>
       <div class="hero-stats">
@@ -211,7 +211,7 @@
 <section class="cat-strip">
   <div class="container">
     <div class="section-header">
-      <span class="badge"><i class="fa-solid fa-layer-group"></i> Browse</span>
+      <span class="badge"><svg class="svg-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> Browse</span>
       <h2>Game Categories</h2>
       <p>Find your favourite gaming genre from our curated collection</p>
     </div>
@@ -235,7 +235,7 @@
 <section class="featured">
   <div class="container">
     <div class="section-header">
-      <span class="badge"><i class="fa-solid fa-fire"></i> Hot Right Now</span>
+      <span class="badge"><svg class="svg-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 3z"/></svg> Hot Right Now</span>
       <h2>Featured Games</h2>
       <p>Our most popular gaming stations ready for you to book right now</p>
     </div>
@@ -256,16 +256,16 @@
         <div class="game-card-body">
           <div class="game-card-title">{{ game.name }}</div>
           <div class="game-card-meta">
-            <span><i class="fa-solid fa-tag"></i> {{ game.category.categoryName }}</span>
-            <span><i class="fa-solid fa-location-dot"></i> {{ game.city.name }}</span>
-            <span><i class="fa-solid fa-desktop"></i> {{ game.totalSystem }} Systems</span>
+            <span><svg class="svg-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> {{ game.category.categoryName }}</span>
+            <span><svg class="svg-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg> {{ game.city.name }}</span>
+            <span><svg class="svg-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> {{ game.totalSystem }} Systems</span>
           </div>
           <p style="color:var(--muted);font-size:.85rem;line-height:1.6;">{{ game.description|truncatechars:90 }}</p>
           <div class="game-price">₹{{ game.pricePerHour|floatformat:0 }} <span style="font-size:.75rem;color:var(--muted);font-weight:400;">/ hour</span></div>
         </div>
         <div class="game-card-footer">
           <a href="{% url 'game_detail' game.id %}" class="btn btn-primary" style="width:100%;justify-content:center;">
-            <i class="fa-solid fa-circle-info"></i> View & Book
+            <svg class="svg-ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> View & Book
           </a>
         </div>
       </div>
@@ -273,12 +273,12 @@
     </div>
     <div style="text-align:center;margin-top:48px;">
       <a href="{% url 'games' %}" class="btn btn-neon" style="font-size:1rem;padding:14px 36px;">
-        <i class="fa-solid fa-grid-2"></i> View All Games
+        <svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> View All Games
       </a>
     </div>
     {% else %}
     <div style="text-align:center;padding:60px;color:var(--muted);">
-      <i class="fa-solid fa-gamepad" style="font-size:3rem;margin-bottom:16px;"></i>
+      <div style="font-size:3rem;margin-bottom:16px;">🎮</div>
       <p>No games available yet. Check back soon!</p>
     </div>
     {% endif %}
@@ -295,7 +295,7 @@
     </div>
     <div style="display:flex;gap:14px;flex-shrink:0;">
       <a href="{% url 'register' %}" class="btn btn-primary" style="font-size:1rem;padding:14px 32px;">
-        <i class="fa-solid fa-rocket"></i> Get Started Free
+        <svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.71.12-1.41-.6-2.13l-1.4-1.4c-.72-.72-1.41-1.31-2 0z"/><path d="M12 15l-3-3 7-7c1.5-1.5 4-2 4-2s-.5 2.5-2 4l-6 6z"/></svg> Get Started Free
       </a>
     </div>
   </div>
