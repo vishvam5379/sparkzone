@@ -106,6 +106,7 @@ if raw_db_url:
         if 'sslmode=require' in clean_url:
             clean_url = clean_url.split('sslmode=require')[0] + 'sslmode=require'
         raw_db_url = clean_url
+        os.environ['DATABASE_URL'] = clean_url
 
 if IS_VERCEL and not raw_db_url:
     db_path = Path('/tmp/db.sqlite3')
@@ -121,8 +122,8 @@ else:
     default_db_url = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=raw_db_url or default_db_url,
+    'default': dj_database_url.parse(
+        raw_db_url or default_db_url,
         conn_max_age=int(os.getenv('CONN_MAX_AGE', 600)),
         conn_health_checks=True,
     )
