@@ -99,11 +99,13 @@ IS_VERCEL = os.getenv('VERCEL') == '1' or 'VERCEL' in os.environ or os.path.exis
 
 raw_db_url = os.getenv('DATABASE_URL')
 if raw_db_url:
-    # Clean up accidental duplicate concatenations in env variables
-    if raw_db_url.count('postgresql://') > 1:
-        raw_db_url = 'postgresql://' + raw_db_url.split('postgresql://')[1]
-    elif raw_db_url.count('postgres://') > 1:
-        raw_db_url = 'postgres://' + raw_db_url.split('postgres://')[1]
+    import re
+    match = re.search(r'postgres(?:ql)?://[^\s\'"]+', raw_db_url)
+    if match:
+        clean_url = match.group(0)
+        if 'sslmode=require' in clean_url:
+            clean_url = clean_url.split('sslmode=require')[0] + 'sslmode=require'
+        raw_db_url = clean_url
 
 if IS_VERCEL and not raw_db_url:
     db_path = Path('/tmp/db.sqlite3')
