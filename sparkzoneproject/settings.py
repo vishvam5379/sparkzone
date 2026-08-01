@@ -97,7 +97,15 @@ if not DEBUG:
 # Falls back to SQLite for local development or Vercel serverless environment
 IS_VERCEL = os.getenv('VERCEL') == '1' or 'VERCEL' in os.environ or os.path.exists('/var/task')
 
-if IS_VERCEL and not os.getenv('DATABASE_URL'):
+raw_db_url = os.getenv('DATABASE_URL')
+if raw_db_url:
+    # Clean up accidental duplicate concatenations in env variables
+    if raw_db_url.count('postgresql://') > 1:
+        raw_db_url = 'postgresql://' + raw_db_url.split('postgresql://')[1]
+    elif raw_db_url.count('postgres://') > 1:
+        raw_db_url = 'postgres://' + raw_db_url.split('postgres://')[1]
+
+if IS_VERCEL and not raw_db_url:
     db_path = Path('/tmp/db.sqlite3')
     source_db = BASE_DIR / 'db.sqlite3'
     if source_db.exists() and not db_path.exists():
@@ -112,7 +120,7 @@ else:
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', default_db_url),
+        default=raw_db_url or default_db_url,
         conn_max_age=int(os.getenv('CONN_MAX_AGE', 600)),
         conn_health_checks=True,
     )
