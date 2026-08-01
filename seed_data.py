@@ -48,18 +48,18 @@ def seed():
         {
             "categoryName": "Action & Adventure",
             "description": "High-octane action, open-world exploration, and immersive storylines.",
-            "image": "Category/openworld.jfif",
-            "image_url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80"
+            "image": "Category/openworld.webp",
+            "image_url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=640&q=75"
         },
         {
             "categoryName": "FPS & Shooter",
             "description": "Fast-paced tactical first-person shooters and multiplayer battle arenas.",
-            "image_url": "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=600&q=80"
+            "image_url": "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=640&q=75"
         },
         {
             "categoryName": "Racing & Sports",
             "description": "Supercars, realistic physics, and adrenaline-pumping racing games.",
-            "image_url": "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=600&q=80"
+            "image_url": "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=640&q=75"
         }
     ]
 
@@ -69,7 +69,7 @@ def seed():
             categoryName=cdata["categoryName"],
             defaults=cdata
         )
-        if not cat.image and cdata.get("image"):
+        if cdata.get("image"):
             cat.image = cdata["image"]
             cat.save()
         if not cat.image_url:
@@ -89,8 +89,8 @@ def seed():
             "pricePerHour": 250.0,
             "totalSystem": 10,
             "availableSystems": 8,
-            "image": "Game/GTA6IMAGE.jfif",
-            "image_url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80",
+            "image": "Game/GTA6IMAGE.webp",
+            "image_url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=640&q=75",
             "status": "active"
         },
         {

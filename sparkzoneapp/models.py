@@ -89,9 +89,16 @@ class Category(models.Model):
             url = self.image_url
             if 'images.unsplash.com' in url and 'auto=format' not in url:
                 sep = '&' if '?' in url else '?'
-                url = f"{url}{sep}auto=format&fit=crop&w=600&q=75"
+                url = f"{url}{sep}auto=format&fit=crop&w=640&q=75"
             return url
         return None
+
+    def get_image_srcset(self):
+        url = self.get_image_url()
+        if url and 'images.unsplash.com' in url:
+            base = url.split('?')[0]
+            return f"{base}?auto=format&fit=crop&w=400&q=75 400w, {base}?auto=format&fit=crop&w=800&q=75 800w"
+        return ""
 
     def categoryImage(self):
         url = self.get_image_url()
@@ -132,9 +139,16 @@ class Game(models.Model):
             url = self.image_url
             if 'images.unsplash.com' in url and 'auto=format' not in url:
                 sep = '&' if '?' in url else '?'
-                url = f"{url}{sep}auto=format&fit=crop&w=600&q=75"
+                url = f"{url}{sep}auto=format&fit=crop&w=640&q=75"
             return url
         return None
+
+    def get_image_srcset(self):
+        url = self.get_image_url()
+        if url and 'images.unsplash.com' in url:
+            base = url.split('?')[0]
+            return f"{base}?auto=format&fit=crop&w=400&q=75 400w, {base}?auto=format&fit=crop&w=800&q=75 800w"
+        return ""
 
     def GameImage(self):
         url = self.get_image_url()

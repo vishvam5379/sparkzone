@@ -330,8 +330,10 @@
     }
 
     if (!isValid && firstErrorField) {
-      firstErrorField.focus();
-      firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      window.requestAnimationFrame(function() {
+        firstErrorField.focus();
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
     }
 
     return isValid;

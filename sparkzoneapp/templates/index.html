@@ -31,19 +31,19 @@
 .hero-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
 .hero-eyebrow::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
 .hero h1 {
-  font-family: 'Orbitron', monospace; font-size: clamp(2.4rem, 5.5vw, 4.2rem);
-  font-weight: 900; line-height: 1.1; margin-bottom: 24px;
+  font-family: var(--font-heading); font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+  font-weight: 900; line-height: 1.1; margin-bottom: 24px; min-height: 2.2em;
 }
 .hero h1 .line1 { color: #fff; }
 .hero h1 .line2 {
   background: linear-gradient(135deg, var(--accent2) 0%, var(--neon) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.hero-sub { color: var(--muted); font-size: 1.1rem; line-height: 1.7; margin-bottom: 36px; max-width: 500px; }
+.hero-sub { color: var(--muted); font-size: 1.1rem; line-height: 1.7; margin-bottom: 36px; max-width: 500px; min-height: 3.4em; }
 .hero-cta { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 48px; }
 .hero-stats { display: flex; gap: 36px; flex-wrap: wrap; }
 .hero-stat { text-align: left; }
-.hero-stat .num { font-family:'Orbitron',monospace; font-size: 1.8rem; font-weight: 800; color: var(--neon); }
+.hero-stat .num { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--neon); }
 .hero-stat .lbl { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 
 /* ── Floating game card preview ── */
@@ -115,7 +115,7 @@
   background: radial-gradient(circle, rgba(124,58,237,.2), transparent);
 }
 .cta-banner-text h2 {
-  font-family:'Orbitron',monospace; font-size:clamp(1.4rem,2.5vw,2rem); font-weight:800; margin-bottom:10px;
+  font-family: var(--font-heading); font-size:clamp(1.4rem,2.5vw,2rem); font-weight:800; margin-bottom:10px;
   background:linear-gradient(135deg,#fff 40%,var(--neon));
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
@@ -219,7 +219,7 @@
       {% for cat in categories %}
       <a href="{% url 'games' %}?category={{ cat.id }}" class="cat-card">
         {% if cat.get_image_url %}
-          <img src="{{ cat.get_image_url }}" alt="{{ cat.categoryName }}" width="300" height="180" loading="lazy" decoding="async" />
+          <img src="{{ cat.get_image_url }}" {% if cat.get_image_srcset %}srcset="{{ cat.get_image_srcset }}" sizes="(max-width: 600px) 400px, 640px"{% endif %} alt="{{ cat.categoryName }}" width="300" height="180" loading="lazy" decoding="async" />
         {% else %}
           <div style="height:180px;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-size:3rem;">🎮</div>
         {% endif %}
@@ -245,7 +245,7 @@
       <div class="game-card">
         <div class="game-card-img">
           {% if game.get_image_url %}
-            <img src="{{ game.get_image_url }}" alt="{{ game.name }}" width="400" height="240" loading="lazy" decoding="async" />
+            <img src="{{ game.get_image_url }}" {% if game.get_image_srcset %}srcset="{{ game.get_image_srcset }}" sizes="(max-width: 600px) 400px, 640px"{% endif %} alt="{{ game.name }}" width="400" height="240" loading="lazy" decoding="async" />
           {% else %}
             <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-size:3rem;">🎮</div>
           {% endif %}
