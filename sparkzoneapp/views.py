@@ -151,53 +151,30 @@ def categories(request):
 
 import re
 
-# ─── Google OAuth Login ──────────────────────────────────────────────────────────
+# ─── Real Google OAuth 2.0 Login ────────────────────────────────────────────────
 def google_login(request):
-    google_client_id = os.getenv('GOOGLE_CLIENT_ID')
+    client_id = os.getenv('GOOGLE_CLIENT_ID')
+    client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+
+    # Check if Google OAuth credentials are set in environment variables
+    if not client_id or not client_secret:
+        messages.error(
+            request, 
+            'Google OAuth is not configured yet. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your Vercel Environment Variables.'
+        )
+        return redirect('login')
+
     code = request.GET.get('code')
-    email = request.GET.get('email')
-    name = request.GET.get('name')
 
-    # Handle real Google OAuth callback if code is returned
-    if code and google_client_id:
-        client_secret = os.getenv('GOOGLE_CLIENT_SECRET', '')
-        redirect_uri = request.build_absolute_uri('/google-login/').split('?')[0]
-        try:
-            import urllib.parse
-            import urllib.request
-            import json
-
-            token_url = "https://oauth2.googleapis.com/token"
-            token_data = urllib.parse.urlencode({
-                'code': code,
-                'client_id': google_client_id,
-                'client_secret': client_secret,
-                'redirect_uri': redirect_uri,
-                'grant_type': 'authorization_code'
-            }).encode('utf-8')
-
-            req = urllib.request.Request(token_url, data=token_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
-            with urllib.request.urlopen(req) as resp:
-                token_json = json.loads(resp.read().decode('utf-8'))
-                access_token = token_json.get('access_token')
-
-            user_info_url = f"https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_token}"
-            with urllib.request.urlopen(user_info_url) as resp:
-                info = json.loads(resp.read().decode('utf-8'))
-                email = info.get('email')
-                first_name = info.get('given_name', info.get('name', 'Google').split()[0])
-                last_name = info.get('family_name', 'User')
-                name = f"{first_name} {last_name}"
-        except Exception as e:
-            messages.error(request, f"Google OAuth login failed: {str(e)}")
-            return redirect('login')
-
-    # If Google Client ID is configured, redirect to Google official OAuth login screen
-    elif google_client_id and not email:
+    # 1. Initiating OAuth Flow: Redirect user to Google official account chooser screen
+    if not code:
         import urllib.parse
         redirect_uri = request.build_absolute_uri('/google-login/').split('?')[0]
+        if request.META.get('HTTP_X_FORWARDED_PROTO') == 'https' or 'vercel' in request.get_host():
+            redirect_uri = redirect_uri.replace('http://', 'https://')
+
         params = urllib.parse.urlencode({
-            'client_id': google_client_id,
+            'client_id': client_id,
             'response_type': 'code',
             'scope': 'openid email profile',
             'redirect_uri': redirect_uri,
@@ -205,30 +182,68 @@ def google_login(request):
         })
         return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?{params}")
 
-    # Prompt user for their Gmail email & name if email is not provided
-    if not email:
-        return render_with_notifs(request, 'google_login_prompt.html', {})
+    # 2. OAuth Callback: Exchange code for access token and fetch verified user profile
+    redirect_uri = request.build_absolute_uri('/google-login/').split('?')[0]
+    if request.META.get('HTTP_X_FORWARDED_PROTO') == 'https' or 'vercel' in request.get_host():
+        redirect_uri = redirect_uri.replace('http://', 'https://')
 
-    email = email.strip().lower()
-    name_parts = (name or email.split('@')[0]).strip().split(' ', 1)
-    first_name = name_parts[0].capitalize()
-    last_name = name_parts[1].capitalize() if len(name_parts) > 1 else 'User'
+    try:
+        import urllib.parse
+        import urllib.request
+        import json
 
-    user, created = User.objects.get_or_create(
-        email=email,
-        defaults={
-            'firstName': first_name,
-            'lastName': last_name,
-            'password': hashlib.sha256(f"GoogleOAuth_{email}".encode()).hexdigest(),
-            'role': 'user'
-        }
-    )
+        token_url = "https://oauth2.googleapis.com/token"
+        token_data = urllib.parse.urlencode({
+            'code': code,
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'redirect_uri': redirect_uri,
+            'grant_type': 'authorization_code'
+        }).encode('utf-8')
 
-    request.session['user_id'] = user.id
-    messages.success(request, f'Successfully signed in with Google as {user.email}!')
-    if user.role == 'provider':
-        return redirect('provider_dashboard')
-    return redirect('index')
+        req = urllib.request.Request(token_url, data=token_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        with urllib.request.urlopen(req) as resp:
+            token_json = json.loads(resp.read().decode('utf-8'))
+            access_token = token_json.get('access_token')
+
+        if not access_token:
+            messages.error(request, 'Failed to obtain access token from Google.')
+            return redirect('login')
+
+        user_info_url = f"https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_token}"
+        req_info = urllib.request.Request(user_info_url)
+        with urllib.request.urlopen(req_info) as resp:
+            info = json.loads(resp.read().decode('utf-8'))
+
+        email = info.get('email')
+        if not email:
+            messages.error(request, 'Google account did not return a valid email address.')
+            return redirect('login')
+
+        email = email.lower().strip()
+        first_name = info.get('given_name') or info.get('name', 'Google').split()[0]
+        last_name = info.get('family_name') or 'User'
+
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'firstName': first_name,
+                'lastName': last_name,
+                'password': hashlib.sha256(f"GoogleOAuth_{email}_{client_secret[:6]}".encode()).hexdigest(),
+                'role': 'user'
+            }
+        )
+
+        request.session['user_id'] = user.id
+        messages.success(request, f'Welcome! Signed in with Google as {user.email}.')
+
+        if user.role == 'provider':
+            return redirect('provider_dashboard')
+        return redirect('index')
+
+    except Exception as e:
+        messages.error(request, f"Google Sign-In failed: {str(e)}")
+        return redirect('login')
 
 # ─── Register ───────────────────────────────────────────────────────────────────
 def register(request):
