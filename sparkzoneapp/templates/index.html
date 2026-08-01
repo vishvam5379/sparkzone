@@ -219,7 +219,7 @@
       {% for cat in categories %}
       <a href="{% url 'games' %}?category={{ cat.id }}" class="cat-card">
         {% if cat.get_image_url %}
-          <img src="{{ cat.get_image_url }}" alt="{{ cat.categoryName }}" />
+          <img src="{{ cat.get_image_url }}" alt="{{ cat.categoryName }}" width="300" height="180" loading="lazy" decoding="async" />
         {% else %}
           <div style="height:180px;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-size:3rem;">🎮</div>
         {% endif %}
@@ -245,7 +245,7 @@
       <div class="game-card">
         <div class="game-card-img">
           {% if game.get_image_url %}
-            <img src="{{ game.get_image_url }}" alt="{{ game.name }}" />
+            <img src="{{ game.get_image_url }}" alt="{{ game.name }}" width="400" height="240" loading="lazy" decoding="async" />
           {% else %}
             <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-size:3rem;">🎮</div>
           {% endif %}

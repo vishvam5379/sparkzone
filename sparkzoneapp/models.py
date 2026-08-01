@@ -86,7 +86,11 @@ class Category(models.Model):
             except Exception:
                 pass
         if self.image_url:
-            return self.image_url
+            url = self.image_url
+            if 'images.unsplash.com' in url and 'auto=format' not in url:
+                sep = '&' if '?' in url else '?'
+                url = f"{url}{sep}auto=format&fit=crop&w=600&q=75"
+            return url
         return None
 
     def categoryImage(self):
@@ -125,7 +129,11 @@ class Game(models.Model):
             except Exception:
                 pass
         if self.image_url:
-            return self.image_url
+            url = self.image_url
+            if 'images.unsplash.com' in url and 'auto=format' not in url:
+                sep = '&' if '?' in url else '?'
+                url = f"{url}{sep}auto=format&fit=crop&w=600&q=75"
+            return url
         return None
 
     def GameImage(self):
