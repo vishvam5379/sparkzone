@@ -150,27 +150,81 @@ def categories(request):
 
 import re
 
-# ─── Google OAuth Login Simulation ─────────────────────────────────────────────
+# ─── Google OAuth Login ──────────────────────────────────────────────────────────
 def google_login(request):
-    email = request.GET.get('email', 'google.user@sparkzone.in')
-    name = request.GET.get('name', 'Google Gamer')
+    google_client_id = os.getenv('GOOGLE_CLIENT_ID')
+    code = request.GET.get('code')
+    email = request.GET.get('email')
+    name = request.GET.get('name')
 
-    name_parts = name.split(' ', 1)
-    first_name = name_parts[0]
-    last_name = name_parts[1] if len(name_parts) > 1 else 'User'
+    # Handle real Google OAuth callback if code is returned
+    if code and google_client_id:
+        client_secret = os.getenv('GOOGLE_CLIENT_SECRET', '')
+        redirect_uri = request.build_absolute_uri('/google-login/').split('?')[0]
+        try:
+            import urllib.parse
+            import urllib.request
+            import json
+
+            token_url = "https://oauth2.googleapis.com/token"
+            token_data = urllib.parse.urlencode({
+                'code': code,
+                'client_id': google_client_id,
+                'client_secret': client_secret,
+                'redirect_uri': redirect_uri,
+                'grant_type': 'authorization_code'
+            }).encode('utf-8')
+
+            req = urllib.request.Request(token_url, data=token_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+            with urllib.request.urlopen(req) as resp:
+                token_json = json.loads(resp.read().decode('utf-8'))
+                access_token = token_json.get('access_token')
+
+            user_info_url = f"https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_token}"
+            with urllib.request.urlopen(user_info_url) as resp:
+                info = json.loads(resp.read().decode('utf-8'))
+                email = info.get('email')
+                first_name = info.get('given_name', info.get('name', 'Google').split()[0])
+                last_name = info.get('family_name', 'User')
+                name = f"{first_name} {last_name}"
+        except Exception as e:
+            messages.error(request, f"Google OAuth login failed: {str(e)}")
+            return redirect('login')
+
+    # If Google Client ID is configured, redirect to Google official OAuth login screen
+    elif google_client_id and not email:
+        import urllib.parse
+        redirect_uri = request.build_absolute_uri('/google-login/').split('?')[0]
+        params = urllib.parse.urlencode({
+            'client_id': google_client_id,
+            'response_type': 'code',
+            'scope': 'openid email profile',
+            'redirect_uri': redirect_uri,
+            'prompt': 'select_account'
+        })
+        return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?{params}")
+
+    # Prompt user for their Gmail email & name if email is not provided
+    if not email:
+        return render_with_notifs(request, 'google_login_prompt.html', {})
+
+    email = email.strip().lower()
+    name_parts = (name or email.split('@')[0]).strip().split(' ', 1)
+    first_name = name_parts[0].capitalize()
+    last_name = name_parts[1].capitalize() if len(name_parts) > 1 else 'User'
 
     user, created = User.objects.get_or_create(
-        email=email.lower().strip(),
+        email=email,
         defaults={
             'firstName': first_name,
             'lastName': last_name,
-            'password': hashlib.sha256('GoogleOAuthSecret123'.encode()).hexdigest(),
+            'password': hashlib.sha256(f"GoogleOAuth_{email}".encode()).hexdigest(),
             'role': 'user'
         }
     )
 
     request.session['user_id'] = user.id
-    messages.success(request, f'Successfully signed in with Google as {user.firstName}!')
+    messages.success(request, f'Successfully signed in with Google as {user.email}!')
     if user.role == 'provider':
         return redirect('provider_dashboard')
     return redirect('index')
