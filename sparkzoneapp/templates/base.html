@@ -371,7 +371,8 @@
 
 <!-- ── Navbar ── -->
 <nav class="navbar">
-  <div class="nav-inner">
+  <div class="nav-inner" style="position:relative;">
+    {% csrf_token %}
     <a href="{% url 'index' %}" class="nav-logo">Spark<span>Zone</span></a>
     <ul class="nav-links">
       <li><a href="{% url 'index' %}">Home</a></li>
@@ -381,36 +382,13 @@
     </ul>
     <div class="nav-actions">
       {% if logged_in_user %}
-        <!-- Notifications Bell -->
-        <div style="position:relative;margin-right:4px;">
-          <button type="button" onclick="toggleNotifs()" aria-label="Notifications" title="Notifications" style="background:var(--bg3);border:1px solid var(--border);color:var(--neon);width:40px;height:40px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;transition:all .2s;">
-            <i class="fa-solid fa-bell" style="font-size:1.1rem;color:var(--neon);"></i>
-            {% if unread_notifications_count > 0 %}
-            <span style="position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:.68rem;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 0 8px rgba(239,68,68,.6);">{{ unread_notifications_count }}</span>
-            {% endif %}
-          </button>
-          <div id="notif-dropdown" style="display:none;position:absolute;right:0;top:48px;width:320px;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.6);z-index:999;padding:16px;">
-            <div style="font-weight:700;font-size:.9rem;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:8px;">
-              <span><i class="fa-solid fa-bell" style="color:var(--neon);margin-right:6px;"></i> Notifications</span>
-              {% if unread_notifications_count > 0 %}
-              <span style="font-size:.72rem;background:rgba(0,212,255,.15);color:var(--neon);padding:2px 8px;border-radius:6px;">{{ unread_notifications_count }} New</span>
-              {% endif %}
-            </div>
-            {% if user_notifications %}
-            <div style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
-              {% for n in user_notifications %}
-              <div style="padding:10px;background:var(--bg3);border-radius:10px;border:1px solid {% if not n.is_read %}var(--accent){% else %}var(--border){% endif %};">
-                <div style="font-weight:700;font-size:.82rem;color:var(--text);margin-bottom:2px;">{{ n.title }}</div>
-                <div style="font-size:.78rem;color:var(--muted);line-height:1.4;">{{ n.message }}</div>
-                <div style="font-size:.7rem;color:var(--accent2);margin-top:4px;">{{ n.timestamp|date:"d M, H:i" }}</div>
-              </div>
-              {% endfor %}
-            </div>
-            {% else %}
-            <div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem;">No notifications yet.</div>
-            {% endif %}
-          </div>
-        </div>
+        <!-- Notifications Bell Button (Desktop) -->
+        <button type="button" class="notif-bell-btn" onclick="toggleNotifs(event)" aria-label="Notifications" title="Notifications" style="background:var(--bg3);border:1px solid var(--border);color:var(--neon);width:40px;height:40px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;transition:all .2s;">
+          <i class="fa-solid fa-bell" style="font-size:1.1rem;color:var(--neon);"></i>
+          {% if unread_notifications_count > 0 %}
+          <span class="notif-badge" style="position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:.68rem;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 0 8px rgba(239,68,68,.6);">{{ unread_notifications_count }}</span>
+          {% endif %}
+        </button>
 
         <a href="{% if '/provider/' in request.path or logged_in_user.role == 'provider' %}{% url 'provider_dashboard' %}{% else %}{% url 'my_bookings' %}{% endif %}" class="nav-user" style="text-decoration:none;color:inherit;cursor:pointer;" title="Go to Dashboard">
           <div class="nav-user-avatar">{{ logged_in_user.firstName.0 }}{{ logged_in_user.lastName.0 }}</div>
@@ -438,14 +416,39 @@
       {% endif %}
     </div>
 
+    <!-- Global Notification Dropdown -->
+    {% if logged_in_user %}
+    <div id="notif-dropdown" onclick="event.stopPropagation()" style="display:none;position:absolute;right:16px;top:65px;width:340px;max-width:calc(100vw - 32px);background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.75);z-index:99999;padding:16px;">
+      <div style="font-weight:700;font-size:.9rem;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:8px;">
+        <span><i class="fa-solid fa-bell" style="color:var(--neon);margin-right:6px;"></i> Notifications</span>
+        {% if unread_notifications_count > 0 %}
+        <span id="notif-count-badge" style="font-size:.72rem;background:rgba(0,212,255,.15);color:var(--neon);padding:2px 8px;border-radius:6px;">{{ unread_notifications_count }} New</span>
+        {% endif %}
+      </div>
+      {% if user_notifications %}
+      <div style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+        {% for n in user_notifications %}
+        <div class="notif-item" style="padding:10px;background:var(--bg3);border-radius:10px;border:1px solid {% if not n.is_read %}var(--accent){% else %}var(--border){% endif %};">
+          <div style="font-weight:700;font-size:.82rem;color:var(--text);margin-bottom:2px;">{{ n.title }}</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.4;">{{ n.message }}</div>
+          <div style="font-size:.7rem;color:var(--accent2);margin-top:4px;">{{ n.timestamp|date:"d M, H:i" }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:24px;color:var(--muted);font-size:.85rem;">No notifications yet.</div>
+      {% endif %}
+    </div>
+    {% endif %}
+
     <!-- Mobile Top Controls -->
     <div style="display:flex;align-items:center;gap:10px;">
       {% if logged_in_user %}
       <div style="position:relative;" class="mobile-only-bell">
-        <button type="button" onclick="toggleNotifs()" aria-label="Notifications" style="background:var(--bg3);border:1px solid var(--border);color:var(--neon);width:38px;height:38px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;">
+        <button type="button" class="notif-bell-btn" onclick="toggleNotifs(event)" aria-label="Notifications" style="background:var(--bg3);border:1px solid var(--border);color:var(--neon);width:38px;height:38px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;">
           <i class="fa-solid fa-bell" style="font-size:1.05rem;color:var(--neon);"></i>
           {% if unread_notifications_count > 0 %}
-          <span style="position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:.68rem;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;">{{ unread_notifications_count }}</span>
+          <span class="notif-badge" style="position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:.68rem;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;">{{ unread_notifications_count }}</span>
           {% endif %}
         </button>
       </div>
@@ -455,6 +458,7 @@
       </button>
     </div>
   </div>
+
 
 
   <!-- Mobile Dropdown Menu -->
@@ -583,17 +587,46 @@
     }
   }
 
-  function toggleNotifs() {
+  function toggleNotifs(e) {
+    if (e) e.stopPropagation();
     const dd = document.getElementById('notif-dropdown');
-    if (dd) dd.style.display = (dd.style.display === 'none' || dd.style.display === '') ? 'block' : 'none';
+    if (!dd) return;
+    const isOpening = (dd.style.display === 'none' || dd.style.display === '');
+    dd.style.display = isOpening ? 'block' : 'none';
+
+    if (isOpening) {
+      const csrfEl = document.querySelector('[name=csrfmiddlewaretoken]');
+      const csrfToken = csrfEl ? csrfEl.value : '';
+      fetch("{% url 'mark_notifications_read' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        }
+      }).then(res => res.json()).then(data => {
+        if (data.status === 'ok') {
+          const badges = document.querySelectorAll('.notif-badge');
+          badges.forEach(b => b.style.display = 'none');
+          const countBadge = document.getElementById('notif-count-badge');
+          if (countBadge) countBadge.style.display = 'none';
+        }
+      }).catch(err => console.log('Notification update notice:', err));
+    }
   }
 
   // Close mobile menu and dropdown when clicking outside
   document.addEventListener('click', function(e) {
+    const dd = document.getElementById('notif-dropdown');
+    const bellBtns = document.querySelectorAll('.notif-bell-btn');
+    let clickedBell = false;
+    bellBtns.forEach(btn => { if (btn.contains(e.target)) clickedBell = true; });
+    if (dd && !dd.contains(e.target) && !clickedBell) {
+      dd.style.display = 'none';
+    }
+
     const navbar = document.querySelector('.navbar');
     const menu = document.getElementById('mobile-menu');
     const icon = document.getElementById('hamburger-icon');
-    
     if (navbar && !navbar.contains(e.target)) {
       if (menu && menu.classList.contains('active')) {
         menu.classList.remove('active');
@@ -602,10 +635,9 @@
           icon.classList.add('fa-bars');
         }
       }
-      const dd = document.getElementById('notif-dropdown');
-      if (dd) dd.style.display = 'none';
     }
   });
+
 
   // Auto-dismiss messages after 5s
   setTimeout(() => {

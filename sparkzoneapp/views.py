@@ -26,6 +26,13 @@ def get_user_notifications(user):
     unread_count = Notification.objects.filter(user=user, is_read=False).count()
     return notifs, unread_count
 
+def mark_notifications_read(request):
+    user = get_logged_in_user(request)
+    if user:
+        Notification.objects.filter(user=user, is_read=False).update(is_read=True)
+        return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=401)
+
 def render_with_notifs(request, template_name, context):
     user = get_logged_in_user(request)
     notifs, unread_count = get_user_notifications(user)
@@ -33,6 +40,7 @@ def render_with_notifs(request, template_name, context):
     context['user_notifications'] = notifs
     context['unread_notifications_count'] = unread_count
     return render(request, template_name, context)
+
 
 def provider_required(view_func):
     @wraps(view_func)

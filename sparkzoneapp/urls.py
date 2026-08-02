@@ -14,7 +14,9 @@ urlpatterns = [
     path('booking/<int:booking_id>/cancel/', views.cancel_booking, name='cancel_booking'),
     path('my-bookings/', views.my_bookings, name='my_bookings'),
     path('contact/', views.contact, name='contact'),
+    path('notifications/read/', views.mark_notifications_read, name='mark_notifications_read'),
     path('health/', views.health_check, name='health_check'),
+
 
     # Provider Panel Routes
     path('provider/dashboard/', views.provider_dashboard, name='provider_dashboard'),
