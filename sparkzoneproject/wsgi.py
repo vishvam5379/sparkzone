@@ -28,6 +28,26 @@ if os.getenv('VERCEL') == '1' or 'VERCEL' in os.environ or os.path.exists('/var/
                 seed()
             except Exception as seed_err:
                 print(f"Vercel auto-seed notice: {seed_err}")
+        
+        # Automatically create or update superuser credentials on Vercel
+        try:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
+            email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@sparkzone.com')
+            password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'Admin@1234')
+            
+            su = User.objects.filter(username=username).first()
+            if not su:
+                User.objects.create_superuser(username=username, email=email, password=password)
+            else:
+                su.set_password(password)
+                su.is_staff = True
+                su.is_superuser = True
+                su.save()
+        except Exception as su_err:
+            print(f"Vercel auto-superuser notice: {su_err}")
     except Exception as err:
         print(f"Vercel DB initialization notice: {err}")
+
 
