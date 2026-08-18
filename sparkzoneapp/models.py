@@ -69,9 +69,12 @@ class ProviderProfile(models.Model):
     def __str__(self):
         return self.businessName
 
+DEFAULT_GAMING_IMAGE = "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=640&q=75"
+DEFAULT_CATEGORY_IMAGE = "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=640&q=75"
+
 class Category(models.Model):
-    categoryName = models.CharField(max_length=100, db_index=True)
-    description = models.TextField()
+    categoryName = models.CharField(max_length=100, unique=True, db_index=True)
+    description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to="Category", null=True, blank=True)
     image_url = models.URLField(max_length=2000, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
@@ -85,7 +88,7 @@ class Category(models.Model):
                 if hasattr(self.image.storage, 'exists') and not self.image.storage.exists(self.image.name):
                     if self.image_url:
                         return self.image_url
-                    return None
+                    return DEFAULT_CATEGORY_IMAGE
                 return self.image.url
             except Exception:
                 pass
@@ -95,7 +98,7 @@ class Category(models.Model):
                 sep = '&' if '?' in url else '?'
                 url = f"{url}{sep}auto=format&fit=crop&w=400&q=60"
             return url
-        return None
+        return DEFAULT_CATEGORY_IMAGE
 
     def get_image_srcset(self):
         url = self.get_image_url()
@@ -145,7 +148,7 @@ class Game(models.Model):
                 if hasattr(self.image.storage, 'exists') and not self.image.storage.exists(self.image.name):
                     if self.image_url:
                         return self.image_url
-                    return None
+                    return DEFAULT_GAMING_IMAGE
                 return self.image.url
             except Exception:
                 pass
@@ -155,7 +158,7 @@ class Game(models.Model):
                 sep = '&' if '?' in url else '?'
                 url = f"{url}{sep}auto=format&fit=crop&w=400&q=60"
             return url
-        return None
+        return DEFAULT_GAMING_IMAGE
 
     def get_image_srcset(self):
         url = self.get_image_url()
