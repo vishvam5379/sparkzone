@@ -625,7 +625,7 @@ def provider_booking_accept(request, booking_id):
             slot_obj = Slot.objects.select_for_update().filter(id=booking_obj.slot_id).first()
 
         if slot_obj:
-            if slot_obj.is_full() or slot_obj.bookedCount >= slot_obj.capacity:
+            if slot_obj.is_full(start_time=booking_obj.startTime, end_time=booking_obj.endTime):
                 booking_obj.status = 'rejected'
                 booking_obj.responded_at = timezone.now()
                 booking_obj.save()
@@ -633,14 +633,13 @@ def provider_booking_accept(request, booking_id):
                     user=booking_obj.user,
                     booking=booking_obj,
                     title="Booking Could Not Be Accepted",
-                    message=f"Sorry, the slot for {booking_obj.game.name} on {booking_obj.bookingDate} was filled by another booking."
+                    message=f"Sorry, the requested time window for {booking_obj.game.name} on {booking_obj.bookingDate} was filled by another booking."
                 )
-                messages.error(request, 'Slot capacity is full! Request automatically rejected.')
+                messages.error(request, 'Slot capacity is full for that time window! Request automatically rejected.')
                 return redirect('provider_booking_requests')
 
-            slot_obj.bookedCount += 1
-            if slot_obj.bookedCount >= slot_obj.capacity:
-                slot_obj.status = 'booked'
+            active_count = Booking.objects.filter(slot=slot_obj, status__in=['pending', 'accepted', 'confirmed']).count() + 1
+            slot_obj.bookedCount = active_count
             slot_obj.save()
 
         booking_obj.status = 'accepted'
@@ -870,12 +869,12 @@ def booking(request, game_id):
             if slot_id:
                 slot_obj = Slot.objects.select_for_update().filter(id=slot_id, game=game).first()
                 if slot_obj:
-                    if slot_obj.is_full():
-                        messages.error(request, 'Sorry, this slot is already fully booked! Please select another time slot.')
+                    if slot_obj.is_full(start_time=start.time(), end_time=end.time()):
+                        messages.error(request, 'Sorry, the requested time window for this slot is already fully booked! Please select another time or slot.')
                         return redirect('booking', game_id=game_id)
 
                     # Prevent duplicate pending request by same user for same slot
-                    if Booking.objects.filter(user=user, slot=slot_obj, status__in=['pending', 'accepted', 'confirmed']).exists():
+                    if Booking.objects.filter(user=user, slot=slot_obj, status__in=['pending', 'accepted', 'confirmed'], startTime__lt=end.time(), endTime__gt=start.time()).exists():
                         messages.warning(request, 'You already have an active booking request for this time slot.')
                         return redirect('my_bookings')
 
@@ -934,9 +933,8 @@ def booking(request, game_id):
 
         messages.success(request, f'Your booking request for Unit(s) {unit_numbers_str} has been submitted and is pending provider approval!')
         return redirect('my_bookings')
-        return redirect('my_bookings')
 
-    available_slots = Slot.objects.filter(game=game, status='available').order_by('slotDate', 'startTime')
+    available_slots = Slot.objects.filter(game=game).exclude(status='cancelled').order_by('slotDate', 'startTime')
     return render_with_notifs(request, 'booking.html', {
         'game': game,
         'available_slots': available_slots,

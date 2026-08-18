@@ -198,6 +198,12 @@
             <i class="fa-solid fa-qrcode"></i> Scan QR Code to Pay via UPI
           </div>
           <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">Scan with Google Pay, PhonePe, Paytm, or any UPI App</p>
+
+          <!-- Estimated Total Amount Banner -->
+          <div style="background:rgba(0,212,255,.1);border:1px solid var(--neon);border-radius:10px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;max-width:300px;margin-left:auto;margin-right:auto;">
+            <span style="font-weight:600;color:var(--text);font-size:.85rem;"><i class="fa-solid fa-receipt" style="color:var(--neon);margin-right:6px;"></i> Total Amount:</span>
+            <span id="upi-total-amount" style="font-family:'Orbitron',monospace;font-weight:700;color:var(--neon);font-size:1.15rem;">₹0.00</span>
+          </div>
           
           <!-- Dynamic QR Code Container -->
           <div style="background:#fff;padding:12px;display:inline-block;border-radius:14px;box-shadow:0 0 20px rgba(124,58,237,.3);">
@@ -512,7 +518,7 @@
   }
 
   function updateUpiQr() {
-    let amount = 0;
+    let amount = "0.00";
     if (startInp.value && endInp.value) {
       const [sh,sm] = startInp.value.split(':').map(Number);
       const [eh,em] = endInp.value.split(':').map(Number);
@@ -522,6 +528,12 @@
         amount = (hours * pricePerHour * count).toFixed(2);
       }
     }
+
+    const upiTotal = document.getElementById('upi-total-amount');
+    if (upiTotal) {
+      upiTotal.textContent = '₹' + amount + (selectedUnitsSet.size > 1 ? ` (${selectedUnitsSet.size} units)` : '');
+    }
+
     const upiUri = `upi://pay?pa=sparkzone@upi&pn=SparkZone Gaming&am=${amount}&cu=INR&tn=${encodeURIComponent('Booking for ' + gameName)}`;
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUri)}`;
     const qrImg = document.getElementById('upi-qr-img');

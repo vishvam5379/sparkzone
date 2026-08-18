@@ -208,8 +208,19 @@ class Slot(models.Model):
             return self.price
         return self.game.pricePerHour
 
-    def is_full(self):
-        return self.bookedCount >= self.capacity or self.status == 'booked'
+    def is_full(self, start_time=None, end_time=None):
+        if self.status == 'cancelled':
+            return True
+        if start_time and end_time:
+            overlapping_count = self.bookings.filter(
+                status__in=['pending', 'accepted', 'confirmed'],
+                startTime__lt=end_time,
+                endTime__gt=start_time
+            ).count()
+            return overlapping_count >= self.capacity
+        if self.status == 'booked':
+            return True
+        return self.bookedCount >= self.capacity
 
 class GameImages(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='images')
