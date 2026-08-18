@@ -121,7 +121,7 @@ table.provider-table tr:last-child td { border-bottom: none; }
           <td>
             <div style="display:flex;align-items:center;gap:12px;">
               {% if g.get_image_url %}
-                <img src="{{ g.get_image_url }}" alt="{{ g.name }}" style="width:50px;height:38px;border-radius:8px;object-fit:cover;" />
+                <img src="{{ g.get_image_url }}" alt="{{ g.name }}" style="width:50px;height:38px;border-radius:8px;object-fit:cover;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=640&q=75';" />
               {% else %}
                 <div style="width:50px;height:38px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;">🎮</div>
               {% endif %}

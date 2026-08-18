@@ -82,6 +82,10 @@ class Category(models.Model):
     def get_image_url(self):
         if self.image:
             try:
+                if hasattr(self.image.storage, 'exists') and not self.image.storage.exists(self.image.name):
+                    if self.image_url:
+                        return self.image_url
+                    return None
                 return self.image.url
             except Exception:
                 pass
@@ -138,6 +142,10 @@ class Game(models.Model):
     def get_image_url(self):
         if self.image:
             try:
+                if hasattr(self.image.storage, 'exists') and not self.image.storage.exists(self.image.name):
+                    if self.image_url:
+                        return self.image_url
+                    return None
                 return self.image.url
             except Exception:
                 pass

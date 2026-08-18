@@ -71,7 +71,7 @@
 <!-- Hero Image -->
 <div class="game-detail-hero">
   {% if game.get_image_url %}
-    <img src="{{ game.get_image_url }}" alt="{{ game.name }}" />
+    <img src="{{ game.get_image_url }}" alt="{{ game.name }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=640&q=75';" />
   {% else %}
     <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));"></div>
   {% endif %}
