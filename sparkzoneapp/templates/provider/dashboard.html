@@ -108,7 +108,6 @@ table.provider-table tr:last-child td { border-bottom: none; }
         <tr>
           <th>Station Name</th>
           <th>Category</th>
-          <th>Price / Hr</th>
           <th>Systems</th>
           <th>Status</th>
           <th>Time Slots</th>
@@ -129,7 +128,6 @@ table.provider-table tr:last-child td { border-bottom: none; }
             </div>
           </td>
           <td><span class="badge" style="font-size:.75rem;">{{ g.category.categoryName }}</span></td>
-          <td style="font-weight:700;color:var(--neon);">₹{{ g.pricePerHour|floatformat:0 }}</td>
           <td>{{ g.totalSystem }} Total / {{ g.availableSystems }} Free</td>
           <td>
             {% if g.status == 'active' %}
@@ -145,9 +143,6 @@ table.provider-table tr:last-child td { border-bottom: none; }
           </td>
           <td>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              <button onclick="openProviderSeatMap({{ g.id }}, '{{ g.name|escapejs }}', {{ g.totalSystem }})" class="btn btn-neon" style="padding:6px 10px;font-size:.8rem;border-radius:8px;" title="View & Manage Live Unit Bookings">
-                <i class="fa-solid fa-gamepad"></i> Live Seat Map
-              </button>
               <a href="{% url 'provider_game_edit' g.id %}" class="btn btn-outline" style="padding:6px 10px;font-size:.8rem;border-radius:8px;" title="Edit Station">
                 <i class="fa-solid fa-pen-to-square"></i> Edit
               </a>

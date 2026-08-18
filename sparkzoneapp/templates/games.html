@@ -112,10 +112,6 @@
             <span style="font-size:.72rem;color:var(--muted);padding:2px 4px;">+{{ game.get_games_list|length|add:"-3" }} more</span>
             {% endif %}
           </div>
-          {% endif %}
-          <div class="game-price">
-            ₹{{ game.pricePerHour|floatformat:0 }}
-            <span style="font-size:.75rem;color:var(--muted);font-weight:400;">/ hour</span>
           </div>
         </div>
         <div class="game-card-footer" style="display:flex;gap:10px;">

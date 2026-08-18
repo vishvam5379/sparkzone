@@ -102,12 +102,7 @@
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
-        <div class="form-group">
-          <label for="g-price"><i class="fa-solid fa-indian-rupee-sign" style="margin-right:6px;color:var(--accent2);"></i>Price / Hour</label>
-          <input type="number" step="1" name="pricePerHour" id="g-price" placeholder="250" required {% if is_edit %}value="{{ game.pricePerHour|floatformat:0 }}"{% endif %} />
-        </div>
-
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="form-group">
           <label for="g-total"><i class="fa-solid fa-desktop" style="margin-right:6px;color:var(--accent2);"></i>Total Rigs</label>
           <input type="number" name="totalSystem" id="g-total" placeholder="10" required {% if is_edit %}value="{{ game.totalSystem }}"{% endif %} />

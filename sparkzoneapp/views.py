@@ -435,7 +435,8 @@ def provider_game_add(request):
         out_of_service_units = request.POST.get('out_of_service_units', '').strip()
         description = request.POST.get('description', '').strip()
         address = request.POST.get('address', '').strip()
-        pricePerHour = float(request.POST.get('pricePerHour', 200))
+        price_val = request.POST.get('pricePerHour')
+        pricePerHour = float(price_val) if price_val and price_val.strip() else 200.0
         totalSystem = int(request.POST.get('totalSystem', 1))
         availableSystems = int(request.POST.get('availableSystems', 1))
         image_url = request.POST.get('image_url', '').strip()
@@ -494,7 +495,9 @@ def provider_game_edit(request, game_id):
         game.out_of_service_units = request.POST.get('out_of_service_units', '').strip()
         game.description = request.POST.get('description', '').strip()
         game.address = request.POST.get('address', '').strip()
-        game.pricePerHour = float(request.POST.get('pricePerHour', 200))
+        price_val = request.POST.get('pricePerHour')
+        if price_val and price_val.strip():
+            game.pricePerHour = float(price_val)
         game.totalSystem = int(request.POST.get('totalSystem', 1))
         game.availableSystems = int(request.POST.get('availableSystems', 1))
         game.image_url = request.POST.get('image_url', '').strip() or None
