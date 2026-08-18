@@ -82,9 +82,9 @@ Open your browser at `http://127.0.0.1:8000/`.
 
 ---
 
-## 🔑 Environment Variables
+## 🔑 Environment Variables & Cloud Media Storage
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory or configure environment variables in **Vercel Project Settings**:
 
 ```env
 SECRET_KEY=your-custom-secret-key
@@ -92,7 +92,14 @@ DEBUG=True
 DATABASE_URL=postgresql://user:password@host:5432/dbname
 ALLOWED_HOSTS=*
 CSRF_TRUSTED_ORIGINS=https://sparkzone-lb8f.vercel.app,https://*.vercel.app,http://localhost,http://127.0.0.1
+
+# Cloudinary Cloud Media Storage (Required for Vercel production file uploads)
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
+
+> **Note for Vercel Production**: Vercel serverless functions run on a read-only filesystem (`/var/task`). To enable image uploads (cover photos, station gallery photos), set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in **Vercel -> Settings -> Environment Variables**. SparkZone will automatically serve all uploaded media via Cloudinary CDN.
 
 ---
 
