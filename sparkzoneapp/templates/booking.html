@@ -71,7 +71,7 @@
       <div class="meta">
         <i class="fa-solid fa-tag" style="color:var(--accent2);margin-right:4px;"></i>{{ game.category.categoryName }} &nbsp;|&nbsp;
         <i class="fa-solid fa-location-dot" style="color:var(--accent2);margin-right:4px;"></i>{{ game.city.name }} &nbsp;|&nbsp;
-        <strong style="color:var(--neon);">₹{{ game.pricePerHour|floatformat:0 }}/hr</strong>
+        <strong style="color:var(--neon);">₹{{ game.get_hourly_rate|floatformat:0 }}/hr</strong>
       </div>
     </div>
   </div>
@@ -85,7 +85,7 @@
         <label><i class="fa-solid fa-clock-rotate-left"></i> Available Provider Slots (Click to Auto-fill)</label>
         <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;">
           {% for s in available_slots %}
-          <div onclick="selectSlot('{{ s.id }}', '{{ s.slotDate|date:'Y-m-d' }}', '{{ s.startTime|time:'H:i' }}', '{{ s.endTime|time:'H:i' }}')" style="padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.borderColor='var(--neon)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div onclick="selectSlot('{{ s.id }}', '{{ s.slotDate|date:'Y-m-d' }}', '{{ s.startTime|time:'H:i' }}', '{{ s.endTime|time:'H:i' }}', '{{ s.get_price }}')" style="padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.borderColor='var(--neon)'" onmouseout="this.style.borderColor='var(--border)'">
             <div style="font-weight:700;font-size:.85rem;color:var(--neon);">{{ s.startTime|time:"H:i" }} - {{ s.endTime|time:"H:i" }}</div>
             <div style="font-size:.75rem;color:var(--muted);">{{ s.slotDate|date:"D, d M" }} • ₹{{ s.get_price|floatformat:0 }}/hr</div>
           </div>
@@ -257,7 +257,8 @@
 </div>
 
 <script>
-  const pricePerHour = {{ game.pricePerHour }};
+  const basePricePerHour = {{ game.get_hourly_rate }};
+  let currentPricePerHour = basePricePerHour;
   const gameName = "{{ game.name|escapejs }}";
   const startInp = document.getElementById('startTime');
   const endInp   = document.getElementById('endTime');
@@ -472,6 +473,10 @@
     calcPrice();
   }
 
+  function getActivePrice() {
+    return (currentPricePerHour > 0) ? currentPricePerHour : (basePricePerHour > 0 ? basePricePerHour : 200);
+  }
+
   function toggleUnitNumber(unitNum) {
     if (selectedUnitsSet.has(unitNum)) {
       selectedUnitsSet.delete(unitNum);
@@ -479,6 +484,7 @@
       selectedUnitsSet.add(unitNum);
     }
     updateSelectedInputsAndBadge();
+    calcPrice();
     fetchUnitAvailability();
   }
 
@@ -507,31 +513,34 @@
     }
   }
 
-  function selectSlot(id, date, start, end) {
+  function selectSlot(id, date, start, end, slotPrice) {
     document.getElementById('selected-slot-id').value = id;
     document.getElementById('bookingDate').value = date;
     document.getElementById('startTime').value = start;
     document.getElementById('endTime').value = end;
+    if (slotPrice && parseFloat(slotPrice) > 0) {
+      currentPricePerHour = parseFloat(slotPrice);
+    }
     calcPrice();
-    updateUpiQr();
     fetchUnitAvailability();
   }
 
   function updateUpiQr() {
     let amount = "0.00";
+    const unitCount = selectedUnitsSet.size > 0 ? selectedUnitsSet.size : 1;
     if (startInp.value && endInp.value) {
       const [sh,sm] = startInp.value.split(':').map(Number);
       const [eh,em] = endInp.value.split(':').map(Number);
       const hours = ((eh*60+em) - (sh*60+sm)) / 60;
-      const count = Math.max(selectedUnitsSet.size, 1);
+      const activePrice = getActivePrice();
       if (hours > 0) {
-        amount = (hours * pricePerHour * count).toFixed(2);
+        amount = (hours * activePrice * unitCount).toFixed(2);
       }
     }
 
     const upiTotal = document.getElementById('upi-total-amount');
     if (upiTotal) {
-      upiTotal.textContent = '₹' + amount + (selectedUnitsSet.size > 1 ? ` (${selectedUnitsSet.size} units)` : '');
+      upiTotal.textContent = '₹' + amount + (unitCount > 1 ? ` (${unitCount} units)` : '');
     }
 
     const upiUri = `upi://pay?pa=sparkzone@upi&pn=SparkZone Gaming&am=${amount}&cu=INR&tn=${encodeURIComponent('Booking for ' + gameName)}`;
@@ -554,11 +563,12 @@
     const [sh,sm] = startInp.value.split(':').map(Number);
     const [eh,em] = endInp.value.split(':').map(Number);
     const hours = ((eh*60+em) - (sh*60+sm)) / 60;
-    const count = Math.max(selectedUnitsSet.size, 1);
+    const unitCount = selectedUnitsSet.size > 0 ? selectedUnitsSet.size : 1;
+    const activePrice = getActivePrice();
     if (hours > 0) {
       calcBox.style.display = 'flex';
-      const total = hours * pricePerHour * count;
-      estPrice.textContent = '₹' + total.toFixed(2) + (selectedUnitsSet.size > 1 ? ` (${selectedUnitsSet.size} units)` : '');
+      const total = hours * activePrice * unitCount;
+      estPrice.textContent = '₹' + total.toFixed(2) + (unitCount > 1 ? ` (${unitCount} units)` : '');
     } else {
       calcBox.style.display = 'none';
     }

@@ -138,6 +138,17 @@ class Game(models.Model):
     def __str__(self):
         return self.name
 
+    def get_hourly_rate(self):
+        first_slot = self.slots.filter(status='available').order_by('price').first()
+        if first_slot and first_slot.price:
+            return first_slot.price
+        any_slot = self.slots.order_by('price').first()
+        if any_slot and any_slot.price:
+            return any_slot.price
+        if self.pricePerHour and self.pricePerHour > 0:
+            return self.pricePerHour
+        return 200.0
+
     def get_disabled_units_set(self):
         if not self.out_of_service_units:
             return set()

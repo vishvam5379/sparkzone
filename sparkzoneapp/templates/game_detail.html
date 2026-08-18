@@ -111,7 +111,7 @@
       <!-- Stats -->
       <div class="detail-stats">
         <div class="detail-stat">
-          <div class="val">₹{{ game.pricePerHour|floatformat:0 }}</div>
+          <div class="val">₹{{ game.get_hourly_rate|floatformat:0 }}</div>
           <div class="key">Per Hour</div>
         </div>
         <div class="detail-stat">
@@ -255,7 +255,7 @@
     <div class="book-sidebar">
       <div class="book-card">
         <div class="book-card-header">
-          <div class="price">₹{{ game.pricePerHour|floatformat:0 }}</div>
+          <div class="price">₹{{ game.get_hourly_rate|floatformat:0 }}</div>
           <div class="per">per hour</div>
         </div>
         <div class="book-card-body">
