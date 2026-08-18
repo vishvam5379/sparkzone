@@ -224,6 +224,7 @@ class Booking(models.Model):
     endTime = models.TimeField()
     totalAmount = models.FloatField()
     status = models.CharField(max_length=60, choices=STATUS_CHOICES, default='pending', db_index=True)
+    unit_number = models.IntegerField(null=True, blank=True, help_text="Specific unit/console number (1..N)")
     requested_at = models.DateTimeField(auto_now_add=True, db_index=True, null=True, blank=True)
     responded_at = models.DateTimeField(null=True, blank=True)
     notes = models.TextField(null=True, blank=True)

@@ -110,6 +110,37 @@
         </div>
       </div>
 
+      <!-- Real-Time Unit / Console Seat-Map Selection -->
+      <div class="form-group" style="margin-top:24px;background:rgba(124,58,237,.06);border:1px dashed rgba(124,58,237,.3);border-radius:16px;padding:20px;">
+        <label style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;color:var(--neon);font-weight:700;font-size:.95rem;">
+          <span><i class="fa-solid fa-gamepad" style="color:var(--accent2);margin-right:6px;"></i> Select Gaming Console / Unit</span>
+          <span id="selected-unit-badge" style="font-size:.78rem;background:var(--accent);color:#fff;padding:3px 10px;border-radius:12px;font-weight:600;">No Unit Selected</span>
+        </label>
+        <span style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:16px;line-height:1.6;">
+          Click an available unit block below to select your seat. Occupied units for your chosen date & time slot are greyed out.
+        </span>
+
+        <input type="hidden" name="unit_number" id="selected-unit-number" value="" required />
+
+        <!-- Interactive Grid Map -->
+        <div id="unit-seat-map" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(95px, 1fr));gap:12px;margin-bottom:16px;">
+          <!-- Dynamically populated via JS fetchUnitAvailability() -->
+        </div>
+
+        <!-- Legend -->
+        <div style="display:flex;align-items:center;gap:16px;font-size:.8rem;color:var(--muted);justify-content:center;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--border);background:var(--bg3);display:inline-block;"></span> Available
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:12px;height:12px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--neon));display:inline-block;"></span> Selected
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:12px;height:12px;border-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);display:inline-block;"></span> Booked
+          </div>
+        </div>
+      </div>
+
       <!-- Payment Method Selection -->
       <div class="form-group" style="margin-top:20px;">
         <label><i class="fa-solid fa-wallet"></i> Select Payment Method</label>
@@ -357,6 +388,94 @@
     updateUpiQr();
   }
 
+  const gameId = {{ game.id }};
+  const totalSystems = {{ game.totalSystem }};
+  let selectedUnit = null;
+
+  async function fetchUnitAvailability() {
+    const dateVal = document.getElementById('bookingDate').value;
+    const startVal = document.getElementById('startTime').value;
+    const endVal = document.getElementById('endTime').value;
+    const container = document.getElementById('unit-seat-map');
+    const badge = document.getElementById('selected-unit-badge');
+    const unitInput = document.getElementById('selected-unit-number');
+
+    if (!container) return;
+
+    let unitsData = [];
+    if (dateVal && startVal && endVal) {
+      try {
+        const res = await fetch(`/api/unit-availability/${gameId}/?date=${encodeURIComponent(dateVal)}&start_time=${encodeURIComponent(startVal)}&end_time=${encodeURIComponent(endVal)}`);
+        if (res.ok) {
+          const data = await res.json();
+          unitsData = data.units || [];
+        }
+      } catch (err) {
+        console.error('Error fetching unit availability:', err);
+      }
+    }
+
+    if (unitsData.length === 0) {
+      for (let u = 1; u <= totalSystems; u++) {
+        unitsData.push({ unit_number: u, status: 'available' });
+      }
+    }
+
+    container.innerHTML = '';
+    unitsData.forEach(u => {
+      const isBooked = u.status === 'booked';
+      const isSelected = selectedUnit === u.unit_number;
+
+      const btn = document.createElement('div');
+      btn.className = 'unit-seat-btn';
+      btn.dataset.unit = u.unit_number;
+      btn.title = isBooked ? `Unit ${u.unit_number} (Booked for this time slot)` : `Click to select Unit ${u.unit_number}`;
+
+      let baseStyle = 'padding:12px 8px;border-radius:12px;text-align:center;font-weight:700;font-size:.85rem;transition:all .2s ease;user-select:none;display:flex;flex-direction:column;align-items:center;gap:4px;';
+      
+      if (isBooked) {
+        baseStyle += 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:var(--muted);cursor:not-allowed;opacity:.55;';
+        btn.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:600;">Booked</span>`;
+      } else if (isSelected) {
+        baseStyle += 'background:linear-gradient(135deg,var(--accent),var(--neon));border:2px solid var(--neon);color:#fff;box-shadow:0 0 15px rgba(0,212,255,.4);transform:scale(1.04);cursor:pointer;';
+        btn.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:700;">Selected</span>`;
+      } else {
+        baseStyle += 'background:var(--bg3);border:2px solid var(--border);color:var(--text);cursor:pointer;';
+        btn.innerHTML = `<i class="fa-solid fa-desktop" style="color:var(--accent2);font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;color:var(--neon);">Free</span>`;
+        btn.onmouseover = function() { if (selectedUnit !== u.unit_number) this.style.borderColor = 'var(--neon)'; };
+        btn.onmouseout = function() { if (selectedUnit !== u.unit_number) this.style.borderColor = 'var(--border)'; };
+        btn.onclick = function() { selectUnitNumber(u.unit_number); };
+      }
+
+      btn.style.cssText = baseStyle;
+      container.appendChild(btn);
+    });
+
+    if (selectedUnit) {
+      const selectedItem = unitsData.find(u => u.unit_number === selectedUnit);
+      if (selectedItem && selectedItem.status === 'booked') {
+        selectedUnit = null;
+        unitInput.value = '';
+        badge.textContent = 'No Unit Selected';
+        badge.style.background = 'var(--accent)';
+      } else {
+        badge.textContent = `Unit ${selectedUnit} Selected`;
+        badge.style.background = 'var(--success)';
+      }
+    }
+  }
+
+  function selectUnitNumber(unitNum) {
+    selectedUnit = unitNum;
+    document.getElementById('selected-unit-number').value = unitNum;
+    const badge = document.getElementById('selected-unit-badge');
+    if (badge) {
+      badge.textContent = `Unit ${unitNum} Selected`;
+      badge.style.background = 'var(--success)';
+    }
+    fetchUnitAvailability();
+  }
+
   function selectSlot(id, date, start, end) {
     document.getElementById('selected-slot-id').value = id;
     document.getElementById('bookingDate').value = date;
@@ -364,6 +483,7 @@
     document.getElementById('endTime').value = end;
     calcPrice();
     updateUpiQr();
+    fetchUnitAvailability();
   }
 
   function updateUpiQr() {
@@ -405,11 +525,20 @@
     updateUpiQr();
   }
 
-  startInp.addEventListener('change', calcPrice);
-  endInp.addEventListener('change', calcPrice);
+  startInp.addEventListener('change', function() { calcPrice(); fetchUnitAvailability(); });
+  endInp.addEventListener('change', function() { calcPrice(); fetchUnitAvailability(); });
+  document.getElementById('bookingDate').addEventListener('change', fetchUnitAvailability);
 
   if (bookingForm) {
     bookingForm.addEventListener('submit', function(e) {
+      const selectedUnitVal = document.getElementById('selected-unit-number').value;
+      if (!selectedUnitVal) {
+        e.preventDefault();
+        alert('Please select an available Gaming Console / Unit (e.g. Unit 1) from the seat map before confirming your booking.');
+        document.getElementById('unit-seat-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
       const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked')?.value;
       if (selectedPayment === 'credit_card') {
         if (!validateCreditCard()) {
@@ -421,8 +550,9 @@
     });
   }
 
-  // Set min date to today
+  // Set min date to today and initialize seat map
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('bookingDate').min = today;
+  fetchUnitAvailability();
 </script>
 {% endblock %}

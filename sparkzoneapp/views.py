@@ -670,6 +670,66 @@ def provider_booking_reject(request, booking_id):
     messages.info(request, f'Booking request for {booking_obj.user.firstName} rejected.')
     return redirect('provider_booking_requests')
 
+# ─── Unit Availability API ──────────────────────────────────────────────────────
+def get_unit_availability_api(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    date_str = request.GET.get('date')
+    start_time_str = request.GET.get('start_time')
+    end_time_str = request.GET.get('end_time')
+
+    total_systems = game.totalSystem or 1
+    units = []
+
+    if date_str and start_time_str and end_time_str:
+        try:
+            from datetime import datetime
+            booking_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            fmt = '%H:%M'
+            start_time = datetime.strptime(start_time_str, fmt).time()
+            end_time = datetime.strptime(end_time_str, fmt).time()
+
+            active_bookings = Booking.objects.filter(
+                game=game,
+                bookingDate=booking_date,
+                status__in=['pending', 'accepted', 'confirmed'],
+                startTime__lt=end_time,
+                endTime__gt=start_time
+            )
+
+            booked_unit_numbers = set()
+            unassigned_count = 0
+
+            for b in active_bookings:
+                if b.unit_number:
+                    booked_unit_numbers.add(b.unit_number)
+                else:
+                    unassigned_count += 1
+
+            if unassigned_count > 0:
+                for u in range(1, total_systems + 1):
+                    if u not in booked_unit_numbers:
+                        booked_unit_numbers.add(u)
+                        unassigned_count -= 1
+                        if unassigned_count == 0:
+                            break
+
+            for u in range(1, total_systems + 1):
+                units.append({
+                    'unit_number': u,
+                    'status': 'booked' if u in booked_unit_numbers else 'available'
+                })
+        except Exception:
+            for u in range(1, total_systems + 1):
+                units.append({'unit_number': u, 'status': 'available'})
+    else:
+        for u in range(1, total_systems + 1):
+            units.append({'unit_number': u, 'status': 'available'})
+
+    return JsonResponse({
+        'total_systems': total_systems,
+        'units': units
+    })
+
 # ─── Booking ────────────────────────────────────────────────────────────────────
 def booking(request, game_id):
     game = get_object_or_404(Game, id=game_id)
@@ -684,6 +744,8 @@ def booking(request, game_id):
         endTime = request.POST.get('endTime')
         paymentMethod = request.POST.get('paymentMethod', 'credit_card')
         slot_id = request.POST.get('slot_id')
+        unit_number_val = request.POST.get('unit_number')
+        unit_number = int(unit_number_val) if unit_number_val and unit_number_val.isdigit() else None
 
         from datetime import datetime
         fmt = '%H:%M'
@@ -692,6 +754,10 @@ def booking(request, game_id):
         hours = (end - start).seconds / 3600
         if hours <= 0:
             messages.error(request, 'End time must be after start time.')
+            return redirect('booking', game_id=game_id)
+
+        if not unit_number:
+            messages.error(request, 'Please select a specific gaming unit/console to proceed with booking.')
             return redirect('booking', game_id=game_id)
 
         # Credit Card Backend Validation
@@ -739,6 +805,19 @@ def booking(request, game_id):
                         messages.warning(request, 'You already have an active booking request for this time slot.')
                         return redirect('my_bookings')
 
+            # Real-time backend check for unit collision
+            already_booked = Booking.objects.filter(
+                game=game,
+                bookingDate=bookingDate,
+                unit_number=unit_number,
+                status__in=['pending', 'accepted', 'confirmed'],
+                startTime__lt=end.time(),
+                endTime__gt=start.time()
+            ).exists()
+            if already_booked:
+                messages.error(request, f'Unit {unit_number} is already booked for the selected time slot. Please choose another available unit.')
+                return redirect('booking', game_id=game_id)
+
             price_per_hr = slot_obj.get_price() if slot_obj else game.pricePerHour
             totalAmount = hours * price_per_hr
 
@@ -751,6 +830,7 @@ def booking(request, game_id):
                 endTime=endTime,
                 totalAmount=totalAmount,
                 status='pending',
+                unit_number=unit_number
             )
 
             Payment.objects.create(
@@ -767,10 +847,10 @@ def booking(request, game_id):
                     user=game.provider.user,
                     booking=booking_obj,
                     title="New Booking Request 🎮",
-                    message=f"{user.firstName} {user.lastName} requested to book {game.name} on {bookingDate} ({startTime}-{endTime})."
+                    message=f"{user.firstName} {user.lastName} requested Unit {unit_number} at {game.name} on {bookingDate} ({startTime}-{endTime})."
                 )
 
-        messages.success(request, 'Your booking request has been submitted and is pending provider approval!')
+        messages.success(request, f'Your booking request for Unit {unit_number} has been submitted and is pending provider approval!')
         return redirect('my_bookings')
 
     available_slots = Slot.objects.filter(game=game, status='available').order_by('slotDate', 'startTime')

@@ -16,6 +16,7 @@ urlpatterns = [
     path('contact/', views.contact, name='contact'),
     path('notifications/read/', views.mark_notifications_read, name='mark_notifications_read'),
     path('health/', views.health_check, name='health_check'),
+    path('api/unit-availability/<int:game_id>/', views.get_unit_availability_api, name='get_unit_availability_api'),
 
 
     # Provider Panel Routes
