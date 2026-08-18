@@ -14,6 +14,7 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sparkzoneproject.settings')
 
 application = get_wsgi_application()
+app = application
 
 # Auto-initialize SQLite database on Vercel / serverless environments if tables are missing
 if os.getenv('VERCEL') == '1' or 'VERCEL' in os.environ or os.path.exists('/var/task'):
