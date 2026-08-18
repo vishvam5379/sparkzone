@@ -2,7 +2,7 @@
 {% block title %}Manage Slots – {{ game.name }}{% endblock %}
 
 {% block extra_css %}
-.slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 0; }
+.slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 0; }
 .slot-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 14px; padding: 18px; position: relative;
@@ -97,6 +97,26 @@
               <i class="fa-solid fa-trash"></i>
             </a>
           </div>
+
+          <!-- Embedded Live Unit Seat-Map Expander -->
+          <button type="button" onclick="toggleSlotSeatMap({{ s.id }}, {{ game.id }}, '{{ s.slotDate|date:'Y-m-d' }}', '{{ s.startTime|time:'H:i' }}', '{{ s.endTime|time:'H:i' }}')" class="btn btn-outline" style="width:100%;margin-top:14px;padding:8px 12px;font-size:.82rem;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(0,212,255,.05);border-color:rgba(0,212,255,.25);color:var(--neon);">
+            <i class="fa-solid fa-gamepad"></i> <span id="slot-btn-text-{{ s.id }}">View Live Seat Map</span>
+          </button>
+
+          <div id="slot-seatmap-container-{{ s.id }}" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+            <div style="font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+              <span><i class="fa-solid fa-desktop" style="color:var(--accent2);margin-right:4px;"></i> Live Unit Status</span>
+              <span style="font-size:.7rem;color:var(--muted);">{{ s.startTime|time:"H:i" }} - {{ s.endTime|time:"H:i" }}</span>
+            </div>
+            
+            <div id="slot-units-grid-{{ s.id }}" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(75px, 1fr));gap:8px;margin-bottom:8px;">
+              <!-- Populated via JS -->
+            </div>
+
+            <div id="slot-inspector-{{ s.id }}" style="display:none;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);border-radius:10px;padding:10px;font-size:.78rem;margin-top:8px;">
+              <!-- Gamer booking details -->
+            </div>
+          </div>
         </div>
         {% endfor %}
       </div>
@@ -110,4 +130,119 @@
 
   </div>
 </div>
+
+<script>
+  const activeSlotSeatMaps = {};
+
+  async function toggleSlotSeatMap(slotId, gameId, dateStr, startTimeStr, endTimeStr) {
+    const container = document.getElementById(`slot-seatmap-container-${slotId}`);
+    const btnText = document.getElementById(`slot-btn-text-${slotId}`);
+    if (!container) return;
+
+    if (container.style.display === 'block') {
+      container.style.display = 'none';
+      if (btnText) btnText.textContent = 'View Live Seat Map';
+      delete activeSlotSeatMaps[slotId];
+    } else {
+      container.style.display = 'block';
+      if (btnText) btnText.textContent = 'Hide Seat Map';
+      activeSlotSeatMaps[slotId] = { gameId, dateStr, startTimeStr, endTimeStr };
+      await loadSlotSeatMapData(slotId, gameId, dateStr, startTimeStr, endTimeStr);
+    }
+  }
+
+  async function loadSlotSeatMapData(slotId, gameId, dateStr, startTimeStr, endTimeStr) {
+    const grid = document.getElementById(`slot-units-grid-${slotId}`);
+    const inspector = document.getElementById(`slot-inspector-${slotId}`);
+    if (!grid) return;
+
+    if (inspector) inspector.style.display = 'none';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);font-size:.75rem;padding:10px;">Loading units...</div>';
+
+    try {
+      const res = await fetch(`/api/unit-availability/${gameId}/?date=${encodeURIComponent(dateStr)}&start_time=${encodeURIComponent(startTimeStr)}&end_time=${encodeURIComponent(endTimeStr)}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const units = data.units || [];
+
+      grid.innerHTML = '';
+      units.forEach(u => {
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:8px 4px;border-radius:8px;text-align:center;font-weight:700;font-size:.75rem;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:2px;user-select:none;';
+
+        if (u.status === 'maintenance') {
+          div.style.background = 'rgba(239,68,68,.15)';
+          div.style.border = '1px solid rgba(239,68,68,.4)';
+          div.style.color = 'var(--danger)';
+          div.title = `Unit ${u.unit_number} is Booked (Manual Block). Click to toggle available.`;
+          div.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.75rem;"></i>U${u.unit_number}<span style="font-size:.62rem;font-weight:600;">Booked</span>`;
+          div.onclick = () => toggleSlotUnitMaintenance(slotId, gameId, u.unit_number);
+        } else if (u.status === 'booked') {
+          div.style.background = 'rgba(0,212,255,.12)';
+          div.style.border = '1px solid var(--neon)';
+          div.style.color = 'var(--neon)';
+          const name = u.details ? u.details.user_name : 'Gamer';
+          div.title = `Unit ${u.unit_number} is Booked by ${name}. Click to view info.`;
+          div.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.75rem;"></i>U${u.unit_number}<span style="font-size:.62rem;font-weight:700;">Booked</span>`;
+          div.onclick = () => {
+            if (u.details && inspector) {
+              inspector.style.display = 'block';
+              inspector.innerHTML = `
+                <div style="font-weight:700;color:var(--neon);margin-bottom:2px;"><i class="fa-solid fa-user"></i> Unit ${u.unit_number} Booking</div>
+                <div><strong>Gamer:</strong> ${u.details.user_name}</div>
+                <div><strong>Slot:</strong> ${u.details.time_slot}</div>
+                <div><strong>Status:</strong> ${u.details.status_display}</div>
+              `;
+            }
+          };
+        } else {
+          div.style.background = 'var(--bg3)';
+          div.style.border = '1px solid var(--border)';
+          div.style.color = 'var(--text)';
+          div.title = `Unit ${u.unit_number} is Free. Click to toggle Booked.`;
+          div.innerHTML = `<i class="fa-solid fa-desktop" style="color:var(--accent2);font-size:.75rem;"></i>U${u.unit_number}<span style="font-size:.62rem;color:var(--success);">Free</span>`;
+          div.onclick = () => toggleSlotUnitMaintenance(slotId, gameId, u.unit_number);
+        }
+
+        grid.appendChild(div);
+      });
+    } catch (err) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--danger);font-size:.75rem;padding:10px;">Failed to load.</div>';
+    }
+  }
+
+  async function toggleSlotUnitMaintenance(slotId, gameId, unitNum) {
+    try {
+      const getCookie = (name) => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      };
+
+      const res = await fetch(`/api/provider/toggle-unit-maintenance/${gameId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken') || ''
+        },
+        body: JSON.stringify({ unit_number: unitNum })
+      });
+      if (res.ok && activeSlotSeatMaps[slotId]) {
+        const sm = activeSlotSeatMaps[slotId];
+        await loadSlotSeatMapData(slotId, gameId, sm.dateStr, sm.startTimeStr, sm.endTimeStr);
+      }
+    } catch (err) {
+      console.error('Error toggling unit:', err);
+    }
+  }
+</script>
 {% endblock %}
