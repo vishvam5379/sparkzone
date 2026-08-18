@@ -178,7 +178,7 @@ table.provider-table tr:last-child td { border-bottom: none; }
     <div style="margin-bottom:20px;">
       <span class="badge" style="margin-bottom:8px;"><i class="fa-solid fa-gamepad"></i> Real-Time Provider Monitor</span>
       <h2 id="modal-station-title" style="font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;color:var(--text);">Station Seat Map</h2>
-      <p style="font-size:.84rem;color:var(--muted);margin-top:4px;">Live unit status and customer reservations. Click any unit to toggle Maintenance mode.</p>
+      <p style="font-size:.84rem;color:var(--muted);margin-top:4px;">Live unit status and customer reservations. Click any unit to toggle Booked status.</p>
     </div>
 
     <!-- Date/Time Selector Controls -->
@@ -210,13 +210,10 @@ table.provider-table tr:last-child td { border-bottom: none; }
     <!-- Legend -->
     <div style="display:flex;align-items:center;gap:16px;font-size:.8rem;color:var(--muted);justify-content:center;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:6px;">
-        <span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--border);background:var(--bg3);display:inline-block;"></span> Available (Click to set Maintenance)
+        <span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--border);background:var(--bg3);display:inline-block;"></span> Available (Click to toggle Booked)
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="width:12px;height:12px;border-radius:4px;background:rgba(0,212,255,.18);border:1px solid var(--neon);display:inline-block;"></span> Booked (Gamer Reservation)
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="width:12px;height:12px;border-radius:4px;background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.5);display:inline-block;"></span> Out of Service
       </div>
     </div>
   </div>
@@ -274,8 +271,8 @@ table.provider-table tr:last-child td { border-bottom: none; }
           div.style.background = 'rgba(239,68,68,.15)';
           div.style.border = '1px solid rgba(239,68,68,.4)';
           div.style.color = 'var(--danger)';
-          div.title = `Unit ${u.unit_number} is Out of Service. Click to bring back online.`;
-          div.innerHTML = `<i class="fa-solid fa-wrench" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:600;">Maintenance</span>`;
+          div.title = `Unit ${u.unit_number} is Booked (Manual Block). Click to toggle available.`;
+          div.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:600;">Booked</span>`;
           div.onclick = () => togglePsmMaintenance(u.unit_number);
         } else if (u.status === 'booked') {
           div.style.background = 'rgba(0,212,255,.12)';
@@ -299,7 +296,7 @@ table.provider-table tr:last-child td { border-bottom: none; }
           div.style.background = 'var(--bg3)';
           div.style.border = '2px solid var(--border)';
           div.style.color = 'var(--text)';
-          div.title = `Unit ${u.unit_number} is Available. Click to mark Out of Service.`;
+          div.title = `Unit ${u.unit_number} is Available. Click to toggle Booked.`;
           div.innerHTML = `<i class="fa-solid fa-desktop" style="color:var(--accent2);font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;color:var(--success);">Available</span>`;
           div.onclick = () => togglePsmMaintenance(u.unit_number);
         }

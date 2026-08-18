@@ -119,14 +119,14 @@
         </div>
       </div>
 
-      <!-- Provider Unit Maintenance & Status Management -->
+      <!-- Provider Unit Booking & Status Management -->
       <div class="form-group" style="background:rgba(124,58,237,.06);border:1px dashed rgba(124,58,237,.35);border-radius:16px;padding:20px;margin-bottom:24px;">
         <label style="font-weight:700;color:var(--neon);display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <span><i class="fa-solid fa-screwdriver-wrench" style="color:var(--accent2);margin-right:6px;"></i> Individual Rigs / Consoles Maintenance Status</span>
-          <span id="disabled-count-badge" style="font-size:.75rem;background:var(--accent);color:#fff;padding:2px 10px;border-radius:12px;font-weight:600;">0 Out of Service</span>
+          <span><i class="fa-solid fa-gamepad" style="color:var(--accent2);margin-right:6px;"></i> Individual Rigs / Consoles Booking Status</span>
+          <span id="disabled-count-badge" style="font-size:.75rem;background:var(--accent);color:#fff;padding:2px 10px;border-radius:12px;font-weight:600;">0 Booked</span>
         </label>
         <span style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:14px;line-height:1.6;">
-          Click any unit block below to toggle its status (Active vs. Out of Service / Under Maintenance). Units marked Out of Service will be greyed out for gamers. Booked status is automatically synced from live customer reservations.
+          Click any unit block below to toggle its status (Active vs. Booked). Units marked Booked will be greyed out for gamers. Booked status is automatically synced from live customer reservations.
         </span>
 
         <input type="hidden" name="out_of_service_units" id="out-of-service-hidden" value="{% if is_edit and game.out_of_service_units %}{{ game.out_of_service_units }}{% endif %}" />
@@ -140,7 +140,7 @@
             <span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--border);background:var(--bg3);display:inline-block;"></span> Active (Free)
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
-            <span style="width:12px;height:12px;border-radius:4px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);display:inline-block;"></span> Out of Service
+            <span style="width:12px;height:12px;border-radius:4px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);display:inline-block;"></span> Booked
           </div>
         </div>
       </div>
@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
         div.style.background = 'rgba(239,68,68,.15)';
         div.style.border = '1px solid rgba(239,68,68,.4)';
         div.style.color = 'var(--danger)';
-        div.innerHTML = `<i class="fa-solid fa-wrench" style="font-size:.85rem;margin-bottom:2px;"></i>Unit ${u}<span style="font-size:.68rem;font-weight:600;">Maintenance</span>`;
+        div.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.85rem;margin-bottom:2px;"></i>Unit ${u}<span style="font-size:.68rem;font-weight:600;">Booked</span>`;
       } else {
         div.style.background = 'var(--bg3)';
         div.style.border = '2px solid var(--border)';
@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
           disabledUnitsSet.add(u);
         }
         hiddenInput.value = Array.from(disabledUnitsSet).sort((a,b)=>a-b).join(', ');
-        if (badge) badge.textContent = `${disabledUnitsSet.size} Out of Service`;
+        if (badge) badge.textContent = `${disabledUnitsSet.size} Booked`;
         renderProviderUnitMap();
       };
 
@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const activeDisabled = Array.from(disabledUnitsSet).filter(u => u <= totalCount);
     hiddenInput.value = activeDisabled.sort((a,b)=>a-b).join(', ');
-    if (badge) badge.textContent = `${activeDisabled.length} Out of Service`;
+    if (badge) badge.textContent = `${activeDisabled.length} Booked`;
   }
 
   const totalInp = document.getElementById('g-total');

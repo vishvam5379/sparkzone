@@ -139,9 +139,6 @@
           <div style="display:flex;align-items:center;gap:6px;">
             <span style="width:12px;height:12px;border-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);display:inline-block;"></span> Booked
           </div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="width:12px;height:12px;border-radius:4px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);display:inline-block;"></span> Out of Service
-          </div>
         </div>
       </div>
 
@@ -444,12 +441,8 @@
       
       let baseStyle = 'padding:12px 8px;border-radius:12px;text-align:center;font-weight:700;font-size:.85rem;transition:all .2s ease;user-select:none;display:flex;flex-direction:column;align-items:center;gap:4px;';
 
-      if (isMaintenance) {
-        btn.title = `Unit ${u.unit_number} (Out of Service / Under Maintenance)`;
-        baseStyle += 'background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);color:var(--danger);cursor:not-allowed;opacity:.75;';
-        btn.innerHTML = `<i class="fa-solid fa-wrench" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:600;">Maintenance</span>`;
-      } else if (isBooked) {
-        btn.title = `Unit ${u.unit_number} (Booked for this time slot)`;
+      if (isMaintenance || isBooked) {
+        btn.title = `Unit ${u.unit_number} (Booked)`;
         baseStyle += 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:var(--muted);cursor:not-allowed;opacity:.55;';
         btn.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:600;">Booked</span>`;
       } else if (isSelected) {

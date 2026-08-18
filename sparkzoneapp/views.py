@@ -819,7 +819,7 @@ def booking(request, game_id):
         disabled_units = game.get_disabled_units_set()
         for u in selected_units:
             if u in disabled_units:
-                messages.error(request, f'Unit {u} is currently out of service / under maintenance. Please select another unit.')
+                messages.error(request, f'Unit {u} is currently booked. Please select another available unit.')
                 return redirect('booking', game_id=game_id)
 
         # Credit Card Backend Validation
