@@ -673,7 +673,7 @@ def provider_booking_reject(request, booking_id):
     messages.info(request, f'Booking request for {booking_obj.user.firstName} rejected.')
     return redirect('provider_booking_requests')
 
-# ─── Unit Availability API ──────────────────────────────────────────────────────
+# ─── Unit Availability & Maintenance API ───────────────────────────────────────
 def get_unit_availability_api(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     date_str = request.GET.get('date')
@@ -684,66 +684,100 @@ def get_unit_availability_api(request, game_id):
     disabled_units = game.get_disabled_units_set()
     units = []
 
-    if date_str and start_time_str and end_time_str:
-        try:
-            from datetime import datetime
-            booking_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-            fmt = '%H:%M'
-            start_time = datetime.strptime(start_time_str, fmt).time()
-            end_time = datetime.strptime(end_time_str, fmt).time()
+    from datetime import datetime, timedelta
+    now = timezone.localtime(timezone.now())
+    if not date_str:
+        date_str = now.strftime('%Y-%m-%d')
+    if not start_time_str:
+        start_time_str = now.strftime('%H:00')
+    if not end_time_str:
+        end_time_str = (now + timedelta(hours=1)).strftime('%H:00')
 
-            active_bookings = Booking.objects.filter(
-                game=game,
-                bookingDate=booking_date,
-                status__in=['pending', 'accepted', 'confirmed'],
-                startTime__lt=end_time,
-                endTime__gt=start_time
-            )
+    try:
+        booking_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        fmt = '%H:%M'
+        start_time = datetime.strptime(start_time_str, fmt).time()
+        end_time = datetime.strptime(end_time_str, fmt).time()
 
-            booked_unit_numbers = set()
-            unassigned_count = 0
+        active_bookings = Booking.objects.filter(
+            game=game,
+            bookingDate=booking_date,
+            status__in=['pending', 'accepted', 'confirmed'],
+            startTime__lt=end_time,
+            endTime__gt=start_time
+        ).select_related('user')
 
-            for b in active_bookings:
-                b_units = b.get_unit_numbers_list()
-                if b_units:
-                    for bu in b_units:
-                        booked_unit_numbers.add(bu)
-                else:
-                    unassigned_count += 1
+        booked_units_map = {}
 
-            if unassigned_count > 0:
-                for u in range(1, total_systems + 1):
-                    if u not in booked_unit_numbers and u not in disabled_units:
-                        booked_unit_numbers.add(u)
-                        unassigned_count -= 1
-                        if unassigned_count == 0:
-                            break
+        for b in active_bookings:
+            b_units = b.get_unit_numbers_list()
+            info = {
+                'booking_id': b.id,
+                'user_name': f"{b.user.firstName} {b.user.lastName}",
+                'user_email': b.user.email,
+                'time_slot': f"{b.startTime.strftime('%H:%M')} - {b.endTime.strftime('%H:%M')}",
+                'status_display': b.get_status_display()
+            }
+            if b_units:
+                for bu in b_units:
+                    booked_units_map[bu] = info
 
-            for u in range(1, total_systems + 1):
-                if u in disabled_units:
-                    st = 'maintenance'
-                elif u in booked_unit_numbers:
-                    st = 'booked'
-                else:
-                    st = 'available'
-                units.append({
-                    'unit_number': u,
-                    'status': st
-                })
-        except Exception:
-            for u in range(1, total_systems + 1):
-                st = 'maintenance' if u in disabled_units else 'available'
-                units.append({'unit_number': u, 'status': st})
-    else:
+        for u in range(1, total_systems + 1):
+            if u in disabled_units:
+                st = 'maintenance'
+                details = None
+            elif u in booked_units_map:
+                st = 'booked'
+                details = booked_units_map[u]
+            else:
+                st = 'available'
+                details = None
+
+            units.append({
+                'unit_number': u,
+                'status': st,
+                'details': details
+            })
+    except Exception:
         for u in range(1, total_systems + 1):
             st = 'maintenance' if u in disabled_units else 'available'
-            units.append({'unit_number': u, 'status': st})
+            units.append({'unit_number': u, 'status': st, 'details': None})
 
     return JsonResponse({
         'total_systems': total_systems,
         'disabled_units': list(disabled_units),
-        'units': units
+        'units': units,
+        'date': date_str,
+        'start_time': start_time_str,
+        'end_time': end_time_str
     })
+
+def provider_toggle_unit_maintenance_api(request, game_id):
+    user = get_logged_in_user(request)
+    if not user or user.role != 'provider':
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    game = get_object_or_404(Game, id=game_id, provider=user.provider_profile)
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body.decode('utf-8')) if request.body else {}
+        unit_num = data.get('unit_number') or request.POST.get('unit_number')
+        if unit_num:
+            try:
+                u_int = int(unit_num)
+                disabled_set = game.get_disabled_units_set()
+                if u_int in disabled_set:
+                    disabled_set.remove(u_int)
+                else:
+                    disabled_set.add(u_int)
+
+                game.out_of_service_units = ", ".join(str(x) for x in sorted(disabled_set))
+                game.save()
+                return JsonResponse({'success': True, 'disabled_units': list(disabled_set)})
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 # ─── Booking ────────────────────────────────────────────────────────────────────
 def booking(request, game_id):
