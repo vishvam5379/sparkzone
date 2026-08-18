@@ -101,6 +101,18 @@
             <span><i class="fa-solid fa-desktop"></i> {{ game.totalSystem }} Total / {{ game.availableSystems }} Free</span>
           </div>
           <p style="color:var(--muted);font-size:.85rem;line-height:1.6;flex:1;">{{ game.description|truncatechars:100 }}</p>
+          {% if game.get_games_list %}
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;margin-bottom:6px;">
+            {% for gtitle in game.get_games_list|slice:":3" %}
+            <span style="font-size:.72rem;background:rgba(0,212,255,.08);color:var(--neon);border:1px solid rgba(0,212,255,.2);padding:2px 8px;border-radius:12px;">
+              🎮 {{ gtitle }}
+            </span>
+            {% endfor %}
+            {% if game.get_games_list|length > 3 %}
+            <span style="font-size:.72rem;color:var(--muted);padding:2px 4px;">+{{ game.get_games_list|length|add:"-3" }} more</span>
+            {% endif %}
+          </div>
+          {% endif %}
           <div class="game-price">
             ₹{{ game.pricePerHour|floatformat:0 }}
             <span style="font-size:.75rem;color:var(--muted);font-weight:400;">/ hour</span>

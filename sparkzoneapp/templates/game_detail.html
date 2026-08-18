@@ -132,6 +132,20 @@
         <p style="color:var(--muted);line-height:1.75;">{{ game.description }}</p>
       </div>
 
+      <!-- Games Installed / Available -->
+      {% if game.get_games_list %}
+      <div class="info-card" style="background:linear-gradient(145deg, var(--card), rgba(124,58,237,.08));border:1px solid rgba(124,58,237,.25);">
+        <h3 style="margin-bottom:12px;"><i class="fa-solid fa-gamepad" style="color:var(--neon);"></i> Installed Games Available to Play</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+          {% for gtitle in game.get_games_list %}
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;font-size:.88rem;font-weight:600;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.2);">
+            <i class="fa-solid fa-play" style="color:var(--accent2);font-size:.75rem;"></i> {{ gtitle }}
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
       <!-- Address & Location Map -->
       <div class="info-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">

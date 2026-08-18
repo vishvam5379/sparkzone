@@ -40,10 +40,10 @@ class ShowCategory(ModelAdmin):
 
 @admin.register(Game)
 class ShowGame(ModelAdmin):
-    list_display = ["name", "provider", "category", "city", "pricePerHour", "totalSystem", "availableSystems", "status", "timestamp"]
+    list_display = ["name", "provider", "category", "available_games", "city", "pricePerHour", "totalSystem", "availableSystems", "status", "timestamp"]
     list_filter = ["status", "category__categoryName", "city"]
     list_editable = ["status", "availableSystems"]
-    search_fields = ["name", "address"]
+    search_fields = ["name", "available_games", "address"]
 
 @admin.register(Slot)
 class ShowSlot(ModelAdmin):

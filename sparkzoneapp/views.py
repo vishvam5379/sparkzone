@@ -105,7 +105,9 @@ def games(request):
     if category_id:
         all_games = all_games.filter(category__id=category_id)
     if search:
-        all_games = all_games.filter(name__icontains=search)
+        all_games = all_games.filter(
+            Q(name__icontains=search) | Q(available_games__icontains=search) | Q(description__icontains=search)
+        )
 
     return render_with_notifs(request, 'games.html', {
         'games': all_games,
@@ -420,6 +422,7 @@ def provider_game_add(request):
         name = request.POST.get('name', '').strip()
         category_id = request.POST.get('category')
         city_id = request.POST.get('city')
+        available_games = request.POST.get('available_games', '').strip()
         description = request.POST.get('description', '').strip()
         address = request.POST.get('address', '').strip()
         pricePerHour = float(request.POST.get('pricePerHour', 200))
@@ -438,6 +441,7 @@ def provider_game_add(request):
             category=cat_obj,
             city=city_obj,
             name=name,
+            available_games=available_games,
             description=description,
             address=address,
             pricePerHour=pricePerHour,
@@ -475,6 +479,7 @@ def provider_game_edit(request, game_id):
         game.name = request.POST.get('name', '').strip()
         game.category_id = request.POST.get('category')
         game.city_id = request.POST.get('city')
+        game.available_games = request.POST.get('available_games', '').strip()
         game.description = request.POST.get('description', '').strip()
         game.address = request.POST.get('address', '').strip()
         game.pricePerHour = float(request.POST.get('pricePerHour', 200))

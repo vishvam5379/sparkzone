@@ -43,6 +43,25 @@
         </div>
       </div>
 
+      <!-- Available Games Section (Category Based Dynamic Selector) -->
+      <div class="form-group" style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.25);border-radius:14px;padding:18px;margin-bottom:20px;">
+        <label for="g-games" style="font-weight:700;color:var(--neon);display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <i class="fa-solid fa-gamepad" style="color:var(--accent2);"></i>
+          Names of Games Available / Installed Games
+        </label>
+        <span style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:12px;">
+          Click popular games for chosen category to quick-add, or type custom game names separated by commas.
+        </span>
+        <input type="text" name="available_games" id="g-games" placeholder="e.g. GTA V, FIFA 24, Tekken 8, Call of Duty Warzone, Cyberpunk 2077" {% if is_edit and game.available_games %}value="{{ game.available_games }}"{% endif %} style="width:100%;margin-bottom:12px;" />
+        
+        <div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">
+          <i class="fa-solid fa-fire" style="color:var(--gold);margin-right:4px;"></i> Recommended Games for Selected Category:
+        </div>
+        <div id="suggested-games-container" style="display:flex;flex-wrap:wrap;gap:8px;min-height:36px;align-items:center;">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+
       <div class="form-group">
         <label for="g-desc"><i class="fa-solid fa-align-left" style="margin-right:6px;color:var(--accent2);"></i>Station Description & Rig Specs</label>
         <textarea name="description" id="g-desc" placeholder="Describe the gaming station, GPU specs, monitor refresh rate, controllers, VR gear..." required style="min-height:100px;">{% if is_edit %}{{ game.description }}{% endif %}</textarea>
@@ -117,4 +136,96 @@
     </form>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const categorySelect = document.getElementById('g-cat');
+  const gamesInput = document.getElementById('g-games');
+  const suggestionsContainer = document.getElementById('suggested-games-container');
+
+  const categoryPresets = {
+    'Action & Adventure': ["GTA V", "Grand Theft Auto VI", "Cyberpunk 2077", "God of War Ragnarök", "Spider-Man 2", "Red Dead Redemption 2", "Elden Ring", "Assassin's Creed Mirage", "The Last of Us Part II"],
+    'FPS & Shooter': ["Call of Duty: Warzone", "Valorant", "Counter-Strike 2", "Apex Legends", "Overwatch 2", "Rainbow Six Siege", "Halo Infinite", "PUBG: Battlegrounds", "Battlefield 2042"],
+    'Racing & Sports': ["EA Sports FC 24", "FIFA 24", "Forza Horizon 5", "Gran Turismo 7", "Need for Speed Unbound", "F1 24", "WWE 2K24", "NBA 2K24", "Rocket League"],
+    'Fighting': ["Tekken 8", "Street Fighter 6", "Mortal Kombat 1", "Super Smash Bros. Ultimate", "Dragon Ball FighterZ", "Guilty Gear Strive"],
+    'VR': ["Beat Saber", "Half-Life: Alyx", "Superhot VR", "Pavlov VR", "Resident Evil Village VR", "Gran Turismo 7 VR"],
+    'RPG & Strategy': ["Baldur's Gate 3", "Starfield", "Hogwarts Legacy", "The Witcher 3", "Dota 2", "League of Legends", "Age of Empires IV"]
+  };
+
+  function getCurrentGamesList() {
+    if (!gamesInput.value) return [];
+    return gamesInput.value.split(',').map(g => g.trim()).filter(g => g.length > 0);
+  }
+
+  function renderSuggestions() {
+    if (!categorySelect || !suggestionsContainer || !gamesInput) return;
+    const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+    const categoryName = selectedOption ? selectedOption.text.trim() : '';
+    
+    let gamesList = [];
+    for (const [catKey, list] of Object.entries(categoryPresets)) {
+      if (categoryName.toLowerCase().includes(catKey.toLowerCase()) || catKey.toLowerCase().includes(categoryName.toLowerCase())) {
+        gamesList = list;
+        break;
+      }
+    }
+    
+    if (gamesList.length === 0) {
+      gamesList = ["GTA V", "Call of Duty: Warzone", "EA Sports FC 24", "Tekken 8", "Valorant", "Forza Horizon 5", "Cyberpunk 2077"];
+    }
+
+    const currentSelected = getCurrentGamesList();
+
+    suggestionsContainer.innerHTML = '';
+    gamesList.forEach(gameName => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      const isSelected = currentSelected.some(g => g.toLowerCase() === gameName.toLowerCase());
+
+      chip.className = 'game-chip-btn';
+      chip.style.padding = '5px 12px';
+      chip.style.borderRadius = '20px';
+      chip.style.fontSize = '0.82rem';
+      chip.style.fontFamily = 'inherit';
+      chip.style.cursor = 'pointer';
+      chip.style.transition = 'all 0.2s ease';
+      chip.style.display = 'inline-flex';
+      chip.style.alignItems = 'center';
+      chip.style.gap = '5px';
+
+      if (isSelected) {
+        chip.style.background = 'var(--accent)';
+        chip.style.color = '#ffffff';
+        chip.style.border = '1px solid var(--accent)';
+        chip.style.boxShadow = '0 0 10px rgba(124,58,237,0.4)';
+        chip.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:0.75rem;"></i> ${gameName}`;
+      } else {
+        chip.style.background = 'var(--bg3)';
+        chip.style.color = 'var(--text)';
+        chip.style.border = '1px solid var(--border)';
+        chip.innerHTML = `<i class="fa-solid fa-plus" style="font-size:0.75rem;color:var(--neon);"></i> ${gameName}`;
+      }
+
+      chip.addEventListener('click', function() {
+        let cur = getCurrentGamesList();
+        const idx = cur.findIndex(g => g.toLowerCase() === gameName.toLowerCase());
+        if (idx >= 0) {
+          cur.splice(idx, 1);
+        } else {
+          cur.push(gameName);
+        }
+        gamesInput.value = cur.join(', ');
+        renderSuggestions();
+      });
+
+      suggestionsContainer.appendChild(chip);
+    });
+  }
+
+  categorySelect.addEventListener('change', renderSuggestions);
+  gamesInput.addEventListener('input', renderSuggestions);
+
+  renderSuggestions();
+});
+</script>
 {% endblock %}

@@ -123,11 +123,17 @@ class Game(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
     image = models.ImageField(upload_to="Game", null=True, blank=True)
     image_url = models.URLField(max_length=2000, null=True, blank=True)
+    available_games = models.TextField(null=True, blank=True, help_text="Comma-separated names of games available at this station")
     operating_hours = models.CharField(max_length=100, default="09:00 AM - 10:00 PM", null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
         return self.name
+
+    def get_games_list(self):
+        if not self.available_games:
+            return []
+        return [g.strip() for g in self.available_games.split(',') if g.strip()]
 
     def get_image_url(self):
         if self.image:
