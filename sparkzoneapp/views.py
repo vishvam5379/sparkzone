@@ -162,6 +162,16 @@ def categories(request):
 import re
 
 # ─── Real Google OAuth 2.0 Login ────────────────────────────────────────────────
+def get_google_redirect_uri(request):
+    explicit_uri = os.getenv('GOOGLE_REDIRECT_URI')
+    if explicit_uri:
+        return explicit_uri.strip()
+    
+    redirect_uri = request.build_absolute_uri('/google-login/').split('?')[0]
+    if request.is_secure() or request.META.get('HTTP_X_FORWARDED_PROTO') == 'https' or 'vercel' in request.get_host() or request.META.get('HTTP_X_FORWARDED_SSL') == 'on':
+        redirect_uri = redirect_uri.replace('http://', 'https://')
+    return redirect_uri
+
 def google_login(request):
     client_id = os.getenv('GOOGLE_CLIENT_ID')
     client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
@@ -174,14 +184,17 @@ def google_login(request):
         )
         return redirect('login')
 
+    if request.GET.get('error'):
+        error_desc = request.GET.get('error_description') or request.GET.get('error')
+        messages.error(request, f"Google Sign-In returned error: {error_desc}")
+        return redirect('login')
+
     code = request.GET.get('code')
+    redirect_uri = get_google_redirect_uri(request)
 
     # 1. Initiating OAuth Flow: Redirect user to Google official account chooser screen
     if not code:
         import urllib.parse
-        redirect_uri = request.build_absolute_uri('/google-login/').split('?')[0]
-        if request.META.get('HTTP_X_FORWARDED_PROTO') == 'https' or 'vercel' in request.get_host():
-            redirect_uri = redirect_uri.replace('http://', 'https://')
 
         params = urllib.parse.urlencode({
             'client_id': client_id,
@@ -193,10 +206,6 @@ def google_login(request):
         return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?{params}")
 
     # 2. OAuth Callback: Exchange code for access token and fetch verified user profile
-    redirect_uri = request.build_absolute_uri('/google-login/').split('?')[0]
-    if request.META.get('HTTP_X_FORWARDED_PROTO') == 'https' or 'vercel' in request.get_host():
-        redirect_uri = redirect_uri.replace('http://', 'https://')
-
     try:
         import urllib.parse
         import urllib.request
