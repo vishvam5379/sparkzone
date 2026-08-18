@@ -43,22 +43,37 @@
         </div>
       </div>
 
-      <!-- Available Games Section (Category Based Dynamic Selector) -->
-      <div class="form-group" style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.25);border-radius:14px;padding:18px;margin-bottom:20px;">
-        <label for="g-games" style="font-weight:700;color:var(--neon);display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-          <i class="fa-solid fa-gamepad" style="color:var(--accent2);"></i>
-          Names of Games Available / Installed Games
+      <!-- Available Games Section (Enhanced Dynamic Chip Selector) -->
+      <div class="form-group" style="background:rgba(124,58,237,.06);border:1px dashed rgba(124,58,237,.35);border-radius:16px;padding:20px;margin-bottom:24px;box-shadow:0 8px 30px rgba(0,0,0,.2);">
+        <label style="font-weight:700;color:var(--neon);display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="display:flex;align-items:center;gap:8px;font-size:.95rem;">
+            <i class="fa-solid fa-gamepad" style="color:var(--accent2);font-size:1.1rem;"></i>
+            Names of Games Available / Installed Games
+          </span>
+          <span id="selected-count-badge" style="font-size:.75rem;background:var(--accent);color:#fff;padding:2px 10px;border-radius:12px;font-weight:600;">0 Selected</span>
         </label>
-        <span style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:12px;">
-          Click popular games for chosen category to quick-add, or type custom game names separated by commas.
+        <span style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:14px;">
+          Select popular games for your category below, or type custom game names in the box and press <kbd style="background:var(--bg3);padding:2px 6px;border-radius:4px;border:1px solid var(--border);color:var(--neon);font-size:.75rem;">Enter</kbd> or <kbd style="background:var(--bg3);padding:2px 6px;border-radius:4px;border:1px solid var(--border);color:var(--neon);font-size:.75rem;">,</kbd>.
         </span>
-        <input type="text" name="available_games" id="g-games" placeholder="e.g. GTA V, FIFA 24, Tekken 8, Call of Duty Warzone, Cyberpunk 2077" {% if is_edit and game.available_games %}value="{{ game.available_games }}"{% endif %} style="width:100%;margin-bottom:12px;" />
-        
-        <div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">
-          <i class="fa-solid fa-fire" style="color:var(--gold);margin-right:4px;"></i> Recommended Games for Selected Category:
+
+        <!-- Hidden input submitted with form -->
+        <input type="hidden" name="available_games" id="g-games-hidden" value="{% if is_edit and game.available_games %}{{ game.available_games }}{% endif %}" />
+
+        <!-- Interactive Tag Container -->
+        <div id="game-tags-wrapper" style="min-height:50px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;cursor:text;transition:border-color .2s;" onclick="document.getElementById('custom-game-input').focus()">
+          <div id="selected-chips-container" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;"></div>
+          <input type="text" id="custom-game-input" placeholder="+ Type custom game name & press Enter..." style="flex:1;min-width:180px;background:transparent;border:none;outline:none;color:var(--text);font-size:.88rem;padding:4px 0;" />
         </div>
-        <div id="suggested-games-container" style="display:flex;flex-wrap:wrap;gap:8px;min-height:36px;align-items:center;">
-          <!-- Dynamically populated via JS -->
+
+        <!-- Dynamic Category Suggestions -->
+        <div style="margin-top:16px;">
+          <div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px;">
+            <i class="fa-solid fa-fire" style="color:var(--gold);"></i>
+            <span>Recommended for <strong id="cat-label-display" style="color:var(--neon);">Selected Category</strong>:</span>
+          </div>
+          <div id="suggested-games-container" style="display:flex;flex-wrap:wrap;gap:8px;min-height:36px;align-items:center;">
+            <!-- Category Chips populated by JS -->
+          </div>
         </div>
       </div>
 
@@ -140,8 +155,12 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const categorySelect = document.getElementById('g-cat');
-  const gamesInput = document.getElementById('g-games');
+  const hiddenInput = document.getElementById('g-games-hidden');
+  const customInput = document.getElementById('custom-game-input');
+  const selectedChipsContainer = document.getElementById('selected-chips-container');
   const suggestionsContainer = document.getElementById('suggested-games-container');
+  const countBadge = document.getElementById('selected-count-badge');
+  const catLabelDisplay = document.getElementById('cat-label-display');
 
   const categoryPresets = {
     'Action & Adventure': ["GTA V", "Grand Theft Auto VI", "Cyberpunk 2077", "God of War Ragnarök", "Spider-Man 2", "Red Dead Redemption 2", "Elden Ring", "Assassin's Creed Mirage", "The Last of Us Part II"],
@@ -152,16 +171,73 @@ document.addEventListener('DOMContentLoaded', function() {
     'RPG & Strategy': ["Baldur's Gate 3", "Starfield", "Hogwarts Legacy", "The Witcher 3", "Dota 2", "League of Legends", "Age of Empires IV"]
   };
 
-  function getCurrentGamesList() {
-    if (!gamesInput.value) return [];
-    return gamesInput.value.split(',').map(g => g.trim()).filter(g => g.length > 0);
+  let selectedGames = [];
+  if (hiddenInput && hiddenInput.value) {
+    selectedGames = hiddenInput.value.split(',').map(g => g.trim()).filter(g => g.length > 0);
+  }
+
+  function syncHiddenInput() {
+    hiddenInput.value = selectedGames.join(', ');
+    if (countBadge) {
+      countBadge.textContent = `${selectedGames.length} Selected`;
+    }
+  }
+
+  function addGame(name) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    if (!selectedGames.some(g => g.toLowerCase() === trimmed.toLowerCase())) {
+      selectedGames.push(trimmed);
+      syncHiddenInput();
+      renderAll();
+    }
+  }
+
+  function removeGame(name) {
+    selectedGames = selectedGames.filter(g => g.toLowerCase() !== name.toLowerCase());
+    syncHiddenInput();
+    renderAll();
+  }
+
+  function renderSelectedChips() {
+    selectedChipsContainer.innerHTML = '';
+    selectedGames.forEach(gameName => {
+      const chip = document.createElement('div');
+      chip.style.display = 'inline-flex';
+      chip.style.alignItems = 'center';
+      chip.style.gap = '6px';
+      chip.style.padding = '5px 12px';
+      chip.style.borderRadius = '20px';
+      chip.style.fontSize = '0.82rem';
+      chip.style.fontWeight = '600';
+      chip.style.background = 'linear-gradient(135deg, var(--accent), var(--accent2))';
+      chip.style.color = '#ffffff';
+      chip.style.boxShadow = '0 3px 12px rgba(124,58,237,0.35)';
+
+      chip.innerHTML = `
+        <i class="fa-solid fa-gamepad" style="font-size:0.75rem;"></i>
+        <span>${gameName}</span>
+        <span class="remove-btn" style="cursor:pointer;margin-left:4px;opacity:0.85;font-weight:700;font-size:0.95rem;line-height:1;" title="Remove ${gameName}">&times;</span>
+      `;
+
+      chip.querySelector('.remove-btn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        removeGame(gameName);
+      });
+
+      selectedChipsContainer.appendChild(chip);
+    });
   }
 
   function renderSuggestions() {
-    if (!categorySelect || !suggestionsContainer || !gamesInput) return;
+    if (!categorySelect || !suggestionsContainer) return;
     const selectedOption = categorySelect.options[categorySelect.selectedIndex];
     const categoryName = selectedOption ? selectedOption.text.trim() : '';
-    
+
+    if (catLabelDisplay) {
+      catLabelDisplay.textContent = categoryName || 'Selected Category';
+    }
+
     let gamesList = [];
     for (const [catKey, list] of Object.entries(categoryPresets)) {
       if (categoryName.toLowerCase().includes(catKey.toLowerCase()) || catKey.toLowerCase().includes(categoryName.toLowerCase())) {
@@ -169,63 +245,81 @@ document.addEventListener('DOMContentLoaded', function() {
         break;
       }
     }
-    
+
     if (gamesList.length === 0) {
       gamesList = ["GTA V", "Call of Duty: Warzone", "EA Sports FC 24", "Tekken 8", "Valorant", "Forza Horizon 5", "Cyberpunk 2077"];
     }
 
-    const currentSelected = getCurrentGamesList();
-
     suggestionsContainer.innerHTML = '';
     gamesList.forEach(gameName => {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      const isSelected = currentSelected.some(g => g.toLowerCase() === gameName.toLowerCase());
-
-      chip.className = 'game-chip-btn';
-      chip.style.padding = '5px 12px';
-      chip.style.borderRadius = '20px';
-      chip.style.fontSize = '0.82rem';
-      chip.style.fontFamily = 'inherit';
-      chip.style.cursor = 'pointer';
-      chip.style.transition = 'all 0.2s ease';
-      chip.style.display = 'inline-flex';
-      chip.style.alignItems = 'center';
-      chip.style.gap = '5px';
+      const isSelected = selectedGames.some(g => g.toLowerCase() === gameName.toLowerCase());
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.style.padding = '5px 12px';
+      btn.style.borderRadius = '20px';
+      btn.style.fontSize = '0.8rem';
+      btn.style.fontFamily = 'inherit';
+      btn.style.cursor = 'pointer';
+      btn.style.transition = 'all 0.2s ease';
+      btn.style.display = 'inline-flex';
+      btn.style.alignItems = 'center';
+      btn.style.gap = '5px';
 
       if (isSelected) {
-        chip.style.background = 'var(--accent)';
-        chip.style.color = '#ffffff';
-        chip.style.border = '1px solid var(--accent)';
-        chip.style.boxShadow = '0 0 10px rgba(124,58,237,0.4)';
-        chip.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:0.75rem;"></i> ${gameName}`;
+        btn.style.background = 'rgba(16,185,129,0.15)';
+        btn.style.color = 'var(--success)';
+        btn.style.border = '1px solid rgba(16,185,129,0.35)';
+        btn.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:0.75rem;"></i> ${gameName}`;
       } else {
-        chip.style.background = 'var(--bg3)';
-        chip.style.color = 'var(--text)';
-        chip.style.border = '1px solid var(--border)';
-        chip.innerHTML = `<i class="fa-solid fa-plus" style="font-size:0.75rem;color:var(--neon);"></i> ${gameName}`;
+        btn.style.background = 'var(--bg2)';
+        btn.style.color = 'var(--text)';
+        btn.style.border = '1px solid var(--border)';
+        btn.innerHTML = `<i class="fa-solid fa-plus" style="font-size:0.75rem;color:var(--neon);"></i> ${gameName}`;
       }
 
-      chip.addEventListener('click', function() {
-        let cur = getCurrentGamesList();
-        const idx = cur.findIndex(g => g.toLowerCase() === gameName.toLowerCase());
-        if (idx >= 0) {
-          cur.splice(idx, 1);
+      btn.addEventListener('click', function() {
+        if (isSelected) {
+          removeGame(gameName);
         } else {
-          cur.push(gameName);
+          addGame(gameName);
         }
-        gamesInput.value = cur.join(', ');
-        renderSuggestions();
       });
 
-      suggestionsContainer.appendChild(chip);
+      suggestionsContainer.appendChild(btn);
     });
   }
 
-  categorySelect.addEventListener('change', renderSuggestions);
-  gamesInput.addEventListener('input', renderSuggestions);
+  function renderAll() {
+    renderSelectedChips();
+    renderSuggestions();
+  }
 
-  renderSuggestions();
+  if (customInput) {
+    customInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        if (customInput.value) {
+          addGame(customInput.value);
+          customInput.value = '';
+        }
+      } else if (e.key === 'Backspace' && customInput.value === '' && selectedGames.length > 0) {
+        removeGame(selectedGames[selectedGames.length - 1]);
+      }
+    });
+
+    customInput.addEventListener('blur', function() {
+      if (customInput.value) {
+        addGame(customInput.value);
+        customInput.value = '';
+      }
+    });
+  }
+
+  if (categorySelect) {
+    categorySelect.addEventListener('change', renderSuggestions);
+  }
+
+  renderAll();
 });
 </script>
 {% endblock %}
