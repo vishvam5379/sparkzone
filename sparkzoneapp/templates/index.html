@@ -4,8 +4,9 @@
 {% block extra_css %}
 /* ── Hero ── */
 .hero {
-  margin-top: 70px; min-height: 92vh;
+  margin-top: 70px; min-height: 85vh;
   display: flex; align-items: center; position: relative; overflow: hidden;
+  padding: 60px 0;
 }
 .hero-bg {
   position: absolute; inset: 0; z-index: 0;
@@ -27,20 +28,36 @@
   border-radius: 50%; animation: pulse 4s ease-in-out infinite;
 }
 @keyframes pulse { 0%,100%{transform:scale(1);opacity:.7;} 50%{transform:scale(1.08);opacity:1;} }
-.hero-content { position: relative; z-index: 1; max-width: 680px; }
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: 64px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+}
 .hero-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
 .hero-eyebrow::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
 .hero h1 {
-  font-family: var(--font-heading); font-size: clamp(2.4rem, 5.5vw, 4.2rem);
-  font-weight: 900; line-height: 1.1; margin-bottom: 24px; min-height: 2.2em;
+  font-family: var(--font-heading); font-size: clamp(2.2rem, 4.2vw, 3.8rem);
+  font-weight: 900; line-height: 1.15; margin-bottom: 24px;
 }
-.hero h1 .line1 { color: #fff; }
+.hero h1 .line1 { color: #fff; display: block; }
 .hero h1 .line2 {
   background: linear-gradient(135deg, var(--accent2) 0%, var(--neon) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  display: block;
 }
-.hero-sub { color: var(--muted); font-size: 1.1rem; line-height: 1.7; margin-bottom: 36px; max-width: 500px; min-height: 3.4em; }
-.hero-cta { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 48px; }
+.hero-sub { color: var(--muted); font-size: 1.05rem; line-height: 1.7; margin-bottom: 36px; max-width: 520px; }
+.hero-cta { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
 .hero-stats { display: flex; gap: 36px; flex-wrap: wrap; }
 .hero-stat { text-align: left; }
 .hero-stat .num { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--neon); }
@@ -48,31 +65,48 @@
 
 /* ── Floating game card preview ── */
 .hero-visual {
-  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-  width: 42%; display: flex; flex-direction: column; gap: 16px; padding-right: 24px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 480px;
+  margin-left: auto;
 }
 .float-card {
   background: rgba(20,25,32,.85); backdrop-filter: blur(16px);
-  border: 1px solid var(--border); border-radius: 16px; padding: 20px;
-  display: flex; gap: 14px; align-items: center;
+  border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px;
+  display: flex; gap: 16px; align-items: center;
   animation: floatY 5s ease-in-out infinite;
   box-shadow: 0 12px 40px rgba(0,0,0,.4);
+  transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
 }
-.float-card:nth-child(2) { animation-delay: -2.5s; margin-left: 40px; }
+.float-card:hover {
+  border-color: var(--accent2);
+  box-shadow: 0 16px 45px rgba(124,58,237,.25);
+}
+.float-card:nth-child(2) { animation-delay: -2.5s; margin-left: 20px; }
+.float-card:nth-child(3) { animation-delay: -1s; margin-left: 10px; }
 .float-card-icon {
   width: 52px; height: 52px; border-radius: 12px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: flex; align-items: center; justify-content: center;
   font-size: 1.4rem; flex-shrink: 0;
 }
-.float-card-info .title { font-weight: 700; font-size: .95rem; }
-.float-card-info .sub { color: var(--muted); font-size: .8rem; margin-top: 2px; }
-.float-card-badge { margin-left: auto; font-size: .8rem; font-weight: 700; color: var(--neon); white-space: nowrap; }
-@keyframes floatY { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
+.float-card-info .title { font-weight: 700; font-size: .98rem; color: #fff; }
+.float-card-info .sub { color: var(--muted); font-size: .82rem; margin-top: 3px; }
+.float-card-badge {
+  margin-left: auto; font-size: .88rem; font-weight: 700; color: var(--neon); white-space: nowrap;
+  background: rgba(0,212,255,.08); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(0,212,255,.2);
+}
+@keyframes floatY { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
 
-@media(max-width: 900px) {
-  .hero-visual { display: none; }
-  .hero-content { max-width: 100%; }
+@media(max-width: 992px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+  .hero-visual { max-width: 100%; margin-left: 0; }
+  .float-card:nth-child(2) { margin-left: 0; }
+  .float-card:nth-child(3) { margin-left: 0; }
 }
 
 /* ── Category Strip ── */
@@ -152,52 +186,54 @@
   <div class="hero-grid-lines"></div>
   <div class="hero-glow"></div>
   <div class="container">
-    <div class="hero-content">
-      <div class="hero-eyebrow">
-        <span class="badge"><svg class="svg-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> New Gaming Era</span>
-      </div>
-      <h1>
-        <span class="line1">Level Up Your</span><br>
-        <span class="line2">Gaming Experience</span>
-      </h1>
-      <p class="hero-sub">
-        Book premium gaming stations, consoles, and PC setups near you. From action to racing — SparkZone has it all.
-      </p>
-      <div class="hero-cta">
-        <a href="{% url 'games' %}" class="btn btn-primary" style="font-size:1rem;padding:14px 32px;">
-          <svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4m-2-2v4m10-2h.01m-2.5-1.5h.01m5 3h.01"/></svg> Browse Games
-        </a>
-        <a href="{% url 'register' %}" class="btn btn-neon" style="font-size:1rem;padding:14px 32px;">
-          <svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg> Join Free
-        </a>
+    <div class="hero-grid">
+      <div class="hero-content">
+        <div class="hero-eyebrow">
+          <span class="badge"><svg class="svg-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> New Gaming Era</span>
+        </div>
+        <h1>
+          <span class="line1">Level Up Your</span>
+          <span class="line2">Gaming Experience</span>
+        </h1>
+        <p class="hero-sub">
+          Book premium gaming stations, consoles, and PC setups near you. From action to racing — SparkZone has it all.
+        </p>
+        <div class="hero-cta">
+          <a href="{% url 'games' %}" class="btn btn-primary" style="font-size:1rem;padding:14px 32px;">
+            <svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4m-2-2v4m10-2h.01m-2.5-1.5h.01m5 3h.01"/></svg> Browse Games
+          </a>
+          <a href="{% url 'register' %}" class="btn btn-neon" style="font-size:1rem;padding:14px 32px;">
+            <svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg> Join Free
+          </a>
+        </div>
       </div>
 
-    </div>
-  </div>
-  <div class="hero-visual">
-    <div class="float-card">
-      <div class="float-card-icon">🎮</div>
-      <div class="float-card-info">
-        <div class="title">PS5 Gaming Zone</div>
-        <div class="sub">Available Now • 4 Systems</div>
+      <div class="hero-visual">
+        <div class="float-card">
+          <div class="float-card-icon">🎮</div>
+          <div class="float-card-info">
+            <div class="title">PS5 Gaming Zone</div>
+            <div class="sub">Available Now • 4 Systems</div>
+          </div>
+          <div class="float-card-badge">₹150/hr</div>
+        </div>
+        <div class="float-card">
+          <div class="float-card-icon">🖥️</div>
+          <div class="float-card-info">
+            <div class="title">PC Gaming Arena</div>
+            <div class="sub">8 Stations • RTX 4080</div>
+          </div>
+          <div class="float-card-badge">₹120/hr</div>
+        </div>
+        <div class="float-card" style="animation-delay:-1s;">
+          <div class="float-card-icon">🏎️</div>
+          <div class="float-card-info">
+            <div class="title">Racing Simulator</div>
+            <div class="sub">VR Ready • Pro Setup</div>
+          </div>
+          <div class="float-card-badge">₹200/hr</div>
+        </div>
       </div>
-      <div class="float-card-badge">₹150/hr</div>
-    </div>
-    <div class="float-card">
-      <div class="float-card-icon">🖥️</div>
-      <div class="float-card-info">
-        <div class="title">PC Gaming Arena</div>
-        <div class="sub">8 Stations • RTX 4080</div>
-      </div>
-      <div class="float-card-badge">₹120/hr</div>
-    </div>
-    <div class="float-card" style="animation-delay:-1s;">
-      <div class="float-card-icon">🏎️</div>
-      <div class="float-card-info">
-        <div class="title">Racing Simulator</div>
-        <div class="sub">VR Ready • Pro Setup</div>
-      </div>
-      <div class="float-card-badge">₹200/hr</div>
     </div>
   </div>
 </section>
