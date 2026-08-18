@@ -235,6 +235,7 @@
     }
     @media(min-width: 769px) {
       .mobile-menu { display: none !important; }
+      .mobile-only-bell { display: none !important; }
     }
     @media(max-width: 480px) {
       #notif-dropdown { right: -10px !important; width: calc(100vw - 32px) !important; max-width: 340px !important; }
@@ -330,26 +331,26 @@
 
     /* ── Page Hero (inner pages) ── */
     .page-hero {
-      margin-top: 70px; padding: 60px 0;
+      margin-top: 70px; padding: 50px 0;
       background: linear-gradient(135deg, rgba(124,58,237,.12) 0%, rgba(0,212,255,.06) 100%);
       border-bottom: 1px solid var(--border);
       text-align: center;
     }
     .page-hero h1 {
       font-family: 'Orbitron', monospace; font-size: clamp(1.8rem, 4vw, 2.8rem);
-      font-weight: 800;
+      font-weight: 800; line-height: 1.35; margin: 14px 0 12px;
       background: linear-gradient(135deg, #fff 40%, var(--accent2));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .page-hero p { color: var(--muted); margin-top: 10px; font-size: 1.05rem; }
+    .page-hero p { color: var(--muted); margin-top: 8px; font-size: 1.05rem; line-height: 1.6; }
 
     /* ── Form styles ── */
     .form-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 20px; padding: 40px; max-width: 520px; margin: 0 auto;
     }
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; margin-bottom: 8px; font-size: .88rem; font-weight: 500; color: var(--muted); }
+    .form-group { margin-bottom: 22px; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: .88rem; font-weight: 500; color: var(--muted); line-height: 1.5; }
     .form-group input,
     .form-group select,
     .form-group textarea {

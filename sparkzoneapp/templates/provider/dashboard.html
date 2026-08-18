@@ -35,9 +35,9 @@ table.provider-table tr:last-child td { border-bottom: none; }
   <div class="container">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
       <div>
-        <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-store"></i> Provider Panel</span>
-        <h1>{{ provider.businessName }}</h1>
-        <p><i class="fa-solid fa-location-dot" style="color:var(--accent2);margin-right:6px;"></i>{{ provider.address }}, {{ provider.city.name }} • Phone: {{ provider.phone }}</p>
+        <span class="badge" style="margin-bottom:14px;"><i class="fa-solid fa-store"></i> Provider Panel</span>
+        <h1 style="margin:14px 0 12px;line-height:1.35;">{{ provider.businessName }}</h1>
+        <p style="line-height:1.6;margin-top:6px;"><i class="fa-solid fa-location-dot" style="color:var(--accent2);margin-right:6px;"></i>{{ provider.address }}, {{ provider.city.name }} • Phone: {{ provider.phone }}</p>
       </div>
       <div style="display:flex;gap:12px;">
         <a href="{% url 'provider_booking_requests' %}" class="btn btn-neon" style="padding:12px 20px;">
