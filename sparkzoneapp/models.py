@@ -132,10 +132,21 @@ class Game(models.Model):
     image_url = models.URLField(max_length=2000, null=True, blank=True)
     available_games = models.TextField(null=True, blank=True, help_text="Comma-separated names of games available at this station")
     operating_hours = models.CharField(max_length=100, default="09:00 AM - 10:00 PM", null=True, blank=True)
+    out_of_service_units = models.CharField(max_length=255, null=True, blank=True, help_text="Comma-separated unit numbers out of service e.g. 2,5")
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
         return self.name
+
+    def get_disabled_units_set(self):
+        if not self.out_of_service_units:
+            return set()
+        res = set()
+        for item in self.out_of_service_units.split(','):
+            item = item.strip()
+            if item.isdigit():
+                res.add(int(item))
+        return res
 
     def get_games_list(self):
         if not self.available_games:
@@ -225,6 +236,7 @@ class Booking(models.Model):
     totalAmount = models.FloatField()
     status = models.CharField(max_length=60, choices=STATUS_CHOICES, default='pending', db_index=True)
     unit_number = models.IntegerField(null=True, blank=True, help_text="Specific unit/console number (1..N)")
+    unit_numbers = models.CharField(max_length=255, null=True, blank=True, help_text="Comma-separated unit numbers e.g. 4,5")
     requested_at = models.DateTimeField(auto_now_add=True, db_index=True, null=True, blank=True)
     responded_at = models.DateTimeField(null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
@@ -232,6 +244,19 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.user.firstName} {self.user.lastName} / {self.game.name} / {self.get_status_display()}"
+
+    def get_unit_numbers_list(self):
+        if self.unit_numbers:
+            res = []
+            for item in self.unit_numbers.split(','):
+                item = item.strip()
+                if item.isdigit():
+                    res.append(int(item))
+            if res:
+                return res
+        if self.unit_number:
+            return [self.unit_number]
+        return []
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

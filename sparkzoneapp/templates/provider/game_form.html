@@ -119,6 +119,32 @@
         </div>
       </div>
 
+      <!-- Provider Unit Maintenance & Status Management -->
+      <div class="form-group" style="background:rgba(124,58,237,.06);border:1px dashed rgba(124,58,237,.35);border-radius:16px;padding:20px;margin-bottom:24px;">
+        <label style="font-weight:700;color:var(--neon);display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span><i class="fa-solid fa-screwdriver-wrench" style="color:var(--accent2);margin-right:6px;"></i> Individual Rigs / Consoles Maintenance Status</span>
+          <span id="disabled-count-badge" style="font-size:.75rem;background:var(--accent);color:#fff;padding:2px 10px;border-radius:12px;font-weight:600;">0 Out of Service</span>
+        </label>
+        <span style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:14px;line-height:1.6;">
+          Click any unit block below to toggle its status (Active vs. Out of Service / Under Maintenance). Units marked Out of Service will be greyed out for gamers. Booked status is automatically synced from live customer reservations.
+        </span>
+
+        <input type="hidden" name="out_of_service_units" id="out-of-service-hidden" value="{% if is_edit and game.out_of_service_units %}{{ game.out_of_service_units }}{% endif %}" />
+
+        <div id="provider-units-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(95px, 1fr));gap:10px;margin-bottom:14px;">
+          <!-- Dynamically populated via JS -->
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px;font-size:.78rem;color:var(--muted);justify-content:center;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--border);background:var(--bg3);display:inline-block;"></span> Active (Free)
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:12px;height:12px;border-radius:4px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);display:inline-block;"></span> Out of Service
+          </div>
+        </div>
+      </div>
+
       <!-- Device Photo File Upload & Gallery Option -->
       <div style="background:rgba(0,212,255,.05);border:1px dashed var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
         <h4 style="font-weight:700;font-size:.92rem;margin-bottom:14px;color:var(--neon);">
@@ -315,9 +341,64 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  if (categorySelect) {
-    categorySelect.addEventListener('change', renderSuggestions);
+  // Provider Unit Maintenance Status Map Logic
+  const initialDisabledStr = "{% if is_edit and game.out_of_service_units %}{{ game.out_of_service_units|escapejs }}{% endif %}";
+  let disabledUnitsSet = new Set(
+    initialDisabledStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n))
+  );
+
+  function renderProviderUnitMap() {
+    const totalInput = document.getElementById('g-total');
+    const container = document.getElementById('provider-units-grid');
+    const hiddenInput = document.getElementById('out-of-service-hidden');
+    const badge = document.getElementById('disabled-count-badge');
+    if (!totalInput || !container) return;
+
+    const totalCount = parseInt(totalInput.value, 10) || 1;
+    container.innerHTML = '';
+
+    for (let u = 1; u <= totalCount; u++) {
+      const isDisabled = disabledUnitsSet.has(u);
+      const div = document.createElement('div');
+      div.className = 'provider-unit-card';
+      div.style.cssText = 'padding:10px 8px;border-radius:10px;text-align:center;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px;user-select:none;';
+      
+      if (isDisabled) {
+        div.style.background = 'rgba(239,68,68,.15)';
+        div.style.border = '1px solid rgba(239,68,68,.4)';
+        div.style.color = 'var(--danger)';
+        div.innerHTML = `<i class="fa-solid fa-wrench" style="font-size:.85rem;margin-bottom:2px;"></i>Unit ${u}<span style="font-size:.68rem;font-weight:600;">Maintenance</span>`;
+      } else {
+        div.style.background = 'var(--bg3)';
+        div.style.border = '2px solid var(--border)';
+        div.style.color = 'var(--text)';
+        div.innerHTML = `<i class="fa-solid fa-desktop" style="color:var(--accent2);font-size:.85rem;margin-bottom:2px;"></i>Unit ${u}<span style="font-size:.68rem;color:var(--neon);">Active</span>`;
+      }
+
+      div.onclick = function() {
+        if (disabledUnitsSet.has(u)) {
+          disabledUnitsSet.delete(u);
+        } else {
+          disabledUnitsSet.add(u);
+        }
+        hiddenInput.value = Array.from(disabledUnitsSet).sort((a,b)=>a-b).join(', ');
+        if (badge) badge.textContent = `${disabledUnitsSet.size} Out of Service`;
+        renderProviderUnitMap();
+      };
+
+      container.appendChild(div);
+    }
+
+    const activeDisabled = Array.from(disabledUnitsSet).filter(u => u <= totalCount);
+    hiddenInput.value = activeDisabled.sort((a,b)=>a-b).join(', ');
+    if (badge) badge.textContent = `${activeDisabled.length} Out of Service`;
   }
+
+  const totalInp = document.getElementById('g-total');
+  if (totalInp) {
+    totalInp.addEventListener('input', renderProviderUnitMap);
+  }
+  renderProviderUnitMap();
 
   renderAll();
 });

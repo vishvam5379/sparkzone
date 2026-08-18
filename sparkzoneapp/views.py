@@ -423,6 +423,7 @@ def provider_game_add(request):
         category_id = request.POST.get('category')
         city_id = request.POST.get('city')
         available_games = request.POST.get('available_games', '').strip()
+        out_of_service_units = request.POST.get('out_of_service_units', '').strip()
         description = request.POST.get('description', '').strip()
         address = request.POST.get('address', '').strip()
         pricePerHour = float(request.POST.get('pricePerHour', 200))
@@ -442,6 +443,7 @@ def provider_game_add(request):
             city=city_obj,
             name=name,
             available_games=available_games,
+            out_of_service_units=out_of_service_units,
             description=description,
             address=address,
             pricePerHour=pricePerHour,
@@ -480,6 +482,7 @@ def provider_game_edit(request, game_id):
         game.category_id = request.POST.get('category')
         game.city_id = request.POST.get('city')
         game.available_games = request.POST.get('available_games', '').strip()
+        game.out_of_service_units = request.POST.get('out_of_service_units', '').strip()
         game.description = request.POST.get('description', '').strip()
         game.address = request.POST.get('address', '').strip()
         game.pricePerHour = float(request.POST.get('pricePerHour', 200))
@@ -678,6 +681,7 @@ def get_unit_availability_api(request, game_id):
     end_time_str = request.GET.get('end_time')
 
     total_systems = game.totalSystem or 1
+    disabled_units = game.get_disabled_units_set()
     units = []
 
     if date_str and start_time_str and end_time_str:
@@ -700,33 +704,44 @@ def get_unit_availability_api(request, game_id):
             unassigned_count = 0
 
             for b in active_bookings:
-                if b.unit_number:
-                    booked_unit_numbers.add(b.unit_number)
+                b_units = b.get_unit_numbers_list()
+                if b_units:
+                    for bu in b_units:
+                        booked_unit_numbers.add(bu)
                 else:
                     unassigned_count += 1
 
             if unassigned_count > 0:
                 for u in range(1, total_systems + 1):
-                    if u not in booked_unit_numbers:
+                    if u not in booked_unit_numbers and u not in disabled_units:
                         booked_unit_numbers.add(u)
                         unassigned_count -= 1
                         if unassigned_count == 0:
                             break
 
             for u in range(1, total_systems + 1):
+                if u in disabled_units:
+                    st = 'maintenance'
+                elif u in booked_unit_numbers:
+                    st = 'booked'
+                else:
+                    st = 'available'
                 units.append({
                     'unit_number': u,
-                    'status': 'booked' if u in booked_unit_numbers else 'available'
+                    'status': st
                 })
         except Exception:
             for u in range(1, total_systems + 1):
-                units.append({'unit_number': u, 'status': 'available'})
+                st = 'maintenance' if u in disabled_units else 'available'
+                units.append({'unit_number': u, 'status': st})
     else:
         for u in range(1, total_systems + 1):
-            units.append({'unit_number': u, 'status': 'available'})
+            st = 'maintenance' if u in disabled_units else 'available'
+            units.append({'unit_number': u, 'status': st})
 
     return JsonResponse({
         'total_systems': total_systems,
+        'disabled_units': list(disabled_units),
         'units': units
     })
 
@@ -744,8 +759,15 @@ def booking(request, game_id):
         endTime = request.POST.get('endTime')
         paymentMethod = request.POST.get('paymentMethod', 'credit_card')
         slot_id = request.POST.get('slot_id')
-        unit_number_val = request.POST.get('unit_number')
-        unit_number = int(unit_number_val) if unit_number_val and unit_number_val.isdigit() else None
+
+        unit_numbers_raw = request.POST.get('unit_numbers') or request.POST.get('unit_number', '')
+        selected_units = []
+        for item in str(unit_numbers_raw).split(','):
+            item = item.strip()
+            if item.isdigit():
+                u_val = int(item)
+                if u_val not in selected_units:
+                    selected_units.append(u_val)
 
         from datetime import datetime
         fmt = '%H:%M'
@@ -756,9 +778,15 @@ def booking(request, game_id):
             messages.error(request, 'End time must be after start time.')
             return redirect('booking', game_id=game_id)
 
-        if not unit_number:
-            messages.error(request, 'Please select a specific gaming unit/console to proceed with booking.')
+        if not selected_units:
+            messages.error(request, 'Please select at least one available gaming unit/console to proceed with booking.')
             return redirect('booking', game_id=game_id)
+
+        disabled_units = game.get_disabled_units_set()
+        for u in selected_units:
+            if u in disabled_units:
+                messages.error(request, f'Unit {u} is currently out of service / under maintenance. Please select another unit.')
+                return redirect('booking', game_id=game_id)
 
         # Credit Card Backend Validation
         if paymentMethod == 'credit_card':
@@ -806,20 +834,27 @@ def booking(request, game_id):
                         return redirect('my_bookings')
 
             # Real-time backend check for unit collision
-            already_booked = Booking.objects.filter(
+            active_bookings = Booking.objects.filter(
                 game=game,
                 bookingDate=bookingDate,
-                unit_number=unit_number,
                 status__in=['pending', 'accepted', 'confirmed'],
                 startTime__lt=end.time(),
                 endTime__gt=start.time()
-            ).exists()
-            if already_booked:
-                messages.error(request, f'Unit {unit_number} is already booked for the selected time slot. Please choose another available unit.')
-                return redirect('booking', game_id=game_id)
+            )
+            already_booked_units = set()
+            for b in active_bookings:
+                for bu in b.get_unit_numbers_list():
+                    already_booked_units.add(bu)
+
+            for u in selected_units:
+                if u in already_booked_units:
+                    messages.error(request, f'Unit {u} is already booked for the selected time slot. Please choose available units.')
+                    return redirect('booking', game_id=game_id)
 
             price_per_hr = slot_obj.get_price() if slot_obj else game.pricePerHour
-            totalAmount = hours * price_per_hr
+            num_units = len(selected_units)
+            totalAmount = hours * price_per_hr * num_units
+            unit_numbers_str = ", ".join(str(x) for x in selected_units)
 
             booking_obj = Booking.objects.create(
                 user=user,
@@ -830,7 +865,8 @@ def booking(request, game_id):
                 endTime=endTime,
                 totalAmount=totalAmount,
                 status='pending',
-                unit_number=unit_number
+                unit_number=selected_units[0],
+                unit_numbers=unit_numbers_str
             )
 
             Payment.objects.create(
@@ -846,11 +882,12 @@ def booking(request, game_id):
                 Notification.objects.create(
                     user=game.provider.user,
                     booking=booking_obj,
-                    title="New Booking Request 🎮",
-                    message=f"{user.firstName} {user.lastName} requested Unit {unit_number} at {game.name} on {bookingDate} ({startTime}-{endTime})."
+                    title="New Multi-Unit Booking Request 🎮",
+                    message=f"{user.firstName} {user.lastName} requested {num_units} unit(s) ({unit_numbers_str}) at {game.name} on {bookingDate} ({startTime}-{endTime})."
                 )
 
-        messages.success(request, f'Your booking request for Unit {unit_number} has been submitted and is pending provider approval!')
+        messages.success(request, f'Your booking request for Unit(s) {unit_numbers_str} has been submitted and is pending provider approval!')
+        return redirect('my_bookings')
         return redirect('my_bookings')
 
     available_slots = Slot.objects.filter(game=game, status='available').order_by('slotDate', 'startTime')

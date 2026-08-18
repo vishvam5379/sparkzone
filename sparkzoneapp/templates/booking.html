@@ -120,7 +120,8 @@
           Click an available unit block below to select your seat. Occupied units for your chosen date & time slot are greyed out.
         </span>
 
-        <input type="hidden" name="unit_number" id="selected-unit-number" value="" required />
+        <input type="hidden" name="unit_numbers" id="selected-units-input" value="" required />
+        <input type="hidden" name="unit_number" id="selected-unit-number" value="" />
 
         <!-- Interactive Grid Map -->
         <div id="unit-seat-map" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(95px, 1fr));gap:12px;margin-bottom:16px;">
@@ -137,6 +138,9 @@
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
             <span style="width:12px;height:12px;border-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);display:inline-block;"></span> Booked
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:12px;height:12px;border-radius:4px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);display:inline-block;"></span> Out of Service
           </div>
         </div>
       </div>
@@ -390,15 +394,13 @@
 
   const gameId = {{ game.id }};
   const totalSystems = {{ game.totalSystem }};
-  let selectedUnit = null;
+  let selectedUnitsSet = new Set();
 
   async function fetchUnitAvailability() {
     const dateVal = document.getElementById('bookingDate').value;
     const startVal = document.getElementById('startTime').value;
     const endVal = document.getElementById('endTime').value;
     const container = document.getElementById('unit-seat-map');
-    const badge = document.getElementById('selected-unit-badge');
-    const unitInput = document.getElementById('selected-unit-number');
 
     if (!container) return;
 
@@ -421,59 +423,89 @@
       }
     }
 
+    // Remove any units that are now booked or in maintenance for the selected time slot
+    unitsData.forEach(u => {
+      if ((u.status === 'booked' || u.status === 'maintenance') && selectedUnitsSet.has(u.unit_number)) {
+        selectedUnitsSet.delete(u.unit_number);
+      }
+    });
+
+    updateSelectedInputsAndBadge();
+
     container.innerHTML = '';
     unitsData.forEach(u => {
       const isBooked = u.status === 'booked';
-      const isSelected = selectedUnit === u.unit_number;
+      const isMaintenance = u.status === 'maintenance';
+      const isSelected = selectedUnitsSet.has(u.unit_number);
 
       const btn = document.createElement('div');
       btn.className = 'unit-seat-btn';
       btn.dataset.unit = u.unit_number;
-      btn.title = isBooked ? `Unit ${u.unit_number} (Booked for this time slot)` : `Click to select Unit ${u.unit_number}`;
-
-      let baseStyle = 'padding:12px 8px;border-radius:12px;text-align:center;font-weight:700;font-size:.85rem;transition:all .2s ease;user-select:none;display:flex;flex-direction:column;align-items:center;gap:4px;';
       
-      if (isBooked) {
+      let baseStyle = 'padding:12px 8px;border-radius:12px;text-align:center;font-weight:700;font-size:.85rem;transition:all .2s ease;user-select:none;display:flex;flex-direction:column;align-items:center;gap:4px;';
+
+      if (isMaintenance) {
+        btn.title = `Unit ${u.unit_number} (Out of Service / Under Maintenance)`;
+        baseStyle += 'background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);color:var(--danger);cursor:not-allowed;opacity:.75;';
+        btn.innerHTML = `<i class="fa-solid fa-wrench" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:600;">Maintenance</span>`;
+      } else if (isBooked) {
+        btn.title = `Unit ${u.unit_number} (Booked for this time slot)`;
         baseStyle += 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:var(--muted);cursor:not-allowed;opacity:.55;';
         btn.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:600;">Booked</span>`;
       } else if (isSelected) {
+        btn.title = `Unit ${u.unit_number} (Selected - Click to deselect)`;
         baseStyle += 'background:linear-gradient(135deg,var(--accent),var(--neon));border:2px solid var(--neon);color:#fff;box-shadow:0 0 15px rgba(0,212,255,.4);transform:scale(1.04);cursor:pointer;';
         btn.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:700;">Selected</span>`;
+        btn.onclick = function() { toggleUnitNumber(u.unit_number); };
       } else {
+        btn.title = `Click to select Unit ${u.unit_number}`;
         baseStyle += 'background:var(--bg3);border:2px solid var(--border);color:var(--text);cursor:pointer;';
         btn.innerHTML = `<i class="fa-solid fa-desktop" style="color:var(--accent2);font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;color:var(--neon);">Free</span>`;
-        btn.onmouseover = function() { if (selectedUnit !== u.unit_number) this.style.borderColor = 'var(--neon)'; };
-        btn.onmouseout = function() { if (selectedUnit !== u.unit_number) this.style.borderColor = 'var(--border)'; };
-        btn.onclick = function() { selectUnitNumber(u.unit_number); };
+        btn.onmouseover = function() { if (!selectedUnitsSet.has(u.unit_number)) this.style.borderColor = 'var(--neon)'; };
+        btn.onmouseout = function() { if (!selectedUnitsSet.has(u.unit_number)) this.style.borderColor = 'var(--border)'; };
+        btn.onclick = function() { toggleUnitNumber(u.unit_number); };
       }
 
       btn.style.cssText = baseStyle;
       container.appendChild(btn);
     });
 
-    if (selectedUnit) {
-      const selectedItem = unitsData.find(u => u.unit_number === selectedUnit);
-      if (selectedItem && selectedItem.status === 'booked') {
-        selectedUnit = null;
-        unitInput.value = '';
+    calcPrice();
+  }
+
+  function toggleUnitNumber(unitNum) {
+    if (selectedUnitsSet.has(unitNum)) {
+      selectedUnitsSet.delete(unitNum);
+    } else {
+      selectedUnitsSet.add(unitNum);
+    }
+    updateSelectedInputsAndBadge();
+    fetchUnitAvailability();
+  }
+
+  function updateSelectedInputsAndBadge() {
+    const badge = document.getElementById('selected-unit-badge');
+    const unitsInput = document.getElementById('selected-units-input');
+    const unitSingleInput = document.getElementById('selected-unit-number');
+
+    const sortedArray = Array.from(selectedUnitsSet).sort((a, b) => a - b);
+    const joinedStr = sortedArray.join(', ');
+
+    if (unitsInput) unitsInput.value = joinedStr;
+    if (unitSingleInput) unitSingleInput.value = sortedArray.length > 0 ? sortedArray[0] : '';
+
+    if (badge) {
+      if (sortedArray.length === 0) {
         badge.textContent = 'No Unit Selected';
         badge.style.background = 'var(--accent)';
+      } else if (sortedArray.length === 1) {
+        badge.textContent = `Unit ${sortedArray[0]} Selected`;
+        badge.style.background = 'var(--success)';
       } else {
-        badge.textContent = `Unit ${selectedUnit} Selected`;
+        badge.textContent = `${sortedArray.length} Units Selected (Units ${joinedStr})`;
         badge.style.background = 'var(--success)';
       }
     }
-  }
-
-  function selectUnitNumber(unitNum) {
-    selectedUnit = unitNum;
-    document.getElementById('selected-unit-number').value = unitNum;
-    const badge = document.getElementById('selected-unit-badge');
-    if (badge) {
-      badge.textContent = `Unit ${unitNum} Selected`;
-      badge.style.background = 'var(--success)';
-    }
-    fetchUnitAvailability();
   }
 
   function selectSlot(id, date, start, end) {
@@ -492,8 +524,9 @@
       const [sh,sm] = startInp.value.split(':').map(Number);
       const [eh,em] = endInp.value.split(':').map(Number);
       const hours = ((eh*60+em) - (sh*60+sm)) / 60;
+      const count = Math.max(selectedUnitsSet.size, 1);
       if (hours > 0) {
-        amount = (hours * pricePerHour).toFixed(2);
+        amount = (hours * pricePerHour * count).toFixed(2);
       }
     }
     const upiUri = `upi://pay?pa=sparkzone@upi&pn=SparkZone Gaming&am=${amount}&cu=INR&tn=${encodeURIComponent('Booking for ' + gameName)}`;
@@ -516,9 +549,11 @@
     const [sh,sm] = startInp.value.split(':').map(Number);
     const [eh,em] = endInp.value.split(':').map(Number);
     const hours = ((eh*60+em) - (sh*60+sm)) / 60;
+    const count = Math.max(selectedUnitsSet.size, 1);
     if (hours > 0) {
       calcBox.style.display = 'flex';
-      estPrice.textContent = '₹' + (hours * pricePerHour).toFixed(2);
+      const total = hours * pricePerHour * count;
+      estPrice.textContent = '₹' + total.toFixed(2) + (selectedUnitsSet.size > 1 ? ` (${selectedUnitsSet.size} units)` : '');
     } else {
       calcBox.style.display = 'none';
     }
@@ -531,10 +566,10 @@
 
   if (bookingForm) {
     bookingForm.addEventListener('submit', function(e) {
-      const selectedUnitVal = document.getElementById('selected-unit-number').value;
-      if (!selectedUnitVal) {
+      const selectedUnitsVal = document.getElementById('selected-units-input').value;
+      if (!selectedUnitsVal) {
         e.preventDefault();
-        alert('Please select an available Gaming Console / Unit (e.g. Unit 1) from the seat map before confirming your booking.');
+        alert('Please select at least one available Gaming Console / Unit (e.g. Unit 1) from the seat map before confirming your booking.');
         document.getElementById('unit-seat-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
