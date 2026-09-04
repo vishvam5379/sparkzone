@@ -48,8 +48,8 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "cloudinary_storage",
     "django.contrib.staticfiles",
+    "cloudinary_storage",
     "cloudinary",
     "sparkzoneapp"
 ]
@@ -153,6 +153,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+WHITENOISE_MANIFEST_STRICT = False
 
 # Cloudinary & Media Storage Configuration
 CLOUDINARY_STORAGE = {
@@ -172,7 +174,7 @@ if CLOUDINARY_ENABLED:
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
 else:
@@ -188,7 +190,7 @@ else:
                 }
             },
             "staticfiles": {
-                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
             },
         }
     else:
@@ -198,7 +200,7 @@ else:
                 "BACKEND": "django.core.files.storage.FileSystemStorage",
             },
             "staticfiles": {
-                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
             },
         }
 
