@@ -46,20 +46,40 @@ def seed():
     # 3. Categories with cover photo URLs
     categories_data = [
         {
-            "categoryName": "Action & Adventure",
-            "description": "High-octane action, open-world exploration, and immersive storylines.",
-            "image": "Category/openworld.webp",
-            "image_url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=640&q=75"
+            "categoryName": "Fighting",
+            "description": "Martial arts combat, explosive combos, and competitive 1v1 fighting games.",
+            "image": "Category/fighting.webp",
+            "image_url": "/static/images/categories/fighting.webp"
         },
         {
-            "categoryName": "FPS & Shooter",
-            "description": "Fast-paced tactical first-person shooters and multiplayer battle arenas.",
-            "image_url": "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=640&q=75"
+            "categoryName": "Shooting",
+            "description": "Tactical first-person shooters, sniper missions, and multiplayer warfare.",
+            "image": "Category/shooting.webp",
+            "image_url": "/static/images/categories/shooting.webp"
         },
         {
-            "categoryName": "Racing & Sports",
-            "description": "Supercars, realistic physics, and adrenaline-pumping racing games.",
-            "image_url": "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=640&q=75"
+            "categoryName": "Open World",
+            "description": "High-octane action, vast open-world exploration, and immersive storylines.",
+            "image": "Category/open_world.webp",
+            "image_url": "/static/images/categories/open_world.webp"
+        },
+        {
+            "categoryName": "Racing",
+            "description": "Supercars, realistic physics, and adrenaline-pumping high speed racing.",
+            "image": "Category/racing.webp",
+            "image_url": "/static/images/categories/racing.webp"
+        },
+        {
+            "categoryName": "Sports",
+            "description": "Championship soccer, basketball, cricket, and high-energy competitive sports.",
+            "image": "Category/sports.webp",
+            "image_url": "/static/images/categories/sports.webp"
+        },
+        {
+            "categoryName": "RPG",
+            "description": "Epic fantasy role-playing quests, magic spells, and character progression.",
+            "image": "Category/rpg.webp",
+            "image_url": "/static/images/categories/rpg.webp"
         }
     ]
 
@@ -82,7 +102,7 @@ def seed():
         {
             "name": "Grand Theft Auto VI",
             "provider": provider_profile,
-            "category": category_objs["Action & Adventure"],
+            "category": category_objs.get("Open World") or category_objs.get("Action & Adventure"),
             "city": ahmedabad,
             "description": "Experience the ultimate next-gen open world gaming station with Vice City & RTX 4090 performance.",
             "address": "SparkZone Arena, CG Road, Ahmedabad",
@@ -97,7 +117,7 @@ def seed():
         {
             "name": "Cyberpunk 2077: Phantom Liberty",
             "provider": provider_profile,
-            "category": category_objs["Action & Adventure"],
+            "category": category_objs.get("Open World") or category_objs.get("Action & Adventure"),
             "city": mumbai,
             "description": "Dive into Night City with full Ray Tracing, 4K OLED display, and haptic feedback gear.",
             "address": "SparkZone Hub, Bandra West, Mumbai",
@@ -111,7 +131,7 @@ def seed():
         {
             "name": "Valorant Pro Arena",
             "provider": provider_profile,
-            "category": category_objs["FPS & Shooter"],
+            "category": category_objs.get("Shooting") or category_objs.get("FPS & Shooter"),
             "city": bengaluru,
             "description": "360Hz Esports monitors, low-latency mechanical keyboards, and 1Gbps fiber gaming line.",
             "address": "SparkZone Lounge, Indiranagar, Bengaluru",
@@ -125,7 +145,7 @@ def seed():
         {
             "name": "Forza Horizon 5 Simulator",
             "provider": provider_profile,
-            "category": category_objs["Racing & Sports"],
+            "category": category_objs.get("Racing") or category_objs.get("Racing & Sports"),
             "city": ahmedabad,
             "description": "Full motion simulator rig with Fanatec direct drive wheel, pedals, and VR headset.",
             "address": "SparkZone Arena, SG Highway, Ahmedabad",
@@ -139,7 +159,7 @@ def seed():
         {
             "name": "Call of Duty: Warzone",
             "provider": provider_profile,
-            "category": category_objs["FPS & Shooter"],
+            "category": category_objs.get("Shooting") or category_objs.get("FPS & Shooter"),
             "city": mumbai,
             "description": "Battle royale squad stations equipped with surround sound headsets and 240Hz monitors.",
             "address": "SparkZone Hub, Andheri East, Mumbai",

@@ -72,6 +72,19 @@ class ProviderProfile(models.Model):
 DEFAULT_GAMING_IMAGE = "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=640&q=75"
 DEFAULT_CATEGORY_IMAGE = "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=640&q=75"
 
+CATEGORY_IMAGE_MAPPING = {
+    'fighting': '/static/images/categories/fighting.webp',
+    'shooting': '/static/images/categories/shooting.webp',
+    'fps': '/static/images/categories/shooting.webp',
+    'fps & shooter': '/static/images/categories/shooting.webp',
+    'open world': '/static/images/categories/open_world.webp',
+    'action & adventure': '/static/images/categories/open_world.webp',
+    'racing': '/static/images/categories/racing.webp',
+    'racing & sports': '/static/images/categories/racing.webp',
+    'sports': '/static/images/categories/sports.webp',
+    'rpg': '/static/images/categories/rpg.webp',
+}
+
 class Category(models.Model):
     categoryName = models.CharField(max_length=100, unique=True, db_index=True)
     description = models.TextField(blank=True, null=True)
@@ -83,21 +96,26 @@ class Category(models.Model):
         return self.categoryName
 
     def get_image_url(self):
-        if self.image:
-            try:
-                if hasattr(self.image.storage, 'exists') and not self.image.storage.exists(self.image.name):
-                    if self.image_url:
-                        return self.image_url
-                    return DEFAULT_CATEGORY_IMAGE
-                return self.image.url
-            except Exception:
-                pass
         if self.image_url:
             url = self.image_url
             if 'images.unsplash.com' in url and 'auto=format' not in url:
                 sep = '&' if '?' in url else '?'
                 url = f"{url}{sep}auto=format&fit=crop&w=400&q=60"
             return url
+        if self.image:
+            try:
+                if hasattr(self.image.storage, 'exists') and self.image.storage.exists(self.image.name):
+                    return self.image.url
+                elif not hasattr(self.image.storage, 'exists'):
+                    return self.image.url
+            except Exception:
+                pass
+        cat_key = self.categoryName.lower().strip()
+        if cat_key in CATEGORY_IMAGE_MAPPING:
+            return CATEGORY_IMAGE_MAPPING[cat_key]
+        for key, img_path in CATEGORY_IMAGE_MAPPING.items():
+            if key in cat_key or cat_key in key:
+                return img_path
         return DEFAULT_CATEGORY_IMAGE
 
     def get_image_srcset(self):
