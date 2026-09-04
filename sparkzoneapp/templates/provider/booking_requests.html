@@ -1,37 +1,44 @@
-{% extends 'base.html' %}
+{% extends 'dashboard_base.html' %}
 {% block title %}Booking Requests – Provider Panel{% endblock %}
+
+{% block page_title %}
+  <i class="fa-solid fa-inbox" style="color:var(--accent2);font-size:1.15rem;"></i>
+  <span>Booking Requests</span>
+{% endblock %}
 
 {% block extra_css %}
 .req-table-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 20px; padding: 28px; overflow-x: auto; margin-top: 0;
+  background: var(--dash-card); border: 1px solid var(--dash-border);
+  border-radius: 18px; padding: 26px; overflow-x: auto; margin-top: 0;
 }
 table.req-table { width: 100%; border-collapse: collapse; text-align: left; }
 table.req-table th {
-  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  padding: 14px 16px; border-bottom: 1px solid var(--dash-border);
   color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em;
+  background: rgba(255, 255, 255, 0.02);
 }
 table.req-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,.05); font-size: .9rem; vertical-align: middle; }
 table.req-table tr:last-child td { border-bottom: none; }
+table.req-table tr:hover td { background: rgba(124, 58, 237, 0.03); }
 {% endblock %}
 
 {% block content %}
-<div class="page-hero">
-  <div class="container">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-      <div>
-        <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-clock-rotate-left"></i> Requests Management</span>
-        <h1>Booking Requests</h1>
-        <p>Review, accept, or reject incoming slot booking requests from gamers</p>
-      </div>
-      <a href="{% url 'provider_dashboard' %}" class="btn btn-outline" style="padding:10px 20px;">
-        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
-      </a>
+<div style="margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+  <div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <span class="dash-role-badge role-provider"><i class="fa-solid fa-clock-rotate-left"></i> Requests Management</span>
     </div>
+    <h1 style="font-family:var(--font-heading);font-size:1.55rem;font-weight:800;color:#fff;margin-bottom:4px;">
+      Gamer Booking Requests
+    </h1>
+    <p style="color:var(--muted);font-size:0.88rem;">Review, accept, or reject incoming station reservation requests from gamers.</p>
   </div>
+  <a href="{% url 'provider_dashboard' %}" class="btn btn-outline" style="padding:10px 18px;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+  </a>
 </div>
 
-<div class="container" style="padding-bottom:80px;">
+<div>
   <div class="req-table-card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <h3 style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;">

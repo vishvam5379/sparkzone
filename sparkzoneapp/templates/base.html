@@ -405,17 +405,17 @@
           {% endif %}
         </button>
 
-        <a href="{% if '/provider/' in request.path or logged_in_user.role == 'provider' %}{% url 'provider_dashboard' %}{% else %}{% url 'my_bookings' %}{% endif %}" class="nav-user" style="text-decoration:none;color:inherit;cursor:pointer;" title="Go to Dashboard">
+        <a href="{% if logged_in_user.role == 'provider' %}{% url 'provider_dashboard' %}{% else %}{% url 'gamer_dashboard' %}{% endif %}" class="nav-user" style="text-decoration:none;color:inherit;cursor:pointer;" title="Go to Dashboard">
           <div class="nav-user-avatar">{{ logged_in_user.firstName.0 }}{{ logged_in_user.lastName.0 }}</div>
           <span style="font-size:.88rem;font-weight:500;">{{ logged_in_user.firstName }}</span>
         </a>
-        {% if '/provider/' in request.path %}
+        {% if logged_in_user.role == 'provider' %}
           <a href="{% url 'provider_dashboard' %}" class="btn btn-neon" style="padding:9px 18px;font-size:.85rem;">
             <i class="fa-solid fa-store" style="margin-right:4px;"></i> Provider Panel
           </a>
         {% else %}
-          <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="padding:9px 18px;font-size:.85rem;">
-            <i class="fa-solid fa-calendar-check" style="margin-right:4px;color:var(--accent2);"></i> Bookings
+          <a href="{% url 'gamer_dashboard' %}" class="btn btn-neon" style="padding:9px 18px;font-size:.85rem;">
+            <i class="fa-solid fa-gamepad" style="margin-right:4px;"></i> Gamer Dashboard
           </a>
         {% endif %}
         <a href="{% url 'logout' %}" class="btn btn-outline" style="padding:9px 14px;font-size:.85rem;display:inline-flex;align-items:center;gap:6px;color:#ef4444;border-color:rgba(239,68,68,0.3);" title="Logout">
@@ -486,20 +486,20 @@
     </ul>
     <div class="mobile-nav-actions">
       {% if logged_in_user %}
-        <a href="{% if '/provider/' in request.path or logged_in_user.role == 'provider' %}{% url 'provider_dashboard' %}{% else %}{% url 'my_bookings' %}{% endif %}" class="mobile-user-card" style="text-decoration:none;color:inherit;cursor:pointer;">
+        <a href="{% if logged_in_user.role == 'provider' %}{% url 'provider_dashboard' %}{% else %}{% url 'gamer_dashboard' %}{% endif %}" class="mobile-user-card" style="text-decoration:none;color:inherit;cursor:pointer;">
           <div class="nav-user-avatar">{{ logged_in_user.firstName.0 }}{{ logged_in_user.lastName.0 }}</div>
           <div style="overflow:hidden;">
             <div style="font-weight:700;font-size:.9rem;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">{{ logged_in_user.firstName }} {{ logged_in_user.lastName }}</div>
             <div style="font-size:.75rem;color:var(--muted);white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">{{ logged_in_user.email }}</div>
           </div>
         </a>
-        {% if '/provider/' in request.path %}
+        {% if logged_in_user.role == 'provider' %}
           <a href="{% url 'provider_dashboard' %}" class="btn btn-neon" style="width:100%;justify-content:center;">
             <i class="fa-solid fa-store"></i> Provider Panel
           </a>
         {% else %}
-          <a href="{% url 'my_bookings' %}" class="btn btn-outline" style="width:100%;justify-content:center;">
-            <i class="fa-solid fa-calendar-check"></i> My Bookings
+          <a href="{% url 'gamer_dashboard' %}" class="btn btn-neon" style="width:100%;justify-content:center;">
+            <i class="fa-solid fa-gamepad"></i> Gamer Dashboard
           </a>
         {% endif %}
         <a href="{% url 'logout' %}" class="btn btn-outline" style="width:100%;justify-content:center;color:var(--danger);border-color:rgba(239,68,68,.3);" title="Logout">
@@ -559,9 +559,10 @@
           <li><a href="{% url 'register' %}">Register</a></li>
           <li><a href="{% url 'login' %}">Login</a></li>
           {% else %}
-          <li><a href="{% url 'my_bookings' %}">My Bookings</a></li>
           {% if logged_in_user.role == 'provider' or logged_in_user.provider_profile %}
           <li><a href="{% url 'provider_dashboard' %}">Provider Panel</a></li>
+          {% else %}
+          <li><a href="{% url 'gamer_dashboard' %}">Gamer Dashboard</a></li>
           {% endif %}
           <li><a href="{% url 'logout' %}">Logout</a></li>
           {% endif %}

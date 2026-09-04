@@ -22,6 +22,13 @@ class User(models.Model):
     def is_provider(self):
         return self.role == 'provider'
 
+    def is_gamer(self):
+        return self.role in ['user', 'gamer']
+
+    @property
+    def role_title(self):
+        return 'Provider' if self.role == 'provider' else 'Gamer'
+
 class Country(models.Model):
     name = models.CharField(max_length=100, db_index=True)
 

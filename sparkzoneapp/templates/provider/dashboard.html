@@ -1,11 +1,22 @@
-{% extends 'base.html' %}
+{% extends 'dashboard_base.html' %}
 {% block title %}Provider Dashboard – SparkZone{% endblock %}
 
+{% block page_title %}
+  <i class="fa-solid fa-store" style="color:var(--accent2);font-size:1.15rem;"></i>
+  <span>Provider Control Panel</span>
+{% endblock %}
+
 {% block extra_css %}
-.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-bottom: 36px; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px; }
 .stat-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 18px;
+  background: var(--dash-card); border: 1px solid var(--dash-border);
+  border-radius: 16px; padding: 22px; display: flex; align-items: center; gap: 18px;
+  transition: all 0.25s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(168,85,247,0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 .stat-icon {
   width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
@@ -14,47 +25,61 @@
   display: flex; align-items: center; justify-content: center;
   color: var(--neon); font-size: 1.4rem;
 }
-.stat-val { font-family: 'Orbitron', monospace; font-size: 1.6rem; font-weight: 800; color: var(--text); }
+.stat-val { font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: var(--text); }
 .stat-lbl { font-size: .85rem; color: var(--muted); margin-top: 2px; }
 
 .table-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 20px; padding: 28px; overflow-x: auto;
+  background: var(--dash-card); border: 1px solid var(--dash-border);
+  border-radius: 18px; padding: 28px; overflow-x: auto;
+  margin-bottom: 28px;
 }
 table.provider-table { width: 100%; border-collapse: collapse; text-align: left; }
 table.provider-table th {
-  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  padding: 14px 16px; border-bottom: 1px solid var(--dash-border);
   color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em;
+  background: rgba(255, 255, 255, 0.02);
 }
 table.provider-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,.05); font-size: .9rem; vertical-align: middle; }
 table.provider-table tr:last-child td { border-bottom: none; }
+table.provider-table tr:hover td { background: rgba(124, 58, 237, 0.03); }
+
+/* Tab Panes */
+.ptab-pane { display: none; }
+.ptab-pane.active { display: block; }
 {% endblock %}
 
 {% block content %}
-<div class="page-hero">
-  <div class="container">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-      <div>
-        <span class="badge" style="margin-bottom:14px;"><i class="fa-solid fa-store"></i> Provider Panel</span>
-        <h1 style="margin:14px 0 12px;line-height:1.35;">{{ provider.businessName }}</h1>
-        <p style="line-height:1.6;margin-top:6px;"><i class="fa-solid fa-location-dot" style="color:var(--accent2);margin-right:6px;"></i>{{ provider.address }}, {{ provider.city.name }} • Phone: {{ provider.phone }}</p>
-      </div>
-      <div style="display:flex;gap:12px;">
-        <a href="{% url 'provider_booking_requests' %}" class="btn btn-neon" style="padding:12px 20px;">
-          <i class="fa-solid fa-inbox"></i> Booking Requests
-          {% if pending_requests_count > 0 %}
-          <span style="background:var(--danger);color:#fff;font-size:.75rem;padding:2px 8px;border-radius:10px;margin-left:6px;font-weight:800;">{{ pending_requests_count }}</span>
-          {% endif %}
-        </a>
-        <a href="{% url 'provider_game_add' %}" class="btn btn-primary" style="padding:12px 20px;">
-          <i class="fa-solid fa-plus"></i> Add Gaming Station
-        </a>
-      </div>
+<!-- Provider Header Inside Dashboard -->
+<div style="margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <span class="dash-role-badge role-provider"><i class="fa-solid fa-store"></i> Provider Portal</span>
+      <span style="color:var(--muted);font-size:0.82rem;">
+        <i class="fa-solid fa-location-dot" style="color:var(--accent2);margin-right:4px;"></i>{{ provider.address }}, {{ provider.city.name }} • Phone: {{ provider.phone }}
+      </span>
     </div>
+    <h1 style="font-family:var(--font-heading);font-size:1.65rem;font-weight:800;color:#fff;margin-bottom:4px;">
+      {{ provider.businessName }}
+    </h1>
+    <p style="color:var(--muted);font-size:0.88rem;">
+      Real-time station control, booking requests, and commercial center management.
+    </p>
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;">
+    <a href="{% url 'provider_booking_requests' %}" class="btn btn-neon" style="padding:10px 18px;">
+      <i class="fa-solid fa-inbox"></i> Booking Requests
+      {% if pending_requests_count > 0 %}
+      <span style="background:var(--danger);color:#fff;font-size:.72rem;padding:2px 7px;border-radius:10px;margin-left:6px;font-weight:800;">{{ pending_requests_count }}</span>
+      {% endif %}
+    </a>
+    <a href="{% url 'provider_game_add' %}" class="btn btn-primary" style="padding:10px 20px;">
+      <i class="fa-solid fa-plus"></i> Add Gaming Station
+    </a>
   </div>
 </div>
 
-<div class="container" style="padding-bottom:80px;">
+<!-- ════════ TAB 1: MY LISTINGS ════════ -->
+<div id="ptab-listings" class="ptab-pane active">
   <!-- Stats -->
   <div class="dashboard-grid">
     <div class="stat-card">
@@ -66,38 +91,40 @@ table.provider-table tr:last-child td { border-bottom: none; }
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+      <div class="stat-icon" style="color:var(--neon);"><i class="fa-solid fa-calendar-check"></i></div>
       <div>
         <div class="stat-val">{{ total_slots_count }}</div>
         <div class="stat-lbl">Active Time Slots</div>
       </div>
     </div>
 
-    <a href="{% url 'provider_booking_requests' %}" class="stat-card" style="text-decoration:none;color:inherit;transition:transform .2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-      <div class="stat-icon"><i class="fa-solid fa-inbox"></i></div>
+    <a href="{% url 'provider_booking_requests' %}" class="stat-card" style="text-decoration:none;color:inherit;">
+      <div class="stat-icon" style="color:var(--gold);"><i class="fa-solid fa-inbox"></i></div>
       <div>
         <div class="stat-val">{{ total_bookings_count }}</div>
-        <div class="stat-lbl">Booking Requests {% if pending_requests_count %}<strong style="color:#f59e0b;">({{ pending_requests_count }} pending)</strong>{% endif %}</div>
+        <div class="stat-lbl">
+          Requests {% if pending_requests_count %}<strong style="color:var(--gold);">({{ pending_requests_count }} pending)</strong>{% endif %}
+        </div>
       </div>
     </a>
 
-    <div class="stat-card">
-      <div class="stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+    <div class="stat-card" onclick="activateProviderTab('earnings')" style="cursor:pointer;">
+      <div class="stat-icon" style="color:var(--success);"><i class="fa-solid fa-indian-rupee-sign"></i></div>
       <div>
         <div class="stat-val">₹{{ total_earnings|floatformat:0 }}</div>
-        <div class="stat-lbl">Total Earnings</div>
+        <div class="stat-lbl">Total Earnings (Click for details)</div>
       </div>
     </div>
   </div>
 
   <!-- Games Management Table -->
   <div class="table-card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-      <h3 style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+      <h3 style="font-family:var(--font-heading);font-size:1.15rem;font-weight:700;color:#fff;">
         <i class="fa-solid fa-list-check" style="color:var(--accent2);margin-right:8px;"></i>
         Your Gaming Stations & Rigs
       </h3>
-      <a href="{% url 'provider_game_add' %}" class="btn btn-neon" style="font-size:.85rem;padding:8px 18px;">
+      <a href="{% url 'provider_game_add' %}" class="btn btn-neon" style="font-size:.82rem;padding:7px 16px;">
         + New Game
       </a>
     </div>
@@ -122,13 +149,16 @@ table.provider-table tr:last-child td { border-bottom: none; }
               {% if g.get_image_url %}
                 <img src="{{ g.get_image_url }}" alt="{{ g.name }}" style="width:50px;height:38px;border-radius:8px;object-fit:cover;" onerror="this.onerror=null;this.src='{{ g.category.get_image_url }}';" />
               {% else %}
-                <div style="width:50px;height:38px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;">🎮</div>
+                <div style="width:50px;height:38px;border-radius:8px;background:var(--dash-sidebar);display:flex;align-items:center;justify-content:center;">🎮</div>
               {% endif %}
-              <div style="font-weight:700;color:var(--text);">{{ g.name }}</div>
+              <div>
+                <div style="font-weight:700;color:var(--text);">{{ g.name }}</div>
+                <div style="font-size:0.75rem;color:var(--muted);">₹{{ g.pricePerHour|floatformat:0 }}/hr</div>
+              </div>
             </div>
           </td>
-          <td><span class="badge" style="font-size:.75rem;">{{ g.category.categoryName }}</span></td>
-          <td>{{ g.totalSystem }} Total / {{ g.availableSystems }} Free</td>
+          <td><span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;background:rgba(124,58,237,0.15);color:var(--accent2);border:1px solid rgba(124,58,237,0.3);">{{ g.category.categoryName }}</span></td>
+          <td>{{ g.totalSystem }} Total</td>
           <td>
             {% if g.status == 'active' %}
               <span style="color:var(--success);font-weight:600;font-size:.82rem;"><i class="fa-solid fa-circle-dot"></i> Active</span>
@@ -137,16 +167,19 @@ table.provider-table tr:last-child td { border-bottom: none; }
             {% endif %}
           </td>
           <td>
-            <a href="{% url 'provider_slot_manage' g.id %}" class="btn btn-outline" style="padding:6px 12px;font-size:.8rem;border-radius:8px;">
+            <a href="{% url 'provider_slot_manage' g.id %}" class="btn btn-outline" style="padding:5px 12px;font-size:.8rem;border-radius:8px;">
               <i class="fa-solid fa-clock"></i> Slots ({{ g.slots.count }})
             </a>
           </td>
           <td>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              <a href="{% url 'provider_game_edit' g.id %}" class="btn btn-outline" style="padding:6px 10px;font-size:.8rem;border-radius:8px;" title="Edit Station">
-                <i class="fa-solid fa-pen-to-square"></i> Edit
+              <button type="button" class="btn btn-outline" onclick="openProviderSeatMap('{{ g.id }}', '{{ g.name|escapejs }}')" style="padding:5px 10px;font-size:.8rem;border-radius:8px;color:var(--neon);border-color:rgba(0,212,255,.3);" title="Live Unit Map">
+                <i class="fa-solid fa-desktop"></i> Live Map
+              </button>
+              <a href="{% url 'provider_game_edit' g.id %}" class="btn btn-outline" style="padding:5px 10px;font-size:.8rem;border-radius:8px;" title="Edit Station">
+                <i class="fa-solid fa-pen-to-square"></i>
               </a>
-              <a href="{% url 'provider_game_delete' g.id %}" class="btn btn-outline" onclick="return confirm('Are you sure you want to delete or deactivate this station?')" style="padding:6px 10px;font-size:.8rem;border-radius:8px;color:var(--danger);border-color:rgba(239,68,68,.3);" title="Delete Station">
+              <a href="{% url 'provider_game_delete' g.id %}" class="btn btn-outline" onclick="return confirm('Are you sure you want to delete or deactivate this station?')" style="padding:5px 10px;font-size:.8rem;border-radius:8px;color:var(--danger);border-color:rgba(239,68,68,.3);" title="Delete Station">
                 <i class="fa-solid fa-trash"></i>
               </a>
             </div>
@@ -165,30 +198,118 @@ table.provider-table tr:last-child td { border-bottom: none; }
   </div>
 </div>
 
+<!-- ════════ TAB 2: EARNINGS ════════ -->
+<div id="ptab-earnings" class="ptab-pane">
+  <div class="table-card">
+    <h3 style="font-family:var(--font-heading);font-size:1.15rem;font-weight:700;color:#fff;margin-bottom:20px;">
+      <i class="fa-solid fa-chart-line" style="color:var(--success);margin-right:8px;"></i>
+      Revenue & Earnings Summary
+    </h3>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:20px;margin-bottom:28px;">
+      <div style="background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(0,212,255,0.08));border:1px solid rgba(16,185,129,0.35);border-radius:16px;padding:24px;">
+        <span style="font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Total Completed Revenue</span>
+        <div style="font-family:var(--font-heading);font-size:2.2rem;font-weight:900;color:#fff;margin:8px 0;">
+          ₹{{ total_earnings|floatformat:2 }}
+        </div>
+        <p style="font-size:0.82rem;color:var(--success);">
+          <i class="fa-solid fa-circle-check"></i> From fulfilled gaming sessions
+        </p>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--dash-border);border-radius:16px;padding:24px;">
+        <span style="font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Total Bookings Received</span>
+        <div style="font-family:var(--font-heading);font-size:2.2rem;font-weight:900;color:var(--text);margin:8px 0;">
+          {{ total_bookings_count }}
+        </div>
+        <p style="font-size:0.82rem;color:var(--muted);">
+          Active slots: {{ total_slots_count }}
+        </p>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;">
+      <a href="{% url 'provider_booking_requests' %}" class="btn btn-neon">
+        View All Booking Transactions <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ TAB 3: SETTINGS ════════ -->
+<div id="ptab-settings" class="ptab-pane">
+  <div class="table-card">
+    <h3 style="font-family:var(--font-heading);font-size:1.15rem;font-weight:700;color:#fff;margin-bottom:20px;">
+      <i class="fa-solid fa-sliders" style="color:var(--accent2);margin-right:8px;"></i>
+      Provider Center Profile & Details
+    </h3>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:24px;">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <div style="color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;">Business / Lounge Name</div>
+          <div style="font-size:1.1rem;font-weight:700;color:#fff;margin-top:2px;">{{ provider.businessName }}</div>
+        </div>
+        <div>
+          <div style="color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;">Contact Phone</div>
+          <div style="font-size:0.95rem;color:var(--text);margin-top:2px;">+91 {{ provider.phone }}</div>
+        </div>
+        <div>
+          <div style="color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;">City & Location</div>
+          <div style="font-size:0.95rem;color:var(--text);margin-top:2px;">{{ provider.address }}, {{ provider.city.name }}</div>
+        </div>
+        <div>
+          <div style="color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;">Account Status</div>
+          <div style="margin-top:4px;">
+            <span class="dash-role-badge role-provider"><i class="fa-solid fa-circle-check"></i> Verified Partner</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--dash-border);border-radius:14px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <h4 style="font-family:var(--font-heading);font-size:0.95rem;color:#fff;margin-bottom:8px;">Quick Actions</h4>
+          <p style="color:var(--muted);font-size:0.82rem;line-height:1.5;">
+            Need to update your center address or business details? Contact admin or support.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px;">
+          <a href="{% url 'contact' %}" class="btn btn-outline" style="font-size:0.85rem;justify-content:center;">
+            <i class="fa-solid fa-headset"></i> Contact Support
+          </a>
+          <a href="{% url 'logout' %}" class="btn btn-outline" style="font-size:0.85rem;justify-content:center;color:var(--danger);border-color:rgba(239,68,68,0.3);">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Provider Live Seat Map & Maintenance Modal -->
-<div id="provider-seatmap-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:650px;width:100%;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;max-height:90vh;overflow-y:auto;">
+<div id="provider-seatmap-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);">
+  <div style="background:var(--dash-card);border:1px solid var(--dash-border);border-radius:20px;max-width:650px;width:100%;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.8);position:relative;max-height:90vh;overflow-y:auto;">
     <button onclick="closeProviderSeatMap()" style="position:absolute;top:20px;right:20px;background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;">&times;</button>
     
     <div style="margin-bottom:20px;">
-      <span class="badge" style="margin-bottom:8px;"><i class="fa-solid fa-gamepad"></i> Real-Time Provider Monitor</span>
-      <h2 id="modal-station-title" style="font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;color:var(--text);">Station Seat Map</h2>
+      <span class="dash-role-badge role-provider" style="margin-bottom:8px;"><i class="fa-solid fa-gamepad"></i> Real-Time Provider Monitor</span>
+      <h2 id="modal-station-title" style="font-family:var(--font-heading);font-size:1.3rem;font-weight:700;color:#fff;margin-top:4px;">Station Seat Map</h2>
       <p style="font-size:.84rem;color:var(--muted);margin-top:4px;">Live unit status and customer reservations. Click any unit to toggle Booked status.</p>
     </div>
 
     <!-- Date/Time Selector Controls -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;background:var(--bg3);padding:14px;border-radius:12px;border:1px solid var(--border);">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;border:1px solid var(--dash-border);">
       <div>
         <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Date</label>
-        <input type="date" id="psm-date" style="width:100%;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.82rem;" />
+        <input type="date" id="psm-date" style="width:100%;padding:6px 10px;background:var(--dash-sidebar);border:1px solid var(--dash-border);border-radius:8px;color:var(--text);font-size:.82rem;" />
       </div>
       <div>
         <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Start Time</label>
-        <input type="time" id="psm-start" style="width:100%;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.82rem;" />
+        <input type="time" id="psm-start" style="width:100%;padding:6px 10px;background:var(--dash-sidebar);border:1px solid var(--dash-border);border-radius:8px;color:var(--text);font-size:.82rem;" />
       </div>
       <div>
         <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">End Time</label>
-        <input type="time" id="psm-end" style="width:100%;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.82rem;" />
+        <input type="time" id="psm-end" style="width:100%;padding:6px 10px;background:var(--dash-sidebar);border:1px solid var(--dash-border);border-radius:8px;color:var(--text);font-size:.82rem;" />
       </div>
     </div>
 
@@ -203,18 +324,44 @@ table.provider-table tr:last-child td { border-bottom: none; }
     </div>
 
     <!-- Legend -->
-    <div style="display:flex;align-items:center;gap:16px;font-size:.8rem;color:var(--muted);justify-content:center;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:16px;font-size:.8rem;color:var(--muted);justify-content:center;padding-top:14px;border-top:1px solid var(--dash-border);flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:6px;">
-        <span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--border);background:var(--bg3);display:inline-block;"></span> Available (Click to toggle Booked)
+        <span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--dash-border);background:rgba(255,255,255,0.05);display:inline-block;"></span> Available
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
-        <span style="width:12px;height:12px;border-radius:4px;background:rgba(0,212,255,.18);border:1px solid var(--neon);display:inline-block;"></span> Booked (Gamer Reservation)
+        <span style="width:12px;height:12px;border-radius:4px;background:rgba(0,212,255,.25);border:1px solid var(--neon);display:inline-block;"></span> Booked (Gamer Reservation)
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="width:12px;height:12px;border-radius:4px;background:rgba(239,68,68,.25);border:1px solid var(--danger);display:inline-block;"></span> Blocked
       </div>
     </div>
   </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
+  function activateProviderTab(tabName) {
+    document.querySelectorAll('.ptab-pane').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('ptab-' + tabName);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.dash-nav-item').forEach(el => el.classList.remove('active'));
+    const navBtn = document.getElementById('pnav-' + tabName);
+    if (navBtn) navBtn.classList.add('active');
+
+    if (history.pushState) {
+      history.pushState(null, null, '#' + tabName);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && ['listings', 'earnings', 'settings'].includes(hash)) {
+      activateProviderTab(hash);
+    }
+  });
+
   let activePsmGameId = null;
 
   function openProviderSeatMap(gameId, gameName) {
@@ -267,7 +414,7 @@ table.provider-table tr:last-child td { border-bottom: none; }
           div.style.border = '1px solid rgba(239,68,68,.4)';
           div.style.color = 'var(--danger)';
           div.title = `Unit ${u.unit_number} is Booked (Manual Block). Click to toggle available.`;
-          div.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:600;">Booked</span>`;
+          div.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:600;">Blocked</span>`;
           div.onclick = () => togglePsmMaintenance(u.unit_number);
         } else if (u.status === 'booked') {
           div.style.background = 'rgba(0,212,255,.12)';
@@ -288,8 +435,8 @@ table.provider-table tr:last-child td { border-bottom: none; }
             }
           };
         } else {
-          div.style.background = 'var(--bg3)';
-          div.style.border = '2px solid var(--border)';
+          div.style.background = 'rgba(255,255,255,0.03)';
+          div.style.border = '2px solid var(--dash-border)';
           div.style.color = 'var(--text)';
           div.title = `Unit ${u.unit_number} is Available. Click to toggle Booked.`;
           div.innerHTML = `<i class="fa-solid fa-desktop" style="color:var(--accent2);font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;color:var(--success);">Available</span>`;

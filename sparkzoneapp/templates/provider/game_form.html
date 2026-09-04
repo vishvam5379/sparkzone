@@ -1,66 +1,105 @@
-{% extends 'base.html' %}
+{% extends 'dashboard_base.html' %}
 {% block title %}{% if is_edit %}Edit {{ game.name }}{% else %}Add Gaming Station{% endif %} – Provider Panel{% endblock %}
 
+{% block page_title %}
+  <i class="fa-solid fa-gamepad" style="color:var(--neon);font-size:1.15rem;"></i>
+  <span>{% if is_edit %}Edit Station{% else %}Add Gaming Station{% endif %}</span>
+{% endblock %}
+
+{% block extra_css %}
+.form-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.form-section-header i {
+  color: var(--accent2);
+  font-size: 1.05rem;
+}
+{% endblock %}
+
 {% block content %}
-<div class="page-hero">
-  <div class="container">
-    <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-store"></i> Provider Management</span>
-    <h1>{% if is_edit %}Edit Station: {{ game.name }}{% else %}Add New Gaming Station{% endif %}</h1>
-    <p>Fill in the details below to list your gaming setup for customers to book</p>
+<div style="margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+  <div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <span class="dash-role-badge role-provider"><i class="fa-solid fa-store"></i> Provider Management</span>
+    </div>
+    <h1 style="font-family:var(--font-heading);font-size:1.55rem;font-weight:800;color:#fff;margin-bottom:4px;">
+      {% if is_edit %}Edit Station: {{ game.name }}{% else %}Add New Gaming Station{% endif %}
+    </h1>
+    <p style="color:var(--muted);font-size:0.88rem;">Configure your gaming hardware, pricing, installed titles, and seat availability.</p>
   </div>
+  <a href="{% url 'provider_dashboard' %}" class="btn btn-outline" style="padding:10px 18px;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+  </a>
 </div>
 
-<div class="container" style="padding-bottom:80px;max-width:720px;">
-  <div class="form-card" style="max-width:100%;">
+<div style="max-width:900px;margin:0 auto;">
+  <div class="form-card">
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
-      <div class="form-group">
-        <label for="g-name"><i class="fa-solid fa-gamepad" style="margin-right:6px;color:var(--accent2);"></i>Game / Station Title</label>
-        <input type="text" name="name" id="g-name" placeholder="e.g. PlayStation 5 Pro Lounge" required {% if is_edit %}value="{{ game.name }}"{% endif %} />
-      </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div class="form-group">
-          <label for="g-cat"><i class="fa-solid fa-layer-group" style="margin-right:6px;color:var(--accent2);"></i>Category</label>
-          <select name="category" id="g-cat" class="filter-select" style="width:100%;" required>
-            {% for cat in categories %}
-            <option value="{{ cat.id }}" {% if is_edit and game.category_id == cat.id %}selected{% endif %}>
-              {{ cat.categoryName }}
-            </option>
-            {% endfor %}
-          </select>
+      <!-- Section 1: Basic Station Information -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>Basic Station Information</span>
         </div>
 
         <div class="form-group">
-          <label for="g-city"><i class="fa-solid fa-city" style="margin-right:6px;color:var(--accent2);"></i>City Location</label>
-          <select name="city" id="g-city" class="filter-select" style="width:100%;" required>
-            {% for c in cities %}
-            <option value="{{ c.id }}" {% if is_edit and game.city_id == c.id %}selected{% endif %}>
-              {{ c.name }} ({{ c.state.name }})
-            </option>
-            {% endfor %}
-          </select>
+          <label for="g-name"><i class="fa-solid fa-gamepad"></i> Game / Station Title *</label>
+          <input type="text" name="name" id="g-name" placeholder="e.g. PlayStation 5 Pro Lounge" required {% if is_edit %}value="{{ game.name }}"{% endif %} />
+        </div>
+
+        <div class="form-grid-2" style="margin-bottom:0;">
+          <div class="form-group">
+            <label for="g-cat"><i class="fa-solid fa-layer-group"></i> Category *</label>
+            <select name="category" id="g-cat" class="filter-select" required>
+              {% for cat in categories %}
+              <option value="{{ cat.id }}" {% if is_edit and game.category_id == cat.id %}selected{% endif %}>
+                {{ cat.categoryName }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="g-city"><i class="fa-solid fa-city"></i> City Location *</label>
+            <select name="city" id="g-city" class="filter-select" required>
+              {% for c in cities %}
+              <option value="{{ c.id }}" {% if is_edit and game.city_id == c.id %}selected{% endif %}>
+                {{ c.name }} ({{ c.state.name }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
       </div>
 
-      <!-- Available Games Section (Enhanced Dynamic Chip Selector) -->
-      <div class="form-group" style="background:rgba(124,58,237,.06);border:1px dashed rgba(124,58,237,.35);border-radius:16px;padding:20px;margin-bottom:24px;box-shadow:0 8px 30px rgba(0,0,0,.2);">
-        <label style="font-weight:700;color:var(--neon);display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;line-height:1.4;">
-          <span style="display:flex;align-items:center;gap:8px;font-size:.95rem;">
-            <i class="fa-solid fa-gamepad" style="color:var(--accent2);font-size:1.1rem;"></i>
-            Names of Games Available / Installed Games
-          </span>
-          <span id="selected-count-badge" style="font-size:.75rem;background:var(--accent);color:#fff;padding:2px 10px;border-radius:12px;font-weight:600;">0 Selected</span>
-        </label>
-        <span style="font-size:.84rem;color:var(--muted);display:block;line-height:1.75;margin-bottom:16px;">
-          Select popular games for your category below, or type custom game names in the box and press <kbd style="background:var(--bg3);padding:2px 6px;border-radius:4px;border:1px solid var(--border);color:var(--neon);font-size:.75rem;display:inline-block;vertical-align:middle;margin:0 2px;">Enter</kbd> or <kbd style="background:var(--bg3);padding:2px 6px;border-radius:4px;border:1px solid var(--border);color:var(--neon);font-size:.75rem;display:inline-block;vertical-align:middle;margin:0 2px;">,</kbd>.
-        </span>
+      <!-- Section 2: Installed / Available Games -->
+      <div class="form-section" style="background:rgba(124,58,237,.04);border:1px dashed rgba(124,58,237,.35);">
+        <div class="form-section-header">
+          <i class="fa-solid fa-list-check"></i>
+          <span>Names of Games Available / Installed Games</span>
+          <span id="selected-count-badge" style="margin-left:auto;font-size:.75rem;background:var(--accent);color:#fff;padding:3px 10px;border-radius:12px;font-weight:600;">0 Selected</span>
+        </div>
+        
+        <p style="font-size:.84rem;color:var(--muted);line-height:1.6;margin-bottom:14px;">
+          Select popular games for your category below, or type custom game names in the box and press <kbd style="background:var(--dash-sidebar);padding:2px 6px;border-radius:4px;border:1px solid var(--dash-border);color:var(--neon);font-size:.75rem;">Enter</kbd> or <kbd style="background:var(--dash-sidebar);padding:2px 6px;border-radius:4px;border:1px solid var(--dash-border);color:var(--neon);font-size:.75rem;">,</kbd>.
+        </p>
 
         <!-- Hidden input submitted with form -->
         <input type="hidden" name="available_games" id="g-games-hidden" value="{% if is_edit and game.available_games %}{{ game.available_games }}{% endif %}" />
 
         <!-- Interactive Tag Container -->
-        <div id="game-tags-wrapper" style="min-height:50px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;cursor:text;transition:border-color .2s;" onclick="document.getElementById('custom-game-input').focus()">
+        <div id="game-tags-wrapper" style="min-height:50px;background:var(--dash-sidebar);border:1px solid var(--dash-border);border-radius:12px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;cursor:text;transition:border-color .2s;" onclick="document.getElementById('custom-game-input').focus()">
           <div id="selected-chips-container" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;"></div>
           <input type="text" id="custom-game-input" placeholder="+ Type custom game name & press Enter..." style="flex:1;min-width:180px;background:transparent;border:none;outline:none;color:var(--text);font-size:.88rem;padding:4px 0;" />
         </div>
@@ -77,97 +116,123 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="g-desc"><i class="fa-solid fa-align-left" style="margin-right:6px;color:var(--accent2);"></i>Station Description & Rig Specs</label>
-        <textarea name="description" id="g-desc" placeholder="Describe the gaming station, GPU specs, monitor refresh rate, controllers, VR gear..." required style="min-height:100px;">{% if is_edit %}{{ game.description }}{% endif %}</textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="g-addr"><i class="fa-solid fa-location-dot" style="margin-right:6px;color:var(--accent2);"></i>Exact Location Address</label>
-        <input type="text" name="address" id="g-addr" placeholder="e.g. SparkZone Hub, CG Road, Navrangpura" required {% if is_edit %}value="{{ game.address }}"{% endif %} />
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div class="form-group">
-          <label for="g-hours"><i class="fa-solid fa-clock" style="margin-right:6px;color:var(--accent2);"></i>Station Service / Operating Hours *</label>
-          <input type="text" name="operating_hours" id="g-hours" placeholder="e.g. 09:00 AM - 11:00 PM" required value="{% if is_edit and game.operating_hours %}{{ game.operating_hours }}{% else %}09:00 AM - 10:00 PM{% endif %}" />
+      <!-- Section 3: Description & Rig Specifications -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <i class="fa-solid fa-align-left"></i>
+          <span>Station Description & Rig Specs</span>
         </div>
-
-        <div class="form-group">
-          <label for="g-status"><i class="fa-solid fa-toggle-on" style="margin-right:6px;color:var(--accent2);"></i>Status</label>
-          <select name="status" id="g-status" class="filter-select" style="width:100%;">
-            <option value="active" {% if is_edit and game.status == 'active' %}selected{% endif %}>Active</option>
-            <option value="inactive" {% if is_edit and game.status == 'inactive' %}selected{% endif %}>Inactive</option>
-          </select>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="g-desc"><i class="fa-solid fa-align-left"></i> Station Description & Hardware Specs *</label>
+          <textarea name="description" id="g-desc" placeholder="Describe the gaming station, GPU specs, monitor refresh rate, controllers, VR gear..." required style="width:100%;min-height:120px;display:block;">{% if is_edit %}{{ game.description }}{% endif %}</textarea>
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div class="form-group">
-          <label for="g-total"><i class="fa-solid fa-desktop" style="margin-right:6px;color:var(--accent2);"></i>Total Rigs</label>
-          <input type="number" name="totalSystem" id="g-total" placeholder="10" required {% if is_edit %}value="{{ game.totalSystem }}"{% endif %} />
+      <!-- Section 4: Location Address -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <i class="fa-solid fa-location-dot"></i>
+          <span>Location & Venue</span>
         </div>
-
-        <div class="form-group">
-          <label for="g-avail"><i class="fa-solid fa-check" style="margin-right:6px;color:var(--accent2);"></i>Available Now</label>
-          <input type="number" name="availableSystems" id="g-avail" placeholder="8" required {% if is_edit %}value="{{ game.availableSystems }}"{% endif %} />
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="g-addr"><i class="fa-solid fa-location-dot"></i> Exact Venue Address *</label>
+          <input type="text" name="address" id="g-addr" placeholder="e.g. SparkZone Hub, CG Road, Navrangpura" required {% if is_edit %}value="{{ game.address }}"{% endif %} />
         </div>
       </div>
 
-      <!-- Provider Unit Booking & Status Management -->
-      <div class="form-group" style="background:rgba(124,58,237,.06);border:1px dashed rgba(124,58,237,.35);border-radius:16px;padding:20px;margin-bottom:24px;">
-        <label style="font-weight:700;color:var(--neon);display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <span><i class="fa-solid fa-gamepad" style="color:var(--accent2);margin-right:6px;"></i> Individual Rigs / Consoles Booking Status</span>
-          <span id="disabled-count-badge" style="font-size:.75rem;background:var(--accent);color:#fff;padding:2px 10px;border-radius:12px;font-weight:600;">0 Booked</span>
-        </label>
-        <span style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:14px;line-height:1.6;">
+      <!-- Section 5: Hours, Rigs & Status -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Station Capacity, Status & Operating Hours</span>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="g-hours"><i class="fa-solid fa-clock"></i> Operating / Service Hours *</label>
+            <input type="text" name="operating_hours" id="g-hours" placeholder="e.g. 09:00 AM - 11:00 PM" required value="{% if is_edit and game.operating_hours %}{{ game.operating_hours }}{% else %}09:00 AM - 10:00 PM{% endif %}" />
+          </div>
+
+          <div class="form-group">
+            <label for="g-status"><i class="fa-solid fa-toggle-on"></i> Station Listing Status *</label>
+            <select name="status" id="g-status" class="filter-select">
+              <option value="active" {% if is_edit and game.status == 'active' %}selected{% endif %}>Active (Open for Booking)</option>
+              <option value="inactive" {% if is_edit and game.status == 'inactive' %}selected{% endif %}>Inactive (Hidden)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2" style="margin-bottom:0;">
+          <div class="form-group">
+            <label for="g-total"><i class="fa-solid fa-desktop"></i> Total Station Units / Rigs *</label>
+            <input type="number" name="totalSystem" id="g-total" placeholder="10" min="1" required {% if is_edit %}value="{{ game.totalSystem }}"{% endif %} />
+          </div>
+
+          <div class="form-group">
+            <label for="g-avail"><i class="fa-solid fa-check"></i> Available Free Units Now *</label>
+            <input type="number" name="availableSystems" id="g-avail" placeholder="8" min="0" required {% if is_edit %}value="{{ game.availableSystems }}"{% endif %} />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 6: Individual Rigs Booking Status -->
+      <div class="form-section" style="background:rgba(124,58,237,.04);border:1px dashed rgba(124,58,237,.35);">
+        <div class="form-section-header">
+          <i class="fa-solid fa-gamepad"></i>
+          <span>Individual Rigs / Consoles Booking Status</span>
+          <span id="disabled-count-badge" style="margin-left:auto;font-size:.75rem;background:var(--accent);color:#fff;padding:3px 10px;border-radius:12px;font-weight:600;">0 Booked</span>
+        </div>
+
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">
           Click any unit block below to toggle its status (Active vs. Booked). Units marked Booked will be greyed out for gamers. Booked status is automatically synced from live customer reservations.
-        </span>
+        </p>
 
         <input type="hidden" name="out_of_service_units" id="out-of-service-hidden" value="{% if is_edit and game.out_of_service_units %}{{ game.out_of_service_units }}{% endif %}" />
 
-        <div id="provider-units-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(95px, 1fr));gap:10px;margin-bottom:14px;">
+        <div id="provider-units-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));gap:12px;margin-bottom:16px;">
           <!-- Dynamically populated via JS -->
         </div>
 
-        <div style="display:flex;align-items:center;gap:16px;font-size:.78rem;color:var(--muted);justify-content:center;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:18px;font-size:.78rem;color:var(--muted);justify-content:center;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;">
           <div style="display:flex;align-items:center;gap:6px;">
-            <span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--border);background:var(--bg3);display:inline-block;"></span> Active (Free)
+            <span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--dash-border);background:var(--dash-sidebar);display:inline-block;"></span> Active (Free)
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
-            <span style="width:12px;height:12px;border-radius:4px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);display:inline-block;"></span> Booked
+            <span style="width:12px;height:12px;border-radius:4px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);display:inline-block;"></span> Booked / Blocked
           </div>
         </div>
       </div>
 
-      <!-- Device Photo File Upload & Gallery Option -->
-      <div style="background:rgba(0,212,255,.05);border:1px dashed var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
-        <h4 style="font-weight:700;font-size:.92rem;margin-bottom:14px;color:var(--neon);">
-          <i class="fa-solid fa-images" style="margin-right:6px;"></i> Station Photos & Gallery Upload
-        </h4>
-
-        <div class="form-group">
-          <label for="g-file"><i class="fa-solid fa-upload" style="margin-right:6px;color:var(--accent2);"></i>Upload Cover Photo from Device</label>
-          <input type="file" name="image_file" id="g-file" accept="image/*" style="padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;" />
+      <!-- Section 7: Device Photo File Upload & Gallery Option -->
+      <div class="form-section" style="background:rgba(0,212,255,.03);border:1px dashed rgba(0,212,255,.3);">
+        <div class="form-section-header">
+          <i class="fa-solid fa-images" style="color:var(--neon);"></i>
+          <span style="color:var(--neon);">Station Photos & Gallery Upload</span>
         </div>
 
         <div class="form-group">
-          <label for="g-img"><i class="fa-solid fa-link" style="margin-right:6px;color:var(--accent2);"></i>Or Cover Image URL (Optional Fallback)</label>
+          <label for="g-file"><i class="fa-solid fa-upload"></i> Upload Cover Photo from Device</label>
+          <input type="file" name="image_file" id="g-file" accept="image/*" />
+        </div>
+
+        <div class="form-group">
+          <label for="g-img"><i class="fa-solid fa-link"></i> Or Cover Image URL (Optional Fallback)</label>
           <input type="url" name="image_url" id="g-img" placeholder="https://images.unsplash.com/photo-..." {% if is_edit and game.image_url %}value="{{ game.image_url }}"{% endif %} />
         </div>
 
         <div class="form-group" style="margin-bottom:0;">
-          <label for="g-gallery"><i class="fa-solid fa-images" style="margin-right:6px;color:var(--accent2);"></i>Upload Additional Gallery Photos from Device (Multiple)</label>
-          <input type="file" name="gallery_images" id="g-gallery" accept="image/*" multiple style="padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;" />
-          <span style="font-size:.78rem;color:var(--muted);margin-top:4px;display:block;">Hold Ctrl / Cmd to select multiple photos from your phone or PC.</span>
+          <label for="g-gallery"><i class="fa-solid fa-photo-film"></i> Upload Additional Gallery Photos from Device (Multiple)</label>
+          <input type="file" name="gallery_images" id="g-gallery" accept="image/*" multiple />
+          <span style="font-size:.78rem;color:var(--muted);margin-top:6px;display:block;">Hold Ctrl / Cmd to select multiple photos from your phone or PC.</span>
         </div>
       </div>
 
-      <div style="display:flex;gap:12px;margin-top:12px;">
-        <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center;padding:14px;">
+      <!-- Section 8: Form Actions -->
+      <div style="display:flex;gap:16px;margin-top:20px;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary" style="flex:1;min-width:200px;justify-content:center;padding:15px;font-size:1rem;">
           <i class="fa-solid fa-floppy-disk"></i> {% if is_edit %}Save Changes{% else %}Create Station{% endif %}
         </button>
-        <a href="{% url 'provider_dashboard' %}" class="btn btn-outline" style="padding:14px 24px;">Cancel</a>
+        <a href="{% url 'provider_dashboard' %}" class="btn btn-outline" style="padding:15px 28px;justify-content:center;">Cancel</a>
       </div>
     </form>
   </div>

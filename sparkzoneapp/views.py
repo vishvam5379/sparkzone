@@ -14,9 +14,13 @@ def get_logged_in_user(request):
     uid = request.session.get('user_id')
     if uid:
         try:
-            return User.objects.select_related('provider_profile').get(id=uid)
+            user = User.objects.select_related('provider_profile').get(id=uid)
+            if request.session.get('role') != user.role:
+                request.session['role'] = user.role
+            return user
         except User.DoesNotExist:
             request.session.pop('user_id', None)
+            request.session.pop('role', None)
     return None
 
 def get_user_notifications(user):
@@ -37,10 +41,26 @@ def render_with_notifs(request, template_name, context):
     user = get_logged_in_user(request)
     notifs, unread_count = get_user_notifications(user)
     context['logged_in_user'] = user
+    context['user'] = user
+    context['user_role'] = request.session.get('role', user.role if user else None)
     context['user_notifications'] = notifs
     context['unread_notifications_count'] = unread_count
     return render(request, template_name, context)
 
+def gamer_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        user = get_logged_in_user(request)
+        if not user:
+            messages.warning(request, 'Please log in to access your Gamer Dashboard.')
+            return redirect('login')
+        if user.role == 'pending':
+            return redirect('complete_profile')
+        if user.role == 'provider':
+            messages.info(request, 'Redirected to your Provider Panel.')
+            return redirect('provider_dashboard')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 def provider_required(view_func):
     @wraps(view_func)
@@ -49,6 +69,11 @@ def provider_required(view_func):
         if not user:
             messages.warning(request, 'Please log in to access the Provider Panel.')
             return redirect('login')
+        if user.role == 'pending':
+            return redirect('complete_profile')
+        if user.role != 'provider':
+            messages.info(request, 'Redirected to your Gamer Dashboard.')
+            return redirect('gamer_dashboard')
 
         # Auto-initialize provider profile if user accesses provider features
         try:
@@ -71,6 +96,7 @@ def provider_required(view_func):
             if user.role != 'provider':
                 user.role = 'provider'
                 user.save(update_fields=['role'])
+                request.session['role'] = 'provider'
 
         return view_func(request, *args, **kwargs)
     return wrapper
@@ -243,22 +269,36 @@ def google_login(request):
         first_name = info.get('given_name') or info.get('name', 'Google').split()[0]
         last_name = info.get('family_name') or 'User'
 
-        user, created = User.objects.get_or_create(
-            email=email,
-            defaults={
-                'firstName': first_name,
-                'lastName': last_name,
-                'password': hashlib.sha256(f"GoogleOAuth_{email}_{client_secret[:6]}".encode()).hexdigest(),
-                'role': 'user'
-            }
-        )
+        existing_user = User.objects.filter(email=email).first()
+        if not existing_user:
+            # Brand-new user: first-time Google login (redirect to role selection)
+            temp_password = hashlib.sha256(f"GoogleOAuth_{email}_{client_secret[:6]}".encode()).hexdigest()
+            user = User.objects.create(
+                email=email,
+                firstName=first_name,
+                lastName=last_name,
+                password=temp_password,
+                role='pending'
+            )
+            request.session['user_id'] = user.id
+            request.session['role'] = 'pending'
+            request.session['pending_role_selection'] = True
+            messages.info(request, f'Welcome to SparkZone, {first_name}! Please choose your role to complete your profile.')
+            return redirect('complete_profile')
+        else:
+            # Returning Google user: skip role selection and route straight to stored role dashboard
+            user = existing_user
+            request.session['user_id'] = user.id
+            request.session['role'] = user.role
+            request.session.pop('pending_role_selection', None)
 
-        request.session['user_id'] = user.id
-        messages.success(request, f'Welcome! Signed in with Google as {user.email}.')
+            if user.role == 'pending':
+                return redirect('complete_profile')
 
-        if user.role == 'provider':
-            return redirect('provider_dashboard')
-        return redirect('index')
+            messages.success(request, f'Welcome back, {user.firstName}!')
+            if user.role == 'provider':
+                return redirect('provider_dashboard')
+            return redirect('gamer_dashboard')
 
     except Exception as e:
         messages.error(request, f"Google Sign-In failed: {str(e)}")
@@ -363,9 +403,11 @@ def register(request):
 def login_view(request):
     logged_user = get_logged_in_user(request)
     if logged_user:
+        if logged_user.role == 'pending':
+            return redirect('complete_profile')
         if logged_user.role == 'provider':
             return redirect('provider_dashboard')
-        return redirect('index')
+        return redirect('gamer_dashboard')
 
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
@@ -374,16 +416,65 @@ def login_view(request):
 
         try:
             user = User.objects.get(email=email, password=hashed)
+            stored_role = user.role
             request.session['user_id'] = user.id
+            request.session['role'] = stored_role
             messages.success(request, f'Welcome back, {user.firstName}!')
-            if user.role == 'provider':
+
+            if stored_role == 'pending':
+                return redirect('complete_profile')
+            if stored_role == 'provider':
                 return redirect('provider_dashboard')
-            return redirect('index')
+            return redirect('gamer_dashboard')
         except User.DoesNotExist:
             messages.error(request, 'Invalid email or password.')
             return redirect('login')
 
     return render_with_notifs(request, 'login.html', {})
+
+# ─── Complete Profile (Google OAuth First-Time Role Selection) ──────────────────
+def complete_profile(request):
+    user = get_logged_in_user(request)
+    if not user:
+        messages.warning(request, 'Please log in or sign in with Google to continue.')
+        return redirect('login')
+
+    if user.role in ['user', 'provider']:
+        request.session['role'] = user.role
+        request.session.pop('pending_role_selection', None)
+        if user.role == 'provider':
+            return redirect('provider_dashboard')
+        return redirect('gamer_dashboard')
+
+    if request.method == 'POST':
+        selected_role = request.POST.get('role', 'user').strip()
+        if selected_role not in ['user', 'provider']:
+            selected_role = 'user'
+
+        user.role = selected_role
+        user.save(update_fields=['role'])
+        request.session['role'] = selected_role
+        request.session.pop('pending_role_selection', None)
+
+        if selected_role == 'provider':
+            default_city = City.objects.first()
+            ProviderProfile.objects.get_or_create(
+                user=user,
+                defaults={
+                    'businessName': f"{user.firstName}'s Gaming Center",
+                    'phone': 9313858614,
+                    'address': 'CG Road, Navrangpura',
+                    'city': default_city,
+                    'is_verified': True
+                }
+            )
+            messages.success(request, f'Profile completed! Welcome to your Provider Panel, {user.firstName}.')
+            return redirect('provider_dashboard')
+        else:
+            messages.success(request, f'Profile completed! Welcome to your Gamer Dashboard, {user.firstName}.')
+            return redirect('gamer_dashboard')
+
+    return render_with_notifs(request, 'complete_profile.html', {'pending_user': user})
 
 # ─── Logout ─────────────────────────────────────────────────────────────────────
 def logout_view(request):
@@ -977,20 +1068,40 @@ def cancel_booking(request, booking_id):
     messages.success(request, 'Booking request cancelled successfully.')
     return redirect('my_bookings')
 
-# ─── My Bookings ────────────────────────────────────────────────────────────────
-def my_bookings(request):
+# ─── Gamer Dashboard ────────────────────────────────────────────────────────────
+@gamer_required
+def gamer_dashboard(request):
     user = get_logged_in_user(request)
-    if not user:
-        return redirect('login')
-
     bookings = list(Booking.objects.filter(user=user).select_related('game', 'game__category').order_by('-timestamp'))
     payments = {p.booking_id: p for p in Payment.objects.filter(booking__in=bookings)}
     for b in bookings:
         b.payment_info = payments.get(b.id)
 
-    return render_with_notifs(request, 'my_bookings.html', {
+    total_bookings = len(bookings)
+    active_bookings = sum(1 for b in bookings if b.status in ['pending', 'accepted', 'confirmed'])
+    completed_bookings = sum(1 for b in bookings if b.status == 'accepted')
+    total_spent = sum(b.totalAmount for b in bookings if b.status in ['accepted', 'confirmed', 'pending'])
+    
+    stations = Game.objects.filter(status='active').select_related('category', 'city')[:8]
+
+    return render_with_notifs(request, 'gamer/dashboard.html', {
         'bookings': bookings,
+        'total_bookings': total_bookings,
+        'active_bookings': active_bookings,
+        'completed_bookings': completed_bookings,
+        'total_spent': total_spent,
+        'stations': stations,
+        'active_tab': request.GET.get('tab', 'bookings'),
     })
+
+# ─── My Bookings ────────────────────────────────────────────────────────────────
+def my_bookings(request):
+    user = get_logged_in_user(request)
+    if not user:
+        return redirect('login')
+    if user.role == 'provider':
+        return redirect('provider_dashboard')
+    return redirect('gamer_dashboard')
 
 # ─── Contact ────────────────────────────────────────────────────────────────────
 def contact(request):

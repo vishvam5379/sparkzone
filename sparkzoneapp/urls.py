@@ -20,8 +20,13 @@ urlpatterns = [
     path('api/provider/toggle-unit-maintenance/<int:game_id>/', views.provider_toggle_unit_maintenance_api, name='provider_toggle_unit_maintenance_api'),
 
 
+    # Dashboard Routes
+    path('dashboard/gamer/', views.gamer_dashboard, name='gamer_dashboard'),
+    path('dashboard/provider/', views.provider_dashboard, name='provider_dashboard'),
+    path('complete-profile/', views.complete_profile, name='complete_profile'),
+
     # Provider Panel Routes
-    path('provider/dashboard/', views.provider_dashboard, name='provider_dashboard'),
+    path('provider/dashboard/', views.provider_dashboard, name='provider_dashboard_legacy'),
     path('provider/games/add/', views.provider_game_add, name='provider_game_add'),
     path('provider/games/<int:game_id>/edit/', views.provider_game_edit, name='provider_game_edit'),
     path('provider/games/<int:game_id>/delete/', views.provider_game_delete, name='provider_game_delete'),
