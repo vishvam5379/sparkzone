@@ -183,21 +183,22 @@ class Game(models.Model):
         return [g.strip() for g in self.available_games.split(',') if g.strip()]
 
     def get_image_url(self):
-        if self.image:
-            try:
-                if hasattr(self.image.storage, 'exists') and not self.image.storage.exists(self.image.name):
-                    if self.image_url:
-                        return self.image_url
-                    return DEFAULT_GAMING_IMAGE
-                return self.image.url
-            except Exception:
-                pass
         if self.image_url:
             url = self.image_url
             if 'images.unsplash.com' in url and 'auto=format' not in url:
                 sep = '&' if '?' in url else '?'
                 url = f"{url}{sep}auto=format&fit=crop&w=400&q=60"
             return url
+        if self.image:
+            try:
+                if hasattr(self.image.storage, 'exists') and self.image.storage.exists(self.image.name):
+                    return self.image.url
+                elif not hasattr(self.image.storage, 'exists'):
+                    return self.image.url
+            except Exception:
+                pass
+        if self.category:
+            return self.category.get_image_url()
         return DEFAULT_GAMING_IMAGE
 
     def get_image_srcset(self):
