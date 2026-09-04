@@ -112,7 +112,7 @@
             <span style="font-size:.72rem;color:var(--muted);padding:2px 4px;">+{{ game.get_games_list|length|add:"-3" }} more</span>
             {% endif %}
           </div>
-          </div>
+          {% endif %}
         </div>
         <div class="game-card-footer" style="display:flex;gap:10px;">
           <a href="{% url 'game_detail' game.id %}" class="btn btn-outline" style="flex:1;justify-content:center;padding:10px;">
