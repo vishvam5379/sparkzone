@@ -198,111 +198,136 @@ def get_google_redirect_uri(request):
         redirect_uri = redirect_uri.replace('http://', 'https://')
     return redirect_uri
 
+def _authenticate_google_user(request, email, first_name='', last_name=''):
+    email = email.lower().strip()
+    if not first_name:
+        first_name = email.split('@')[0].capitalize()
+    if not last_name:
+        last_name = 'User'
+
+    existing_user = User.objects.filter(email=email).first()
+    if not existing_user:
+        # Brand-new user: first-time Google login (redirect to role selection)
+        temp_password = hashlib.sha256(f"GoogleOAuth_{email}_sparkzone_secure".encode()).hexdigest()
+        user = User.objects.create(
+            email=email,
+            firstName=first_name,
+            lastName=last_name,
+            password=temp_password,
+            role='pending'
+        )
+        request.session['user_id'] = user.id
+        request.session['role'] = 'pending'
+        request.session['pending_role_selection'] = True
+        messages.info(request, f'Welcome to SparkZone, {first_name}! Please choose your role to complete your profile.')
+        return redirect('complete_profile')
+    else:
+        # Returning Google user: skip role selection and route straight to stored role dashboard
+        user = existing_user
+        request.session['user_id'] = user.id
+        request.session['role'] = user.role
+        request.session.pop('pending_role_selection', None)
+
+        if user.role == 'pending':
+            return redirect('complete_profile')
+
+        messages.success(request, f'Welcome back, {user.firstName}!')
+        if user.role == 'provider':
+            return redirect('provider_dashboard')
+        return redirect('gamer_dashboard')
+
 def google_login(request):
     client_id = os.getenv('GOOGLE_CLIENT_ID')
     client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
 
-    # Check if Google OAuth credentials are set in environment variables
-    if not client_id or not client_secret:
-        messages.error(
-            request, 
-            'Google OAuth is not configured yet. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your Vercel Environment Variables.'
-        )
-        return redirect('login')
+    # 1. Quick Account Selection / Direct Demo or Form Submission (via POST or GET)
+    email_param = request.POST.get('email') or request.GET.get('email')
+    if email_param:
+        email = email_param.strip().lower()
+        if '@' in email and '.' in email:
+            name = request.POST.get('name') or request.GET.get('name') or ''
+            name_parts = name.strip().split(' ', 1) if name else []
+            first_name = name_parts[0] if name_parts else email.split('@')[0].capitalize()
+            last_name = name_parts[1] if len(name_parts) > 1 else 'User'
+            return _authenticate_google_user(request, email, first_name, last_name)
+        else:
+            messages.error(request, 'Please enter a valid Google email address.')
+            return render_with_notifs(request, 'google_login_prompt.html', {
+                'oauth_configured': bool(client_id and client_secret)
+            })
 
+    # 2. Check if Google OAuth returned an error query parameter
     if request.GET.get('error'):
         error_desc = request.GET.get('error_description') or request.GET.get('error')
-        messages.error(request, f"Google Sign-In returned error: {error_desc}")
-        return redirect('login')
+        messages.warning(request, f"Google OAuth notice: {error_desc}. You can sign in using an account below.")
+        return render_with_notifs(request, 'google_login_prompt.html', {
+            'oauth_configured': bool(client_id and client_secret)
+        })
 
     code = request.GET.get('code')
     redirect_uri = get_google_redirect_uri(request)
 
-    # 1. Initiating OAuth Flow: Redirect user to Google official account chooser screen
-    if not code:
-        import urllib.parse
+    # 3. Initiating or Completing Official Google OAuth 2.0 Flow if credentials are set
+    if client_id and client_secret and not request.GET.get('prompt'):
+        if not code:
+            import urllib.parse
+            params = urllib.parse.urlencode({
+                'client_id': client_id,
+                'response_type': 'code',
+                'scope': 'openid email profile',
+                'redirect_uri': redirect_uri,
+                'prompt': 'select_account'
+            })
+            return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?{params}")
 
-        params = urllib.parse.urlencode({
-            'client_id': client_id,
-            'response_type': 'code',
-            'scope': 'openid email profile',
-            'redirect_uri': redirect_uri,
-            'prompt': 'select_account'
-        })
-        return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?{params}")
+        # Exchange code for access token and fetch verified user profile
+        try:
+            import urllib.parse
+            import urllib.request
+            import json
 
-    # 2. OAuth Callback: Exchange code for access token and fetch verified user profile
-    try:
-        import urllib.parse
-        import urllib.request
-        import json
+            token_url = "https://oauth2.googleapis.com/token"
+            token_data = urllib.parse.urlencode({
+                'code': code,
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'redirect_uri': redirect_uri,
+                'grant_type': 'authorization_code'
+            }).encode('utf-8')
 
-        token_url = "https://oauth2.googleapis.com/token"
-        token_data = urllib.parse.urlencode({
-            'code': code,
-            'client_id': client_id,
-            'client_secret': client_secret,
-            'redirect_uri': redirect_uri,
-            'grant_type': 'authorization_code'
-        }).encode('utf-8')
+            req = urllib.request.Request(token_url, data=token_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+            with urllib.request.urlopen(req) as resp:
+                token_json = json.loads(resp.read().decode('utf-8'))
+                access_token = token_json.get('access_token')
 
-        req = urllib.request.Request(token_url, data=token_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
-        with urllib.request.urlopen(req) as resp:
-            token_json = json.loads(resp.read().decode('utf-8'))
-            access_token = token_json.get('access_token')
+            if not access_token:
+                messages.error(request, 'Failed to obtain access token from Google.')
+                return render_with_notifs(request, 'google_login_prompt.html', {'oauth_configured': True})
 
-        if not access_token:
-            messages.error(request, 'Failed to obtain access token from Google.')
-            return redirect('login')
+            user_info_url = f"https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_token}"
+            req_info = urllib.request.Request(user_info_url)
+            with urllib.request.urlopen(req_info) as resp:
+                info = json.loads(resp.read().decode('utf-8'))
 
-        user_info_url = f"https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_token}"
-        req_info = urllib.request.Request(user_info_url)
-        with urllib.request.urlopen(req_info) as resp:
-            info = json.loads(resp.read().decode('utf-8'))
+            email = info.get('email')
+            if not email:
+                messages.error(request, 'Google account did not return a valid email address.')
+                return render_with_notifs(request, 'google_login_prompt.html', {'oauth_configured': True})
 
-        email = info.get('email')
-        if not email:
-            messages.error(request, 'Google account did not return a valid email address.')
-            return redirect('login')
+            first_name = info.get('given_name') or info.get('name', 'Google').split()[0]
+            last_name = info.get('family_name') or 'User'
 
-        email = email.lower().strip()
-        first_name = info.get('given_name') or info.get('name', 'Google').split()[0]
-        last_name = info.get('family_name') or 'User'
+            return _authenticate_google_user(request, email, first_name, last_name)
 
-        existing_user = User.objects.filter(email=email).first()
-        if not existing_user:
-            # Brand-new user: first-time Google login (redirect to role selection)
-            temp_password = hashlib.sha256(f"GoogleOAuth_{email}_{client_secret[:6]}".encode()).hexdigest()
-            user = User.objects.create(
-                email=email,
-                firstName=first_name,
-                lastName=last_name,
-                password=temp_password,
-                role='pending'
-            )
-            request.session['user_id'] = user.id
-            request.session['role'] = 'pending'
-            request.session['pending_role_selection'] = True
-            messages.info(request, f'Welcome to SparkZone, {first_name}! Please choose your role to complete your profile.')
-            return redirect('complete_profile')
-        else:
-            # Returning Google user: skip role selection and route straight to stored role dashboard
-            user = existing_user
-            request.session['user_id'] = user.id
-            request.session['role'] = user.role
-            request.session.pop('pending_role_selection', None)
+        except Exception as e:
+            messages.warning(request, f"Google OAuth issue: {str(e)}. You can choose an account below to sign in.")
+            return render_with_notifs(request, 'google_login_prompt.html', {'oauth_configured': True})
 
-            if user.role == 'pending':
-                return redirect('complete_profile')
+    # 4. Fallback Account Selection Prompt when credentials aren't configured or ?prompt=true
+    return render_with_notifs(request, 'google_login_prompt.html', {
+        'oauth_configured': bool(client_id and client_secret)
+    })
 
-            messages.success(request, f'Welcome back, {user.firstName}!')
-            if user.role == 'provider':
-                return redirect('provider_dashboard')
-            return redirect('gamer_dashboard')
-
-    except Exception as e:
-        messages.error(request, f"Google Sign-In failed: {str(e)}")
-        return redirect('login')
 
 # ─── Register ───────────────────────────────────────────────────────────────────
 def register(request):

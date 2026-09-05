@@ -1,46 +1,51 @@
 {% extends 'base.html' %}
-{% block title %}All Games – SparkZone{% endblock %}
+{% block title %}All Gaming Stations & Rigs – SparkZone{% endblock %}
 
 {% block extra_css %}
 .filters {
-  background: var(--bg2); border-bottom: 1px solid var(--border);
-  padding: 20px 0; position: sticky; top: 70px; z-index: 100;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-md) 0;
+  position: sticky;
+  top: 68px;
+  z-index: 100;
 }
-.filters-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.filters-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .filter-search {
-  position: relative; flex: 1; min-width: 220px;
+  position: relative; flex: 1; min-width: 240px;
 }
 .filter-search input {
-  width: 100%; padding: 10px 16px 10px 42px;
+  width: 100%; height: 42px; padding: 0 16px 0 42px;
   background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 10px; color: var(--text); font-size: .9rem; outline: none;
-  transition: border-color .2s;
+  border-radius: var(--radius-md); color: #fff; font-size: 0.9rem; outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
-.filter-search input:focus { border-color: var(--accent); }
-.filter-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.filter-search input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.15);
+}
+.filter-search i {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); font-size: 1.1rem;
+}
 .filter-select {
-  padding: 10px 16px; background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 10px; color: var(--text); font-size: .9rem; font-family: inherit;
-  outline: none; cursor: pointer;
+  height: 42px; padding: 0 16px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-md); color: var(--text); font-size: 0.9rem; font-family: inherit;
+  outline: none; cursor: pointer; transition: border-color var(--transition-fast);
 }
-.filter-select:focus { border-color: var(--accent); }
-.filter-btn { padding: 10px 20px; border-radius: 10px; font-size: .9rem; font-weight: 600; cursor: pointer; border: none; }
-.filter-btn-submit { background: var(--accent); color: #fff; }
-.filter-btn-clear { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
-.filter-btn:hover { opacity: .85; }
-.games-count { color: var(--muted); font-size: .88rem; }
-.no-results {
-  text-align: center; padding: 80px 0; color: var(--muted);
+.filter-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.15);
 }
-.no-results i { font-size: 3.5rem; margin-bottom: 16px; color: var(--accent2); opacity: .5; }
+.games-count { color: var(--muted); font-size: 0.9rem; }
 {% endblock %}
 
 {% block content %}
 <div class="page-hero" style="margin-bottom:0;">
   <div class="container">
-    <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-gamepad"></i> Games</span>
+    <span class="badge badge-accent" style="margin-bottom:12px;"><i class="ti ti-device-desktop"></i> VENUE STATIONS</span>
     <h1>All Gaming Stations</h1>
-    <p>Discover and book from our wide range of premium gaming setups</p>
+    <p>Discover and book high-end PC setups, PS5 booths, and Fanatec sim racing cockpits</p>
   </div>
 </div>
 
@@ -49,8 +54,8 @@
     <form method="GET" action="{% url 'games' %}">
       <div class="filters-inner">
         <div class="filter-search">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" name="search" value="{{ search }}" placeholder="Search games…" id="search-input" />
+          <i class="ti ti-search"></i>
+          <input type="text" name="search" value="{{ search }}" placeholder="Search stations, games, or specs…" id="search-input" />
         </div>
         <select name="category" class="filter-select" id="category-filter">
           <option value="">All Categories</option>
@@ -60,32 +65,34 @@
           </option>
           {% endfor %}
         </select>
-        <button type="submit" class="filter-btn filter-btn-submit">
-          <i class="fa-solid fa-filter"></i> Filter
+        <button type="submit" class="btn btn-primary" style="height:42px;">
+          <i class="ti ti-filter"></i> Filter
         </button>
-        <a href="{% url 'games' %}" class="filter-btn filter-btn-clear" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
-          <i class="fa-solid fa-rotate-left"></i> Clear
+        <a href="{% url 'games' %}" class="btn btn-secondary" style="height:42px;">
+          <i class="ti ti-rotate-clockwise"></i> Reset
         </a>
       </div>
     </form>
   </div>
 </div>
 
-<section style="padding: 48px 0 80px;">
+<section style="padding: var(--space-2xl) 0 var(--space-4xl);" class="reveal">
   <div class="container">
-    <p class="games-count" style="margin-bottom:28px;">
-      Showing <strong style="color:var(--text);">{{ games|length }}</strong> gaming station{{ games|length|pluralize }}
-      {% if search %} for "<strong style="color:var(--accent2)">{{ search }}</strong>"{% endif %}
-    </p>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:12px;">
+      <p class="games-count">
+        Showing <strong style="color:#fff;">{{ games|length }}</strong> gaming station{{ games|length|pluralize }}
+        {% if search %} for "<strong style="color:var(--accent)">{{ search }}</strong>"{% endif %}
+      </p>
+    </div>
     {% if games %}
     <div class="grid-3">
       {% for game in games %}
       <div class="game-card">
         <div class="game-card-img">
           {% if game.get_image_url %}
-            <img src="{{ game.get_image_url }}" {% if game.get_image_srcset %}srcset="{{ game.get_image_srcset }}" sizes="(max-width: 600px) 400px, 640px"{% endif %} alt="{{ game.name }}" width="400" height="240" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ game.category.get_image_url }}';" />
+            <img src="{{ game.get_image_url }}" {% if game.get_image_srcset %}srcset="{{ game.get_image_srcset }}" sizes="(max-width: 600px) 400px, 640px"{% endif %} alt="{{ game.name }}" width="400" height="240" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/images/stations/esports_station.jpg';" />
           {% else %}
-            <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-size:3rem;">🎮</div>
+            <div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="ti ti-controller" style="font-size:3rem;"></i></div>
           {% endif %}
           <span class="availability {% if game.availableSystems > 0 %}avail-yes{% else %}avail-no{% endif %}">
             {% if game.availableSystems > 0 %}{{ game.availableSystems }} Available{% else %}Fully Booked{% endif %}
@@ -94,43 +101,46 @@
         <div class="game-card-body">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div class="game-card-title">{{ game.name }}</div>
-            <span style="font-size:.75rem;background:rgba(124,58,237,.15);color:var(--accent2);border:1px solid rgba(124,58,237,.3);padding:3px 8px;border-radius:6px;white-space:nowrap;">{{ game.category.categoryName }}</span>
+            <span style="font-family:var(--font-heading);font-size:1.15rem;font-weight:800;color:var(--accent);white-space:nowrap;">₹{{ game.pricePerHour|floatformat:0 }}<span style="font-size:.72rem;color:var(--muted);font-family:var(--font-body);font-weight:400;">/hr</span></span>
           </div>
-          <div class="game-card-meta">
-            <span><i class="fa-solid fa-location-dot"></i> {{ game.city.name }}</span>
-            <span><i class="fa-solid fa-desktop"></i> {{ game.totalSystem }} Total / {{ game.availableSystems }} Free</span>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:.75rem;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border);padding:2px 8px;border-radius:4px;white-space:nowrap;font-weight:700;">{{ game.category.categoryName }}</span>
+            <span style="font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:5px;"><i class="ti ti-map-pin" style="color:var(--accent);"></i> {{ game.city.name }}</span>
+            <span style="font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:5px;"><i class="ti ti-device-desktop" style="color:var(--accent);"></i> {{ game.totalSystem }} Rigs</span>
           </div>
-          <p style="color:var(--muted);font-size:.85rem;line-height:1.6;flex:1;">{{ game.description|truncatechars:100 }}</p>
+          <p style="color:var(--muted);font-size:.85rem;line-height:1.6;flex:1;">{{ game.description|truncatechars:110 }}</p>
           {% if game.get_games_list %}
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;margin-bottom:6px;">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;margin-bottom:4px;">
             {% for gtitle in game.get_games_list|slice:":3" %}
-            <span style="font-size:.72rem;background:rgba(0,212,255,.08);color:var(--neon);border:1px solid rgba(0,212,255,.2);padding:2px 8px;border-radius:12px;">
-              🎮 {{ gtitle }}
+            <span style="font-size:.72rem;background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:3px 8px;border-radius:4px;display:inline-flex;align-items:center;gap:4px;">
+              <i class="ti ti-device-gamepad-2" style="color:var(--accent);"></i> {{ gtitle }}
             </span>
             {% endfor %}
             {% if game.get_games_list|length > 3 %}
-            <span style="font-size:.72rem;color:var(--muted);padding:2px 4px;">+{{ game.get_games_list|length|add:"-3" }} more</span>
+            <span style="font-size:.72rem;color:var(--muted);padding:2px 6px;">+{{ game.get_games_list|length|add:"-3" }} more</span>
             {% endif %}
           </div>
           {% endif %}
         </div>
         <div class="game-card-footer" style="display:flex;gap:10px;">
-          <a href="{% url 'game_detail' game.id %}" class="btn btn-outline" style="flex:1;justify-content:center;padding:10px;">
-            <i class="fa-solid fa-circle-info"></i> Details
+          <a href="{% url 'game_detail' game.id %}" class="btn btn-secondary" style="flex:1;justify-content:center;">
+            Setup Details
           </a>
-          <a href="{% url 'booking' game.id %}" class="btn btn-primary" style="flex:1;justify-content:center;padding:10px;">
-            <i class="fa-solid fa-calendar-plus"></i> Book
+          <a href="{% url 'booking' game.id %}" class="btn btn-primary" style="flex:1;justify-content:center;">
+            Book Rig
           </a>
         </div>
       </div>
       {% endfor %}
     </div>
     {% else %}
-    <div class="no-results">
-      <div><i class="fa-solid fa-magnifying-glass-minus"></i></div>
-      <h3 style="margin-bottom:8px;color:var(--text);">No Games Found</h3>
-      <p>Try adjusting your search or filter criteria</p>
-      <a href="{% url 'games' %}" class="btn btn-primary" style="margin-top:24px;">Clear Filters</a>
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="ti ti-search-off" style="font-size:3rem;color:var(--accent);"></i></div>
+      <h3>No Gaming Stations Found</h3>
+      <p>Try adjusting your search terms or choose a different category to view available setups.</p>
+      <a href="{% url 'games' %}" class="btn btn-primary">
+        <i class="ti ti-rotate-clockwise"></i> Reset All Filters
+      </a>
     </div>
     {% endif %}
   </div>

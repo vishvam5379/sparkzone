@@ -1,53 +1,51 @@
 {% extends 'base.html' %}
-{% block title %}Contact Us & Locations – SparkZone{% endblock %}
+{% block title %}Contact & Gaming Venues – SparkZone{% endblock %}
 {% block meta_desc %}Get in touch with SparkZone – find gaming arena locations in Ahmedabad, Mumbai, and Bengaluru.{% endblock %}
 
 {% block extra_css %}
 .contact-grid {
-  display: grid; grid-template-columns: 1fr 1.3fr; gap: 48px;
-  padding: 0 0 64px; align-items: start;
+  display: grid; grid-template-columns: 1fr 1.25fr; gap: var(--space-2xl);
+  padding: 0 0 var(--space-3xl); align-items: start;
 }
-@media(max-width:768px) { .contact-grid { grid-template-columns: 1fr; } }
-.contact-info { display: flex; flex-direction: column; gap: 20px; }
+@media(max-width:880px) { .contact-grid { grid-template-columns: 1fr; gap: var(--space-xl); } }
+.contact-info { display: flex; flex-direction: column; gap: var(--space-md); }
 .contact-item {
-  display: flex; gap: 18px; align-items: center; justify-content: space-between;
+  display: flex; gap: var(--space-md); align-items: center; justify-content: space-between;
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 22px; text-decoration: none; color: inherit;
-  transition: border-color .3s, transform .3s, box-shadow .3s;
+  border-radius: var(--radius-lg); padding: var(--space-lg); text-decoration: none; color: inherit;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
 }
 .contact-item:hover {
-  border-color: var(--accent2); transform: translateX(6px);
-  box-shadow: 0 10px 30px rgba(124,58,237,.2);
+  border-color: var(--accent); transform: translateX(3px);
 }
-.contact-item-content { display: flex; gap: 18px; align-items: flex-start; }
+.contact-item-content { display: flex; gap: var(--space-md); align-items: flex-start; }
 .contact-icon {
-  width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
-  background: linear-gradient(135deg, rgba(124,58,237,.25), rgba(0,212,255,.15));
-  border: 1px solid rgba(124,58,237,.2);
+  width: 44px; height: 44px; border-radius: var(--radius-md); flex-shrink: 0;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
   display: flex; align-items: center; justify-content: center;
-  color: var(--accent2); font-size: 1.2rem;
+  color: var(--accent); font-size: 1.15rem;
 }
-.contact-item h4 { font-weight: 600; margin-bottom: 4px; color: var(--text); }
-.contact-item p { color: var(--muted); font-size: .88rem; line-height: 1.6; }
+.contact-item h4 { font-weight: 700; font-size: var(--text-base); margin-bottom: var(--space-xs); color: #fff; }
+.contact-item p { color: var(--muted); font-size: var(--text-sm); line-height: 1.6; }
 .contact-arrow {
-  color: var(--muted); font-size: 1rem; transition: color .2s, transform .2s; flex-shrink: 0;
+  color: var(--muted); font-size: 0.9rem; transition: color var(--transition-fast), transform var(--transition-fast); flex-shrink: 0;
 }
-.contact-item:hover .contact-arrow { color: var(--neon); transform: translateX(4px); }
+.contact-item:hover .contact-arrow { color: var(--accent); transform: translateX(3px); }
 
-.locations-section { margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--border); }
-.location-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 24px; }
+.locations-section { margin-top: var(--space-2xl); padding-top: var(--space-2xl); border-top: 1px solid var(--border); }
+.location-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
 .location-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 24px; text-decoration: none; color: inherit; display: block;
-  transition: border-color .3s, transform .3s, box-shadow .3s;
+  border-radius: var(--radius-lg); padding: var(--space-lg); text-decoration: none; color: inherit; display: block;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
 }
 .location-card:hover {
-  border-color: var(--neon); transform: translateY(-5px);
-  box-shadow: 0 16px 40px rgba(0,212,255,.2);
+  border-color: var(--accent); transform: translateY(-3px);
 }
-.location-card-city { font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:700; color:var(--neon); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; }
+.location-card-city { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: var(--space-xs); display: flex; align-items: center; justify-content: space-between; }
 .map-container {
-  margin-top: 24px; border-radius: 16px; overflow: hidden;
+  margin-top: var(--space-sm); border-radius: var(--radius-md); overflow: hidden;
   border: 1px solid var(--border); height: 260px; width: 100%;
 }
 .map-container iframe { width: 100%; height: 100%; border: 0; }
@@ -56,57 +54,57 @@
 {% block content %}
 <div class="page-hero">
   <div class="container">
-    <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-headset"></i> Support & Locations</span>
+    <span class="badge badge-accent" style="margin-bottom:var(--space-sm);"><i class="ti ti-headset"></i> SUPPORT & VENUES</span>
     <h1>Get In Touch</h1>
-    <p>Visit our gaming arenas, call us directly, or send us a message 24/7</p>
+    <p>Visit our gaming lounges, call us directly, or send us a message anytime</p>
   </div>
 </div>
 
-<div class="container" style="padding-bottom: 80px;">
+<div class="container reveal" style="padding-bottom: var(--space-3xl);">
   <div class="contact-grid">
 
     <!-- Info side -->
     <div class="contact-info">
-      <h2 style="font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:700;margin-bottom:4px;">We'd Love to Hear From You</h2>
-      <p style="color:var(--muted);line-height:1.7;margin-bottom:8px;">Click any contact option below to get instant Google Maps directions, place a call, or email us directly.</p>
+      <h2 style="font-family:var(--font-heading);font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:var(--space-xs);">We'd Love to Hear From You</h2>
+      <p style="color:var(--muted);line-height:1.65;margin-bottom:var(--space-sm);font-size:0.92rem;">Click any contact option below to get instant Google Maps directions, place a call, or send an email.</p>
 
       <!-- Clickable Google Maps Location Link -->
       <a href="https://maps.google.com/?q=CG+Road+Navrangpura+Ahmedabad+Gujarat" target="_blank" class="contact-item" title="Click to open Google Maps Directions">
         <div class="contact-item-content">
-          <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+          <div class="contact-icon"><i class="ti ti-map-pin"></i></div>
           <div>
             <h4>Headquarters & Flagship Arena</h4>
             <p>SparkZone Gaming Hub, CG Road, Navrangpura<br>Ahmedabad, Gujarat 380009</p>
-            <span style="display:inline-block;margin-top:6px;font-size:.8rem;color:var(--neon);font-weight:600;"><i class="fa-solid fa-diamond-turn-right"></i> Open in Maps ↗</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;margin-top:var(--space-xs);font-size:var(--text-xs);color:var(--accent);font-weight:700;"><i class="ti ti-direction"></i> Open in Maps ↗</span>
           </div>
         </div>
-        <i class="fa-solid fa-chevron-right contact-arrow"></i>
+        <i class="ti ti-chevron-right contact-arrow"></i>
       </a>
 
       <!-- Clickable Phone Link -->
       <a href="tel:+919313858614" class="contact-item" title="Click to call +91 93138 58614">
         <div class="contact-item-content">
-          <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+          <div class="contact-icon"><i class="ti ti-phone"></i></div>
           <div>
             <h4>Call Us Directly</h4>
             <p>+91 93138 58614<br>Mon – Sun, 9am – 11pm IST</p>
-            <span style="display:inline-block;margin-top:6px;font-size:.8rem;color:var(--neon);font-weight:600;"><i class="fa-solid fa-phone-flip"></i> Tap to Call ↗</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;margin-top:var(--space-xs);font-size:var(--text-xs);color:var(--accent);font-weight:700;"><i class="ti ti-phone-call"></i> Tap to Call ↗</span>
           </div>
         </div>
-        <i class="fa-solid fa-chevron-right contact-arrow"></i>
+        <i class="ti ti-chevron-right contact-arrow"></i>
       </a>
 
       <!-- Clickable Email Link -->
       <a href="mailto:support@sparkzone.in" class="contact-item" title="Click to send an email">
         <div class="contact-item-content">
-          <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+          <div class="contact-icon"><i class="ti ti-mail"></i></div>
           <div>
             <h4>Email Support</h4>
             <p>support@sparkzone.in<br>info@sparkzone.in</p>
-            <span style="display:inline-block;margin-top:6px;font-size:.8rem;color:var(--neon);font-weight:600;"><i class="fa-solid fa-paper-plane"></i> Send Email ↗</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;margin-top:var(--space-xs);font-size:var(--text-xs);color:var(--accent);font-weight:600;"><i class="ti ti-send"></i> Send Email ↗</span>
           </div>
         </div>
-        <i class="fa-solid fa-chevron-right contact-arrow"></i>
+        <i class="ti ti-chevron-right contact-arrow"></i>
       </a>
 
       <!-- Embedded Google Map -->
@@ -121,33 +119,33 @@
 
     <!-- Form side -->
     <div>
-      <div class="form-card" style="max-width:100%;">
-        <h3 style="font-weight:700;margin-bottom:24px;font-size:1.1rem;">
-          <i class="fa-solid fa-paper-plane" style="color:var(--accent2);margin-right:8px;"></i>
+      <div class="card" style="padding: var(--space-xl);">
+        <h3 style="font-family:var(--font-heading);font-weight:800;margin-bottom:var(--space-lg);font-size:1.15rem;display:flex;align-items:center;gap:var(--space-xs);">
+          <i class="ti ti-send" style="color:var(--accent);"></i>
           Send a Message
         </h3>
         <form method="POST">
           {% csrf_token %}
           <div class="form-group">
-            <label for="c-name">Your Name</label>
-            <input type="text" name="name" id="c-name" placeholder="John Doe" required {% if logged_in_user %}value="{{ logged_in_user.firstName }} {{ logged_in_user.lastName }}"{% endif %} />
+            <label class="form-label" for="c-name"><i class="ti ti-user"></i> Your Name</label>
+            <input class="form-control" type="text" name="name" id="c-name" placeholder="John Doe" required {% if logged_in_user %}value="{{ logged_in_user.firstName }} {{ logged_in_user.lastName }}"{% endif %} />
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="grid-2">
             <div class="form-group">
-              <label for="c-email">Email Address</label>
-              <input type="email" name="email" id="c-email" placeholder="you@example.com" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address (e.g. name@domain.com)" {% if logged_in_user %}value="{{ logged_in_user.email }}"{% endif %} />
+              <label class="form-label" for="c-email"><i class="ti ti-mail"></i> Email Address</label>
+              <input class="form-control" type="email" name="email" id="c-email" placeholder="you@example.com" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address (e.g. name@domain.com)" {% if logged_in_user %}value="{{ logged_in_user.email }}"{% endif %} />
             </div>
             <div class="form-group">
-              <label for="c-phone">Phone Number (10 digits)</label>
-              <input type="tel" name="phone" id="c-phone" placeholder="9876543210" required pattern="[0-9]{10}" maxlength="10" title="Please enter exactly 10 digits" />
+              <label class="form-label" for="c-phone"><i class="ti ti-phone"></i> Phone Number (10 digits)</label>
+              <input class="form-control" type="tel" name="phone" id="c-phone" placeholder="9876543210" required pattern="[0-9]{10}" maxlength="10" title="Please enter exactly 10 digits" />
             </div>
           </div>
           <div class="form-group">
-            <label for="c-msg">Message</label>
-            <textarea name="message" id="c-msg" placeholder="Tell us how we can help you…" required></textarea>
+            <label class="form-label" for="c-msg"><i class="ti ti-message-dots"></i> Message</label>
+            <textarea class="form-control" name="message" id="c-msg" placeholder="Tell us how we can help you…" style="min-height:130px;" required></textarea>
           </div>
-          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:14px;">
-            <i class="fa-solid fa-paper-plane"></i> Send Message
+          <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;">
+            <i class="ti ti-send"></i> Send Message
           </button>
         </form>
       </div>
@@ -156,45 +154,45 @@
 
   <!-- Arena Locations Section -->
   <div class="locations-section">
-    <div class="section-header" style="text-align:left;margin-bottom:16px;">
-      <span class="badge"><i class="fa-solid fa-building-flag"></i> Our Arenas</span>
+    <div class="section-header" style="text-align:left;margin-bottom:var(--space-md);">
+      <span class="badge badge-accent"><i class="ti ti-building"></i> OUR ARENAS</span>
       <h2>Gaming Arena Locations</h2>
       <p>Click any city arena card to open Google Maps directions</p>
     </div>
     <div class="location-cards">
       <a href="https://maps.google.com/?q=CG+Road+Navrangpura+Ahmedabad" target="_blank" class="location-card" title="Open Ahmedabad Arena in Google Maps">
         <div class="location-card-city">
-          <span><i class="fa-solid fa-map-pin"></i> Ahmedabad</span>
-          <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.85rem;"></i>
+          <span><i class="ti ti-map-pin"></i> Ahmedabad</span>
+          <i class="ti ti-external-link" style="font-size:.9rem;"></i>
         </div>
-        <p style="color:var(--text);font-weight:600;margin-bottom:4px;">SparkZone Arena (CG Road)</p>
-        <p style="color:var(--muted);font-size:.88rem;line-height:1.6;">CG Road, Opp. Municipal Market, Navrangpura, Ahmedabad 380009</p>
-        <div style="margin-top:12px;font-size:.8rem;color:var(--neon);">
-          <i class="fa-solid fa-clock"></i> Open 24/7 • 20 RTX Rigs
+        <p style="color:var(--text);font-weight:600;margin-bottom:var(--space-xs);">SparkZone Arena (CG Road)</p>
+        <p style="color:var(--muted);font-size:var(--text-sm);line-height:1.6;">CG Road, Opp. Municipal Market, Navrangpura, Ahmedabad 380009</p>
+        <div style="margin-top:var(--space-sm);font-size:var(--text-xs);color:var(--accent);font-weight:600;">
+          <i class="ti ti-clock"></i> Open 24/7 • 20 RTX Rigs
         </div>
       </a>
 
       <a href="https://maps.google.com/?q=Hill+Road+Bandra+West+Mumbai" target="_blank" class="location-card" title="Open Mumbai Arena in Google Maps">
         <div class="location-card-city">
-          <span><i class="fa-solid fa-map-pin"></i> Mumbai</span>
-          <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.85rem;"></i>
+          <span><i class="ti ti-map-pin"></i> Mumbai</span>
+          <i class="ti ti-external-link" style="font-size:.9rem;"></i>
         </div>
-        <p style="color:var(--text);font-weight:600;margin-bottom:4px;">SparkZone Hub (Bandra West)</p>
-        <p style="color:var(--muted);font-size:.88rem;line-height:1.6;">Hill Road, Opp. Elco Market, Bandra West, Mumbai 400050</p>
-        <div style="margin-top:12px;font-size:.8rem;color:var(--neon);">
-          <i class="fa-solid fa-clock"></i> Open 24/7 • 25 RTX Rigs
+        <p style="color:var(--text);font-weight:600;margin-bottom:var(--space-xs);">SparkZone Hub (Bandra West)</p>
+        <p style="color:var(--muted);font-size:var(--text-sm);line-height:1.6;">Hill Road, Opp. Elco Market, Bandra West, Mumbai 400050</p>
+        <div style="margin-top:var(--space-sm);font-size:var(--text-xs);color:var(--accent);font-weight:600;">
+          <i class="ti ti-clock"></i> Open 24/7 • 25 RTX Rigs
         </div>
       </a>
 
       <a href="https://maps.google.com/?q=100+Feet+Road+Indiranagar+Bengaluru" target="_blank" class="location-card" title="Open Bengaluru Arena in Google Maps">
         <div class="location-card-city">
-          <span><i class="fa-solid fa-map-pin"></i> Bengaluru</span>
-          <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.85rem;"></i>
+          <span><i class="ti ti-map-pin"></i> Bengaluru</span>
+          <i class="ti ti-external-link" style="font-size:.9rem;"></i>
         </div>
-        <p style="color:var(--text);font-weight:600;margin-bottom:4px;">SparkZone Lounge (Indiranagar)</p>
-        <p style="color:var(--muted);font-size:.88rem;line-height:1.6;">100 Feet Road, Near Toit, Indiranagar, Bengaluru 560038</p>
-        <div style="margin-top:12px;font-size:.8rem;color:var(--neon);">
-          <i class="fa-solid fa-clock"></i> Open 24/7 • 30 RTX Rigs
+        <p style="color:var(--text);font-weight:600;margin-bottom:var(--space-xs);">SparkZone Lounge (Indiranagar)</p>
+        <p style="color:var(--muted);font-size:var(--text-sm);line-height:1.6;">100 Feet Road, Near Toit, Indiranagar, Bengaluru 560038</p>
+        <div style="margin-top:var(--space-sm);font-size:var(--text-xs);color:var(--accent);font-weight:600;">
+          <i class="ti ti-clock"></i> Open 24/7 • 30 RTX Rigs
         </div>
       </a>
     </div>

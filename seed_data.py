@@ -97,7 +97,7 @@ def seed():
             cat.save()
         category_objs[cdata["categoryName"]] = cat
 
-    # 4. Games with Provider link & High-res cover photos
+    # 4. Games with Provider link & High-res real station cover photos
     games_data = [
         {
             "name": "Grand Theft Auto VI",
@@ -111,7 +111,7 @@ def seed():
             "totalSystem": 10,
             "availableSystems": 8,
             "image": "Game/GTA6IMAGE.webp",
-            "image_url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=640&q=75",
+            "image_url": "/static/images/stations/pro_arena_rig.jpg",
             "status": "active"
         },
         {
@@ -125,7 +125,7 @@ def seed():
             "pricePerHour": 300.0,
             "totalSystem": 8,
             "availableSystems": 6,
-            "image_url": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80",
+            "image_url": "/static/images/stations/ps5_lounge.jpg",
             "status": "active"
         },
         {
@@ -139,7 +139,7 @@ def seed():
             "pricePerHour": 180.0,
             "totalSystem": 15,
             "availableSystems": 12,
-            "image_url": "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80",
+            "image_url": "/static/images/stations/esports_station.jpg",
             "status": "active"
         },
         {
@@ -153,7 +153,7 @@ def seed():
             "pricePerHour": 350.0,
             "totalSystem": 4,
             "availableSystems": 3,
-            "image_url": "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=800&q=80",
+            "image_url": "/static/images/stations/sim_racing_rig.jpg",
             "status": "active"
         },
         {
@@ -167,7 +167,7 @@ def seed():
             "pricePerHour": 220.0,
             "totalSystem": 12,
             "availableSystems": 10,
-            "image_url": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80",
+            "image_url": "/static/images/stations/pro_arena_rig.jpg",
             "status": "active"
         }
     ]

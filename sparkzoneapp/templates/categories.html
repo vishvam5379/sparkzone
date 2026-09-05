@@ -1,27 +1,36 @@
 {% extends 'base.html' %}
-{% block title %}Categories – SparkZone{% endblock %}
+{% block title %}Game Setup Categories – SparkZone Genres{% endblock %}
 
 {% block extra_css %}
-.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 28px; padding: 0 0 80px; }
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: var(--space-lg); padding: 0 0 var(--space-4xl); }
 .cat-big-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 20px; overflow: hidden; position: relative;
-  transition: transform .3s, box-shadow .3s, border-color .3s;
-  cursor: pointer;
+  border-radius: var(--radius-xl); overflow: hidden; position: relative;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  cursor: pointer; display: flex; flex-direction: column;
 }
-.cat-big-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 24px 60px rgba(124,58,237,.25);
-  border-color: rgba(124,58,237,.4);
+.cat-big-card:nth-child(odd):hover {
+  transform: translateY(-4px) rotate(-0.5deg);
+  border-color: var(--accent);
+  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.7);
 }
-.cat-big-card-img { height: 220px; overflow: hidden; }
-.cat-big-card-img img { width:100%; height:100%; object-fit:cover; transition:transform .4s; }
-.cat-big-card:hover .cat-big-card-img img { transform:scale(1.08); }
-.cat-big-card-body { padding: 24px; }
-.cat-big-card-body h3 { font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; }
-.cat-big-card-body p { color: var(--muted); font-size: .88rem; line-height: 1.65; }
+.cat-big-card:nth-child(even):hover {
+  transform: translateY(-4px) rotate(0.5deg);
+  border-color: var(--accent);
+  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.7);
+}
+.cat-big-card-img { height: 200px; overflow: hidden; background: var(--bg2); position: relative; }
+.cat-big-card-img img { width:100%; height:100%; object-fit:cover; transition:transform var(--transition-smooth); }
+.cat-big-card:hover .cat-big-card-img img { transform:scale(1.03); }
+.cat-big-card-body { padding: var(--space-lg); flex: 1; }
+.cat-big-card-body h3 {
+  font-family: var(--font-heading);
+  font-weight: 800; font-size: 1.2rem; margin-bottom: 8px; color: #fff;
+  letter-spacing: -0.01em;
+}
+.cat-big-card-body p { color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
 .cat-big-card-footer {
-  padding: 0 24px 24px;
+  padding: 0 var(--space-lg) var(--space-lg);
   display: flex; align-items: center; justify-content: space-between;
 }
 {% endblock %}
@@ -29,21 +38,21 @@
 {% block content %}
 <div class="page-hero">
   <div class="container">
-    <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-layer-group"></i> Browse</span>
+    <span class="badge badge-accent" style="margin-bottom:12px;"><i class="ti ti-category"></i> SETUP GENRES</span>
     <h1>Game Categories</h1>
-    <p>Find your perfect gaming genre from our curated collection</p>
+    <p>Discover gaming stations tailored to your favorite genres and setup styles</p>
   </div>
 </div>
 
-<div class="container">
+<div class="container reveal">
   <div class="cat-grid">
     {% for cat in categories %}
     <a href="{% url 'games' %}?category={{ cat.id }}" class="cat-big-card" style="text-decoration:none;color:inherit;">
       <div class="cat-big-card-img">
         {% if cat.get_image_url %}
-          <img src="{{ cat.get_image_url }}" alt="{{ cat.categoryName }}" onerror="this.onerror=null;this.src='{{ cat.get_image_url }}';" />
+          <img src="{{ cat.get_image_url }}" alt="{{ cat.categoryName }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/images/stations/esports_station.jpg';" />
         {% else %}
-          <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-size:4rem;">🎮</div>
+          <div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="ti ti-controller" style="font-size:3rem;"></i></div>
         {% endif %}
       </div>
       <div class="cat-big-card-body">
@@ -51,14 +60,15 @@
         <p>{{ cat.description|truncatechars:120 }}</p>
       </div>
       <div class="cat-big-card-footer">
-        <span style="font-size:.85rem;color:var(--muted);">View all games →</span>
-        <span class="badge"><i class="fa-solid fa-arrow-right"></i></span>
+        <span style="font-size:.85rem;color:var(--muted);font-weight:600;">View available stations →</span>
+        <span class="badge badge-accent"><i class="ti ti-arrow-right"></i></span>
       </div>
     </a>
     {% empty %}
-    <div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--muted);">
-      <i class="fa-solid fa-layer-group" style="font-size:3rem;margin-bottom:16px;opacity:.5;"></i>
-      <p>No categories available yet.</p>
+    <div class="empty-state" style="grid-column: 1 / -1;">
+      <div class="empty-state-icon"><i class="ti ti-category-off" style="font-size:3rem;color:var(--accent);"></i></div>
+      <h3>No Categories Available</h3>
+      <p>Categories will appear here once gaming genres are catalogued.</p>
     </div>
     {% endfor %}
   </div>

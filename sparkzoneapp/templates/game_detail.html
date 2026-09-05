@@ -1,71 +1,72 @@
 {% extends 'base.html' %}
-{% block title %}{{ game.name }} – SparkZone{% endblock %}
+{% block title %}{{ game.name }} – SparkZone Station Details{% endblock %}
 
 {% block extra_css %}
 .game-detail-hero {
-margin-top: 70px; position: relative; height: 400px; overflow: hidden;
+  margin-top: 68px; position: relative; height: 380px; overflow: hidden;
+  background: var(--bg2);
 }
 .game-detail-hero img { width:100%; height:100%; object-fit:cover; }
 .game-detail-hero-overlay {
-position: absolute; inset: 0;
-background: linear-gradient(to top, rgba(9,11,17,1) 0%, rgba(9,11,17,.5) 50%, rgba(9,11,17,.2) 100%);
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(18,18,18,1) 0%, rgba(18,18,18,0.5) 60%, rgba(18,18,18,0.2) 100%);
 }
 .game-detail-hero-info {
-position: absolute; bottom: 0; left: 0; right: 0; padding: 40px;
+  position: absolute; bottom: 0; left: 0; right: 0; padding: 32px 0;
 }
-.detail-grid { display: grid; grid-template-columns: 1fr 360px; gap: 32px; padding: 48px 0 80px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 340px; gap: 32px; padding: 40px 0 80px; }
 @media(max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }
 
-.detail-main { display: flex; flex-direction: column; gap: 32px; }
+.detail-main { display: flex; flex-direction: column; gap: 28px; }
 .info-card {
-background: var(--card); border: 1px solid var(--border);
-border-radius: 16px; padding: 28px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px;
 }
-.info-card h3 { font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
-.info-card h3 i { color: var(--accent2); }
+.info-card h3 { font-weight: 800; font-size: 1.1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; color: #fff; }
+.info-card h3 i { color: var(--accent); }
 .detail-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .detail-stat {
-background: var(--bg3); border: 1px solid var(--border);
-border-radius: 12px; padding: 18px; text-align: center;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 16px; text-align: center;
 }
-.detail-stat .val { font-family:'Orbitron',monospace; font-size:1.3rem; font-weight:700; color:var(--neon); }
-.detail-stat .key { font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;
-margin-top:4px; }
+.detail-stat .val { font-family: var(--font-heading); font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+.detail-stat .key { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
 
 /* Gallery */
 .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.gallery img { border-radius: 10px; aspect-ratio:16/9; object-fit:cover; cursor:pointer; transition:transform .25s; }
-.gallery img:hover { transform:scale(1.03); }
+.gallery img { border-radius: var(--radius-sm); aspect-ratio: 16/9; object-fit: cover; cursor: pointer; transition: transform .2s; }
+.gallery img:hover { transform: scale(1.02); }
 
 /* Book sidebar */
-.book-sidebar { position: sticky; top: 88px; height: fit-content; }
+.book-sidebar { position: sticky; top: 84px; height: fit-content; }
 .book-card {
-background: var(--card); border: 1px solid var(--border);
-border-radius: 20px; overflow: hidden;
-box-shadow: 0 12px 40px rgba(0,0,0,.4);
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 .book-card-header {
-background: linear-gradient(135deg, var(--accent), var(--accent2));
-padding: 24px; text-align: center;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  padding: 20px; text-align: center;
 }
-.book-card-header .price { font-family:'Orbitron',monospace; font-size:2.2rem; font-weight:900; }
-.book-card-header .per { font-size:.85rem; opacity:.8; }
-.book-card-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.book-card-header .price { font-family: var(--font-heading); font-size: 2rem; font-weight: 900; color: var(--accent); }
+.book-card-header .per { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+.book-card-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 .avail-indicator {
-display: flex; align-items: center; gap: 10px; padding: 12px 16px;
-border-radius: 10px; font-size: .9rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px;
+  border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
 }
-.avail-indicator.yes { background:rgba(16,185,129,.1); color:var(--success); border:1px solid rgba(16,185,129,.25); }
-.avail-indicator.no { background:rgba(239,68,68,.1); color:var(--danger); border:1px solid rgba(239,68,68,.25); }
+.avail-indicator.yes { background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+.avail-indicator.no { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
 
 /* Reviews */
 .review-form { display: flex; flex-direction: column; gap: 14px; }
 .star-rating { display: flex; gap: 8px; }
 .star-rating input { display:none; }
-.star-rating label { font-size:1.6rem; color:var(--muted); cursor:pointer; transition:color .15s; }
+.star-rating label { font-size: 1.5rem; color: var(--muted); cursor: pointer; transition: color .15s; }
 .star-rating label:hover,
-.star-rating label:hover ~ label { color:var(--gold); }
-.star-rating input:checked ~ label { color:var(--gold); }
+.star-rating label:hover ~ label { color: var(--gold); }
+.star-rating input:checked ~ label { color: var(--gold); }
 {% endblock %}
 
 {% block content %}
@@ -73,31 +74,29 @@ border-radius: 10px; font-size: .9rem; font-weight: 600;
 <div class="game-detail-hero">
   {% if game.get_image_url %}
   <img src="{{ game.get_image_url }}" alt="{{ game.name }}"
-    onerror="this.onerror=null;this.src='{{ game.category.get_image_url }}';" />
+    onerror="this.onerror=null;this.src='/static/images/stations/esports_station.jpg';" />
   {% else %}
-  <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--neon));"></div>
+  <div style="width:100%;height:100%;background:var(--bg3);"></div>
   {% endif %}
   <div class="game-detail-hero-overlay"></div>
   <div class="game-detail-hero-info">
     <div class="container">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <span class="badge"><i class="fa-solid fa-tag"></i> {{ game.category.categoryName }}</span>
-        <span class="badge" style="background:rgba(0,212,255,.1);color:var(--neon);border-color:rgba(0,212,255,.2);">
-          <i class="fa-solid fa-location-dot"></i> {{ game.city.name }}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+        <span class="badge badge-accent"><i class="ti ti-tag"></i> {{ game.category.categoryName }}</span>
+        <span class="badge">
+          <i class="ti ti-map-pin" style="color:var(--accent);"></i> {{ game.city.name }}
         </span>
-        <span class="badge" style="background:rgba(245,158,11,.1);color:var(--gold);border-color:rgba(245,158,11,.2);">
-          <i class="fa-solid fa-clock"></i> Hours: {{ game.operating_hours|default:"09:00 AM - 10:00 PM" }}
+        <span class="badge">
+          <i class="ti ti-clock" style="color:var(--accent);"></i> Hours: {{ game.operating_hours|default:"09:00 AM - 11:00 PM" }}
         </span>
       </div>
-      <h1 style="font-family:'Orbitron',monospace;font-size:clamp(1.6rem,4vw,2.8rem);font-weight:900;">{{ game.name }}
-      </h1>
+      <h1 style="font-family:var(--font-heading);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:#fff;letter-spacing:-0.01em;">{{ game.name }}</h1>
       {% if avg_rating %}
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-        <span class="stars">
+        <span class="stars" style="color:var(--accent);">
           {% for i in "12345" %}
-          {% if forloop.counter <= avg_rating %}<i class="fa-solid fa-star"></i>{% else %}<i
-              class="fa-regular fa-star"></i>{% endif %}
-            {% endfor %}
+          {% if forloop.counter <= avg_rating %}<i class="ti ti-star-filled"></i>{% else %}<i class="ti ti-star" style="opacity:0.3;"></i>{% endif %}
+          {% endfor %}
         </span>
         <span style="color:var(--muted);font-size:.9rem;">{{ avg_rating }} ({{ reviews|length }} reviews)</span>
       </div>
@@ -106,7 +105,7 @@ border-radius: 10px; font-size: .9rem; font-weight: 600;
   </div>
 </div>
 
-<div class="container">
+<div class="container reveal">
   <div class="detail-grid">
 
     <!-- Left: Main Info -->
@@ -119,31 +118,31 @@ border-radius: 10px; font-size: .9rem; font-weight: 600;
           <div class="key">Total Systems</div>
         </div>
         <div class="detail-stat">
-          <div class="val"
-            style="color:{% if game.availableSystems > 0 %}var(--success){% else %}var(--danger){% endif %};">
+          <div class="val" style="color:{% if game.availableSystems > 0 %}var(--success){% else %}var(--danger){% endif %};">
             {{ game.availableSystems }}
           </div>
           <div class="key">Available Now</div>
+        </div>
+        <div class="detail-stat">
+          <div class="val">₹{{ game.pricePerHour|floatformat:0 }}</div>
+          <div class="key">Per Hour</div>
         </div>
       </div>
 
       <!-- Description -->
       <div class="info-card">
-        <h3><i class="fa-solid fa-circle-info"></i> About This Station</h3>
-        <p style="color:var(--muted);line-height:1.75;">{{ game.description }}</p>
+        <h3><i class="ti ti-info-circle"></i> Station Specifications & Overview</h3>
+        <p style="color:var(--muted);line-height:1.75;font-size:0.95rem;">{{ game.description }}</p>
       </div>
 
       <!-- Games Installed / Available -->
       {% if game.get_games_list %}
-      <div class="info-card"
-        style="background:linear-gradient(145deg, var(--card), rgba(124,58,237,.08));border:1px solid rgba(124,58,237,.25);">
-        <h3 style="margin-bottom:12px;"><i class="fa-solid fa-gamepad" style="color:var(--neon);"></i> Installed Games
-          Available to Play</h3>
+      <div class="info-card">
+        <h3><i class="ti ti-controller"></i> Pre-installed Games</h3>
         <div style="display:flex;flex-wrap:wrap;gap:10px;">
           {% for gtitle in game.get_games_list %}
-          <span
-            style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;font-size:.88rem;font-weight:600;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.2);">
-            <i class="fa-solid fa-play" style="color:var(--accent2);font-size:.75rem;"></i> {{ gtitle }}
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);font-size:.85rem;font-weight:600;color:var(--text);">
+            <i class="ti ti-player-play" style="color:var(--accent);font-size:.8rem;"></i> {{ gtitle }}
           </span>
           {% endfor %}
         </div>
@@ -153,25 +152,21 @@ border-radius: 10px; font-size: .9rem; font-weight: 600;
       <!-- Address & Location Map -->
       <div class="info-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <h3 style="margin-bottom:0;"><i class="fa-solid fa-location-dot"></i> Location</h3>
+          <h3 style="margin-bottom:0;"><i class="ti ti-map-pin"></i> Venue Location</h3>
           <a href="https://maps.google.com/?q={{ game.address|urlencode }}+{{ game.city.name|urlencode }}"
-            target="_blank" class="btn btn-outline"
-            style="padding:6px 14px;font-size:.8rem;border-radius:8px;text-decoration:none;">
-            <i class="fa-solid fa-diamond-turn-right" style="color:var(--neon);"></i> Get Directions ↗
+            target="_blank" class="btn btn-outline btn-sm">
+            Directions ↗
           </a>
         </div>
         <a href="https://maps.google.com/?q={{ game.address|urlencode }}+{{ game.city.name|urlencode }}" target="_blank"
           style="text-decoration:none;color:inherit;display:block;margin-bottom:12px;">
-          <p style="color:var(--text);font-weight:600;font-size:.95rem;line-height:1.6;margin-bottom:8px;">{{
-            game.address }}</p>
-          <div
-            style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);font-size:.88rem;color:var(--neon);font-weight:600;">
-            <i class="fa-solid fa-city" style="color:var(--accent2);"></i>
-            {{ game.city.name }} • Tap for Google Maps Route ↗
+          <p style="color:var(--text);font-weight:600;font-size:.92rem;line-height:1.6;margin-bottom:8px;">{{ game.address }}</p>
+          <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);font-size:.82rem;color:var(--accent);font-weight:600;">
+            <i class="ti ti-building"></i> {{ game.city.name }} • Tap to open Google Maps ↗
           </div>
         </a>
         <!-- Embedded Google Map -->
-        <div style="margin-top:12px;border-radius:14px;overflow:hidden;border:1px solid var(--border);height:200px;">
+        <div style="margin-top:12px;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border);height:200px;">
           <iframe
             src="https://maps.google.com/maps?q={{ game.address|urlencode }}+{{ game.city.name|urlencode }}&t=&z=14&ie=UTF8&iwloc=&output=embed"
             style="width:100%;height:100%;border:0;" allowfullscreen="" loading="lazy">
@@ -182,11 +177,11 @@ border-radius: 10px; font-size: .9rem; font-weight: 600;
       <!-- Gallery -->
       {% if game_images %}
       <div class="info-card">
-        <h3><i class="fa-solid fa-images"></i> Gallery (Click image to expand)</h3>
+        <h3><i class="ti ti-photo"></i> Venue Gallery</h3>
         <div class="gallery">
           {% for gi in game_images %}
           <img src="{{ gi.image.url }}" alt="Gallery image" onclick="openLightbox('{{ gi.image.url }}')"
-            title="Click to view full screen" style="cursor:pointer;" />
+            title="Click to view full screen" />
           {% endfor %}
         </div>
       </div>
@@ -194,79 +189,68 @@ border-radius: 10px; font-size: .9rem; font-weight: 600;
 
       <!-- Reviews -->
       <div class="info-card">
-        <h3><i class="fa-solid fa-star"></i> Reviews ({{ reviews|length }})</h3>
+        <h3><i class="ti ti-star"></i> Reviews ({{ reviews|length }})</h3>
 
-        <!-- Add Review Form -->
         {% if logged_in_user %}
-        <div
-          style="padding:20px;background:var(--bg3);border-radius:14px;border:1px solid var(--border);margin-bottom:24px;">
-          <h4 style="font-weight:700;margin-bottom:14px;font-size:1rem;color:var(--text);">
-            <i class="fa-solid fa-pen-to-square" style="color:var(--accent2);margin-right:8px;"></i> Leave a Review for
-            {{ game.name }}
+        <div style="padding:var(--space-lg);background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);margin-bottom:var(--space-lg);">
+          <h4 style="font-family:var(--font-heading);font-weight:700;margin-bottom:var(--space-md);font-size:0.95rem;color:#fff;">
+            Leave a Review for {{ game.name }}
           </h4>
           <form method="POST">
             {% csrf_token %}
-            <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:14px;">
+            <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:16px;">
               <div class="form-group" style="margin-bottom:0;">
-                <label for="review-rating"
-                  style="font-size:.85rem;color:var(--muted);margin-bottom:6px;display:block;">Rating</label>
-                <select name="rating" id="review-rating" class="filter-select" style="width:100%;padding:10px 14px;"
-                  required>
-                  <option value="5">⭐⭐⭐⭐⭐ (5.0 Stars)</option>
-                  <option value="4">⭐⭐⭐⭐ (4.0 Stars)</option>
-                  <option value="3">⭐⭐⭐ (3.0 Stars)</option>
-                  <option value="2">⭐⭐ (2.0 Stars)</option>
-                  <option value="1">⭐ (1.0 Star)</option>
+                <label for="review-rating" class="form-label">Rating</label>
+                <select name="rating" id="review-rating" class="form-control" required>
+                  <option value="5">5.0 Stars (Excellent)</option>
+                  <option value="4">4.0 Stars (Very Good)</option>
+                  <option value="3">3.0 Stars (Average)</option>
+                  <option value="2">2.0 Stars (Below Expectations)</option>
+                  <option value="1">1.0 Star (Poor)</option>
                 </select>
               </div>
               <div class="form-group" style="margin-bottom:0;">
-                <label for="review-comment"
-                  style="font-size:.85rem;color:var(--muted);margin-bottom:6px;display:block;">Comment</label>
-                <input type="text" name="comment" id="review-comment"
-                  placeholder="Share your experience playing {{ game.name }}..." required
-                  style="width:100%;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);outline:none;" />
+                <label for="review-comment" class="form-label">Comment</label>
+                <input type="text" name="comment" id="review-comment" class="form-control"
+                  placeholder="Share your gaming experience..." required />
               </div>
             </div>
-            <button type="submit" class="btn btn-primary" style="padding:10px 24px;font-size:.88rem;">
-              <i class="fa-solid fa-paper-plane"></i> Submit Review
+            <button type="submit" class="btn btn-primary" style="height:42px;">
+              Submit Review
             </button>
           </form>
         </div>
         {% else %}
-        <p
-          style="color:var(--muted);font-size:.88rem;margin-bottom:20px;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);">
-          <i class="fa-solid fa-lock" style="color:var(--accent2);margin-right:6px;"></i>
-          <a href="{% url 'login' %}" style="color:var(--neon);font-weight:600;text-decoration:underline;">Log in</a> to
-          write a review.
+        <p style="color:var(--muted);font-size:.88rem;margin-bottom:20px;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);">
+          <a href="{% url 'login' %}" style="color:var(--accent);font-weight:600;text-decoration:underline;">Log in</a> to submit a review.
         </p>
         {% endif %}
 
         {% if reviews %}
-        <div style="display:flex;flex-direction:column;gap:20px;">
+        <div style="display:flex;flex-direction:column;gap:14px;">
           {% for review in reviews %}
-          <div style="padding:18px;background:var(--bg3);border-radius:12px;border:1px solid var(--border);">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-              <div
-                style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--neon));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;">
+          <div style="padding:14px 18px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+              <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;color:var(--accent);">
                 {{ review.user.firstName.0 }}{{ review.user.lastName.0 }}
               </div>
               <div>
-                <div style="font-weight:600;font-size:.9rem;">{{ review.user.firstName }} {{ review.user.lastName }}
-                </div>
-                <div class="stars" style="font-size:.8rem;">
+                <div style="font-weight:700;font-size:.88rem;color:#fff;">{{ review.user.firstName }} {{ review.user.lastName }}</div>
+                <div class="stars" style="font-size:.78rem;color:var(--accent);">
                   {% for i in "12345" %}
-                  {% if forloop.counter <= review.rating %}<i class="fa-solid fa-star"></i>{% else %}<i
-                      class="fa-regular fa-star"></i>{% endif %}
-                    {% endfor %}
+                  {% if forloop.counter <= review.rating %}<i class="ti ti-star-filled"></i>{% else %}<i class="ti ti-star" style="opacity:0.3;"></i>{% endif %}
+                  {% endfor %}
                 </div>
               </div>
             </div>
-            <p style="color:var(--muted);font-size:.88rem;line-height:1.65;">{{ review.comment }}</p>
+            <p style="color:var(--muted);font-size:.88rem;line-height:1.6;">"{{ review.comment }}"</p>
           </div>
           {% endfor %}
         </div>
         {% else %}
-        <p style="color:var(--muted);text-align:center;padding:24px 0;">No reviews yet. Be the first to review!</p>
+        <div class="empty-state" style="padding: var(--space-xl) var(--space-md); margin:0;">
+          <p style="margin-bottom:0;">No reviews yet. Be the first to review this station!</p>
+        </div>
         {% endif %}
       </div>
     </div>
@@ -274,45 +258,45 @@ border-radius: 10px; font-size: .9rem; font-weight: 600;
     <!-- Right: Booking Sidebar -->
     <div class="book-sidebar">
       <div class="book-card">
+        <div class="book-card-header">
+          <div class="price">₹{{ game.pricePerHour|floatformat:0 }}</div>
+          <div class="per">per hour • instant booking</div>
+        </div>
         <div class="book-card-body">
           <div class="avail-indicator {% if game.availableSystems > 0 %}yes{% else %}no{% endif %}">
-            <i
-              class="fa-solid {% if game.availableSystems > 0 %}fa-circle-check{% else %}fa-circle-xmark{% endif %}"></i>
             {% if game.availableSystems > 0 %}
-            {{ game.availableSystems }} Systems Available
+            ● {{ game.availableSystems }} Systems Available
             {% else %}
-            Fully Booked
+            ● Fully Booked
             {% endif %}
           </div>
           {% if game.availableSystems > 0 %}
           {% if logged_in_user %}
-          <a href="{% url 'booking' game.id %}" class="btn btn-primary"
-            style="width:100%;justify-content:center;font-size:1rem;padding:14px;">
-            <i class="fa-solid fa-calendar-plus"></i> Book Now
+          <a href="{% url 'booking' game.id %}" class="btn btn-primary btn-lg"
+            style="width:100%;justify-content:center;">
+            Book This Station
           </a>
           {% else %}
-          <a href="{% url 'login' %}" class="btn btn-primary"
-            style="width:100%;justify-content:center;font-size:1rem;padding:14px;">
-            <i class="fa-solid fa-right-to-bracket"></i> Login to Book
+          <a href="{% url 'login' %}" class="btn btn-primary btn-lg"
+            style="width:100%;justify-content:center;">
+            Login to Book
           </a>
           {% endif %}
           {% else %}
-          <button class="btn"
-            style="width:100%;background:var(--bg3);color:var(--muted);cursor:not-allowed;justify-content:center;"
-            disabled>
-            <i class="fa-solid fa-ban"></i> Currently Unavailable
+          <button class="btn btn-secondary btn-lg" style="width:100%;cursor:not-allowed;justify-content:center;" disabled>
+            Currently Unavailable
           </button>
           {% endif %}
           <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;flex-direction:column;gap:10px;">
-            <div style="display:flex;justify-content:space-between;font-size:.88rem;">
+            <div style="display:flex;justify-content:space-between;font-size:.85rem;">
               <span style="color:var(--muted);">Category</span>
               <span style="font-weight:600;">{{ game.category.categoryName }}</span>
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:.88rem;">
+            <div style="display:flex;justify-content:space-between;font-size:.85rem;">
               <span style="color:var(--muted);">Total Systems</span>
-              <span style="font-weight:600;">{{ game.totalSystem }}</span>
+              <span style="font-weight:600;">{{ game.totalSystem }} Rigs</span>
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:.88rem;">
+            <div style="display:flex;justify-content:space-between;font-size:.85rem;">
               <span style="color:var(--muted);">Location</span>
               <span style="font-weight:600;">{{ game.city.name }}</span>
             </div>
@@ -325,13 +309,12 @@ border-radius: 10px; font-size: .9rem; font-weight: 600;
 
 <!-- Lightbox Fullscreen Modal -->
 <div id="lightbox-modal"
-  style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);"
+  style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(18,18,18,.95);align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);"
   onclick="closeLightbox()">
   <span onclick="closeLightbox()"
-    style="position:absolute;top:20px;right:28px;color:#fff;font-size:2.8rem;font-weight:700;cursor:pointer;z-index:100000;line-height:1;transition:transform .2s;"
-    onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">&times;</span>
-  <img id="lightbox-img" src="" alt="Expanded Gallery View"
-    style="max-width:92vw;max-height:88vh;border-radius:16px;box-shadow:0 20px 60px rgba(124,58,237,.6);border:2px solid var(--accent);object-fit:contain;"
+    style="position:absolute;top:20px;right:28px;color:#fff;font-size:2.4rem;font-weight:700;cursor:pointer;z-index:100000;line-height:1;">&times;</span>
+  <img id="lightbox-img" src="" alt="Expanded View"
+    style="max-width:92vw;max-height:88vh;border-radius:var(--radius-lg);border:1px solid var(--border);object-fit:contain;"
     onclick="event.stopPropagation();" />
 </div>
 
@@ -352,4 +335,4 @@ border-radius: 10px; font-size: .9rem; font-weight: 600;
     if (e.key === 'Escape') closeLightbox();
   });
 </script>
-{% endblock %}
+{% endblock %}

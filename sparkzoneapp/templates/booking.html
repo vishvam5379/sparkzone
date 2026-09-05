@@ -3,17 +3,17 @@
 
 {% block extra_css %}
 .booking-wrap {
-  max-width: 720px; margin: 0 auto; padding: 56px 24px 80px;
+  max-width: 720px; margin: 0 auto; padding: 48px 24px 80px;
 }
 .booking-game-preview {
   display: flex; gap: 20px; align-items: center;
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 20px; margin-bottom: 32px;
+  border-radius: var(--radius-lg); padding: 20px; margin-bottom: 28px;
 }
 .booking-game-preview img {
-  width: 100px; height: 70px; object-fit: cover; border-radius: 10px; flex-shrink: 0;
+  width: 100px; height: 70px; object-fit: cover; border-radius: var(--radius-sm); flex-shrink: 0;
 }
-.booking-game-preview .name { font-weight: 700; font-size: 1.05rem; }
+.booking-game-preview .name { font-weight: 800; font-size: 1.1rem; color: #fff; }
 .booking-game-preview .meta { color: var(--muted); font-size: .85rem; margin-top: 4px; }
 .time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .payment-grid {
@@ -21,42 +21,64 @@
 }
 .payment-card {
   position: relative;
-  background: var(--bg3); border: 2px solid var(--border);
-  border-radius: 12px; padding: 14px 10px; text-align: center;
-  cursor: pointer; transition: all .2s ease; display: flex;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 16px 12px; text-align: center;
+  cursor: pointer; transition: all var(--transition-fast); display: flex;
   flex-direction: column; align-items: center; justify-content: center; gap: 8px;
 }
 .payment-card:hover {
-  border-color: rgba(124,58,237,.5); background: rgba(124,58,237,.06);
+  border-color: rgba(255, 255, 255, 0.16); background: #2a2a2a;
 }
 .payment-card input[type="radio"] {
   position: absolute; opacity: 0; pointer-events: none;
 }
 .payment-card.active {
-  border-color: var(--neon); background: rgba(124,58,237,.12);
-  box-shadow: 0 0 15px rgba(124,58,237,.25);
+  border-color: var(--accent); background: var(--accent-light);
 }
-.payment-card i { font-size: 1.4rem; color: var(--accent2); }
-.payment-card.active i { color: var(--neon); }
-.payment-card .title { font-weight: 600; font-size: .88rem; color: var(--text); }
+.payment-card i { font-size: 1.3rem; color: var(--muted); }
+.payment-card.active i { color: var(--accent); }
+.payment-card .title { font-weight: 700; font-size: .88rem; color: var(--text); }
+
+.price-calc {
+  background: var(--bg3);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.price-calc .est {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.price-calc .val {
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: var(--accent);
+}
+
 @media(max-width: 550px) {
   .payment-grid { grid-template-columns: 1fr; }
 }
 {% endblock %}
 
 {% block content %}
-<div style="margin-top:70px;"></div>
+<div style="margin-top:68px;"></div>
 <div class="booking-wrap">
-  <div style="margin-bottom:28px;">
-    <a href="{% url 'game_detail' game.id %}" style="color:var(--muted);font-size:.9rem;display:inline-flex;align-items:center;gap:6px;margin-bottom:20px;">
+  <div style="margin-bottom:24px;">
+    <a href="{% url 'game_detail' game.id %}" style="color:var(--muted);font-size:.88rem;display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;font-weight:600;">
       <i class="fa-solid fa-arrow-left"></i> Back to {{ game.name }}
     </a>
-    <h1 style="font-family:'Orbitron',monospace;font-size:clamp(1.4rem,3vw,2rem);font-weight:800;
-               background:linear-gradient(135deg,#fff 40%,var(--accent2));
-               -webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-      Book Your Session
+    <h1 style="font-family:var(--font-heading);font-size:clamp(1.5rem,3vw,2.2rem);font-weight:900;color:#fff;letter-spacing:-0.01em;">
+      Reserve Station Session
     </h1>
-    <p style="color:var(--muted);margin-top:8px;">Fill in the details below to reserve your gaming station</p>
+    <p style="color:var(--muted);margin-top:4px;font-size:0.95rem;">Select your preferred date, time, seat, and payment method</p>
   </div>
 
   <!-- Game Preview -->
@@ -64,7 +86,7 @@
     {% if game.get_image_url %}
       <img src="{{ game.get_image_url }}" alt="{{ game.name }}" />
     {% else %}
-      <div style="width:100px;height:70px;background:linear-gradient(135deg,var(--accent),var(--neon));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎮</div>
+      <div style="width:100px;height:70px;background:#141b27;border:1px solid #1e293b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#00f0ff;flex-shrink:0;"><i class="ti ti-device-gamepad-2"></i></div>
     {% endif %}
     <div>
       <div class="name">{{ game.name }}</div>
@@ -80,11 +102,11 @@
     <form method="POST" id="booking-form">
       {% csrf_token %}
       {% if available_slots %}
-      <div class="form-group" style="margin-bottom:20px;">
-        <label><i class="fa-solid fa-clock-rotate-left"></i> Available Provider Slots (Click to Auto-fill)</label>
+      <div class="form-group" style="margin-bottom:var(--space-lg);">
+        <label class="form-label"><i class="fa-solid fa-clock-rotate-left"></i> Available Provider Slots (Click to Auto-fill)</label>
         <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;">
           {% for s in available_slots %}
-          <div onclick="selectSlot('{{ s.id }}', '{{ s.slotDate|date:'Y-m-d' }}', '{{ s.startTime|time:'H:i' }}', '{{ s.endTime|time:'H:i' }}', '{{ s.get_price }}')" style="padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.borderColor='var(--neon)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div onclick="selectSlot('{{ s.id }}', '{{ s.slotDate|date:'Y-m-d' }}', '{{ s.startTime|time:'H:i' }}', '{{ s.endTime|time:'H:i' }}', '{{ s.get_price }}')" style="padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;flex-shrink:0;transition:all var(--transition-fast);" onmouseover="this.style.borderColor='var(--neon)'" onmouseout="this.style.borderColor='var(--border)'">
             <div style="font-weight:700;font-size:.85rem;color:var(--neon);">{{ s.startTime|time:"H:i" }} - {{ s.endTime|time:"H:i" }}</div>
             <div style="font-size:.75rem;color:var(--muted);">{{ s.slotDate|date:"D, d M" }} • ₹{{ s.get_price|floatformat:0 }}/hr</div>
           </div>
@@ -95,22 +117,22 @@
       {% endif %}
 
       <div class="form-group">
-        <label for="bookingDate"><i class="fa-solid fa-calendar"></i> Booking Date</label>
-        <input type="date" name="bookingDate" id="bookingDate" required min="{{ today }}" />
+        <label for="bookingDate" class="form-label"><i class="fa-solid fa-calendar"></i> Booking Date</label>
+        <input type="date" name="bookingDate" id="bookingDate" class="form-control" required min="{{ today }}" />
       </div>
-      <div class="time-row">
+      <div class="grid-2">
         <div class="form-group">
-          <label for="startTime"><i class="fa-solid fa-clock"></i> Start Time</label>
-          <input type="time" name="startTime" id="startTime" required />
+          <label for="startTime" class="form-label"><i class="fa-solid fa-clock"></i> Start Time</label>
+          <input type="time" name="startTime" id="startTime" class="form-control" required />
         </div>
         <div class="form-group">
-          <label for="endTime"><i class="fa-solid fa-clock"></i> End Time</label>
-          <input type="time" name="endTime" id="endTime" required />
+          <label for="endTime" class="form-label"><i class="fa-solid fa-hourglass-end"></i> End Time</label>
+          <input type="time" name="endTime" id="endTime" class="form-control" required />
         </div>
       </div>
 
       <!-- Real-Time Unit / Console Seat-Map Selection -->
-      <div class="form-group" style="margin-top:24px;background:rgba(124,58,237,.06);border:1px dashed rgba(124,58,237,.3);border-radius:16px;padding:20px;">
+      <div class="form-group" style="margin-top:var(--space-lg);background:rgba(124,58,237,.06);border:1px dashed rgba(124,58,237,.35);border-radius:var(--radius-lg);padding:var(--space-lg);">
         <label style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;color:var(--neon);font-weight:700;font-size:.95rem;">
           <span><i class="fa-solid fa-gamepad" style="color:var(--accent2);margin-right:6px;"></i> Select Gaming Console / Unit</span>
           <span id="selected-unit-badge" style="font-size:.78rem;background:var(--accent);color:#fff;padding:3px 10px;border-radius:12px;font-weight:600;">No Unit Selected</span>
@@ -142,8 +164,8 @@
       </div>
 
       <!-- Payment Method Selection -->
-      <div class="form-group" style="margin-top:20px;">
-        <label><i class="fa-solid fa-wallet"></i> Select Payment Method</label>
+      <div class="form-group" style="margin-top:var(--space-lg);">
+        <label class="form-label"><i class="fa-solid fa-wallet"></i> Select Payment Method</label>
         <div class="payment-grid">
           <label class="payment-card active" onclick="selectPayment('credit_card', this)">
             <input type="radio" name="paymentMethod" value="credit_card" checked />
@@ -165,26 +187,26 @@
 
       <!-- Payment Details Boxes -->
       <div id="credit_card_details" class="payment-details-box">
-        <div style="margin-top:14px;padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;">
-          <div style="font-weight:600;font-size:.9rem;margin-bottom:12px;color:var(--text);">
+        <div style="margin-top:14px;padding:var(--space-md);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);">
+          <div style="font-weight:600;font-size:.9rem;margin-bottom:12px;color:#fff;">
             <i class="fa-solid fa-credit-card" style="color:var(--accent2);margin-right:6px;"></i> Enter Card Information
           </div>
           
           <div style="margin-bottom:12px;">
-            <label style="font-size:.8rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Card Number</label>
-            <input type="text" id="card_number" name="card_number" placeholder="4532 8901 2345 8921" maxlength="19" class="card-input" style="width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;transition:border-color .2s;" />
+            <label class="form-label" style="font-size:.8rem;color:var(--muted);margin-bottom:4px;">Card Number</label>
+            <input type="text" id="card_number" name="card_number" placeholder="4532 8901 2345 8921" maxlength="19" class="form-control card-input" />
             <div id="err_card_number" class="card-err-msg" style="color:#ef4444;font-size:.78rem;margin-top:4px;display:none;font-weight:600;"></div>
           </div>
           
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="grid-2">
             <div>
-              <label style="font-size:.8rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Expiry Date</label>
-              <input type="text" id="card_expiry" name="card_expiry" placeholder="MM/YY" maxlength="5" class="card-input" style="width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;transition:border-color .2s;" />
+              <label class="form-label" style="font-size:.8rem;color:var(--muted);margin-bottom:4px;">Expiry Date (MM/YY)</label>
+              <input type="text" id="card_expiry" name="card_expiry" placeholder="12/28" maxlength="5" class="form-control card-input" />
               <div id="err_card_expiry" class="card-err-msg" style="color:#ef4444;font-size:.78rem;margin-top:4px;display:none;font-weight:600;"></div>
             </div>
             <div>
-              <label style="font-size:.8rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Security Code</label>
-              <input type="password" id="card_cvv" name="card_cvv" placeholder="CVV" maxlength="4" class="card-input" style="width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;transition:border-color .2s;" />
+              <label class="form-label" style="font-size:.8rem;color:var(--muted);margin-bottom:4px;">CVV</label>
+              <input type="password" id="card_cvv" name="card_cvv" placeholder="123" maxlength="4" class="form-control card-input" />
               <div id="err_card_cvv" class="card-err-msg" style="color:#ef4444;font-size:.78rem;margin-top:4px;display:none;font-weight:600;"></div>
             </div>
           </div>

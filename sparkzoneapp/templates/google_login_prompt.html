@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block title %}Sign in with Google – SparkZone{% endblock %}
+
+{% block content %}
+<div style="margin-top:72px;min-height:calc(100vh - 72px);display:flex;align-items:center;justify-content:center;padding:48px 24px;background:#080b11;">
+  <div style="width:100%;max-width:480px;">
+    
+    <!-- Modal Card -->
+    <div style="background:#0f141d;border:1px solid #1e2638;border-radius:16px;padding:36px 32px;box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+      
+      <!-- Google Brand Header -->
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#161c28;border:1px solid #232d3f;margin-bottom:16px;">
+          <svg width="28" height="28" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.28 7.39 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36c-.8 1.6-1.26 3.41-1.26 5.42s.46 3.82 1.26 5.42l3.96-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.39 0 3.33 2.72 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z"/>
+          </svg>
+        </div>
+        <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:#f0f4f8;letter-spacing:-0.02em;margin-bottom:6px;">Sign in with Google</h1>
+        <p style="color:#8896a8;font-size:0.9rem;">Choose an account to continue to <strong style="color:#f0f4f8;">SparkZone</strong></p>
+      </div>
+
+      <!-- Quick Account Chooser List -->
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+        
+        <!-- Account 1: Vishvam Sukhadiya (Gamer) -->
+        <form method="POST" action="{% url 'google_login' %}" style="margin:0;">
+          {% csrf_token %}
+          <input type="hidden" name="email" value="sukhadiyavishvam22@gmail.com">
+          <input type="hidden" name="name" value="Vishvam Sukhadiya">
+          <button type="submit" style="width:100%;display:flex;align-items:center;gap:14px;padding:12px 16px;background:#141b27;border:1px solid #1e293b;border-radius:10px;color:#f0f4f8;cursor:pointer;text-align:left;transition:all 0.15s ease;"
+                  onmouseover="this.style.background='#192233';this.style.borderColor='#00f0ff';" 
+                  onmouseout="this.style.background='#141b27';this.style.borderColor='#1e293b';">
+            <div style="width:40px;height:40px;border-radius:50%;background:rgba(0,240,255,0.12);border:1px solid rgba(0,240,255,0.3);display:flex;align-items:center;justify-content:center;color:#00f0ff;font-weight:700;font-size:0.95rem;flex-shrink:0;">
+              V
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:0.92rem;color:#f0f4f8;display:flex;align-items:center;gap:8px;">
+                Vishvam Sukhadiya
+                <span style="font-size:0.7rem;padding:2px 8px;border-radius:100px;background:rgba(0,240,255,0.12);color:#00f0ff;border:1px solid rgba(0,240,255,0.25);">Gamer</span>
+              </div>
+              <div style="font-size:0.8rem;color:#8896a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">sukhadiyavishvam22@gmail.com</div>
+            </div>
+            <i class="ti ti-chevron-right" style="color:#8896a8;font-size:1.1rem;"></i>
+          </button>
+        </form>
+
+        <!-- Account 2: Parshva Sukhadiya (Provider) -->
+        <form method="POST" action="{% url 'google_login' %}" style="margin:0;">
+          {% csrf_token %}
+          <input type="hidden" name="email" value="parshvabsukhadiya@gmail.com">
+          <input type="hidden" name="name" value="Parshva Sukhadiya">
+          <button type="submit" style="width:100%;display:flex;align-items:center;gap:14px;padding:12px 16px;background:#141b27;border:1px solid #1e293b;border-radius:10px;color:#f0f4f8;cursor:pointer;text-align:left;transition:all 0.15s ease;"
+                  onmouseover="this.style.background='#192233';this.style.borderColor='#00f0ff';" 
+                  onmouseout="this.style.background='#141b27';this.style.borderColor='#1e293b';">
+            <div style="width:40px;height:40px;border-radius:50%;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.3);display:flex;align-items:center;justify-content:center;color:#a855f7;font-weight:700;font-size:0.95rem;flex-shrink:0;">
+              P
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:0.92rem;color:#f0f4f8;display:flex;align-items:center;gap:8px;">
+                Parshva Sukhadiya
+                <span style="font-size:0.7rem;padding:2px 8px;border-radius:100px;background:rgba(168,85,247,0.12);color:#c084fc;border:1px solid rgba(168,85,247,0.25);">Provider</span>
+              </div>
+              <div style="font-size:0.8rem;color:#8896a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">parshvabsukhadiya@gmail.com</div>
+            </div>
+            <i class="ti ti-chevron-right" style="color:#8896a8;font-size:1.1rem;"></i>
+          </button>
+        </form>
+
+        <!-- Account 3: Demo Gamer -->
+        <form method="POST" action="{% url 'google_login' %}" style="margin:0;">
+          {% csrf_token %}
+          <input type="hidden" name="email" value="gamer@sparkzone.in">
+          <input type="hidden" name="name" value="Demo Gamer">
+          <button type="submit" style="width:100%;display:flex;align-items:center;gap:14px;padding:12px 16px;background:#141b27;border:1px solid #1e293b;border-radius:10px;color:#f0f4f8;cursor:pointer;text-align:left;transition:all 0.15s ease;"
+                  onmouseover="this.style.background='#192233';this.style.borderColor='#00f0ff';" 
+                  onmouseout="this.style.background='#141b27';this.style.borderColor='#1e293b';">
+            <div style="width:40px;height:40px;border-radius:50%;background:rgba(0,240,255,0.12);border:1px solid rgba(0,240,255,0.3);display:flex;align-items:center;justify-content:center;color:#00f0ff;font-weight:700;font-size:0.95rem;flex-shrink:0;">
+              <i class="ti ti-device-gamepad-2"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:0.92rem;color:#f0f4f8;display:flex;align-items:center;gap:8px;">
+                Demo Gamer
+                <span style="font-size:0.7rem;padding:2px 8px;border-radius:100px;background:#1e293b;color:#94a3b8;">Demo</span>
+              </div>
+              <div style="font-size:0.8rem;color:#8896a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">gamer@sparkzone.in</div>
+            </div>
+            <i class="ti ti-chevron-right" style="color:#8896a8;font-size:1.1rem;"></i>
+          </button>
+        </form>
+
+      </div>
+
+      <!-- Divider -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="flex:1;height:1px;background:#1e2638;"></div>
+        <span style="font-size:0.8rem;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Or sign in with another email</span>
+        <div style="flex:1;height:1px;background:#1e2638;"></div>
+      </div>
+
+      <!-- Custom Google Email Form -->
+      <form method="POST" action="{% url 'google_login' %}">
+        {% csrf_token %}
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:0.82rem;font-weight:600;color:#cbd5e1;margin-bottom:6px;">Google Email</label>
+          <div style="position:relative;">
+            <input type="email" name="email" required placeholder="name@gmail.com" 
+                   style="width:100%;padding:12px 14px 12px 40px;background:#141b27;border:1px solid #1e293b;border-radius:8px;color:#f0f4f8;font-size:0.92rem;outline:none;"
+                   onfocus="this.style.borderColor='#00f0ff';" onblur="this.style.borderColor='#1e293b';">
+            <i class="ti ti-mail" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#64748b;font-size:1rem;"></i>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label style="display:block;font-size:0.82rem;font-weight:600;color:#cbd5e1;margin-bottom:6px;">Full Name (optional)</label>
+          <div style="position:relative;">
+            <input type="text" name="name" placeholder="First and Last Name" 
+                   style="width:100%;padding:12px 14px 12px 40px;background:#141b27;border:1px solid #1e293b;border-radius:8px;color:#f0f4f8;font-size:0.92rem;outline:none;"
+                   onfocus="this.style.borderColor='#00f0ff';" onblur="this.style.borderColor='#1e293b';">
+            <i class="ti ti-user" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#64748b;font-size:1rem;"></i>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:0.92rem;font-weight:600;">
+          <i class="ti ti-brand-google"></i> Continue with Google
+        </button>
+      </form>
+
+      <!-- Return link -->
+      <div style="margin-top:24px;text-align:center;">
+        <a href="{% url 'login' %}" style="color:#8896a8;font-size:0.85rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:color 0.15s ease;"
+           onmouseover="this.style.color='#00f0ff';" onmouseout="this.style.color='#8896a8';">
+          <i class="ti ti-arrow-left"></i> Return to standard email sign in
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Security notice -->
+    <div style="text-align:center;margin-top:16px;color:#475569;font-size:0.78rem;">
+      Protected by SparkZone Authentication. By signing in, you agree to our Terms & Privacy Policy.
+    </div>
+
+  </div>
+</div>
+{% endblock %}

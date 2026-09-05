@@ -4,48 +4,49 @@
 {% block extra_css %}
 .bookings-table-wrap {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 20px; overflow: hidden; margin-top: 24px;
+  border-radius: var(--radius-xl); overflow: hidden; margin-top: var(--space-lg);
+  box-shadow: var(--shadow-sm);
 }
 table { width: 100%; border-collapse: collapse; }
 th {
-  background: var(--bg3); padding: 16px 20px;
-  font-size: .8rem; text-transform: uppercase; letter-spacing: .07em;
+  background: var(--bg3); padding: 14px 20px;
+  font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .07em;
   color: var(--muted); font-weight: 600; text-align: left;
 }
-td { padding: 18px 20px; border-top: 1px solid var(--border); vertical-align: middle; }
+td { padding: 16px 20px; border-top: 1px solid var(--border); vertical-align: middle; }
 tr:hover td { background: rgba(124,58,237,.04); }
-.status-badge {
+
+.status-pill {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 12px; border-radius: 6px; font-size: .8rem; font-weight: 600;
+  padding: 4px 10px; border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600;
 }
-.status-pending   { background:rgba(245,158,11,.12);  color:var(--gold);    border:1px solid rgba(245,158,11,.25); }
-.status-confirmed { background:rgba(16,185,129,.12);  color:var(--success); border:1px solid rgba(16,185,129,.25); }
-.status-cancelled { background:rgba(239,68,68,.12);   color:var(--danger);  border:1px solid rgba(239,68,68,.25); }
-.empty-state {
-  text-align: center; padding: 80px 40px; color: var(--muted);
-}
-.empty-state i { font-size: 3.5rem; margin-bottom: 20px; opacity: .4; }
-@media(max-width:700px) {
-  table { display:block; overflow-x:auto; white-space:nowrap; }
+.status-pill-pending   { background:rgba(245,158,11,.14);  color:var(--gold);    border:1px solid rgba(245,158,11,.3); }
+.status-pill-confirmed { background:rgba(16,185,129,.14);  color:var(--success); border:1px solid rgba(16,185,129,.3); }
+.status-pill-rejected  { background:rgba(239,68,68,.14);   color:var(--danger);  border:1px solid rgba(239,68,68,.3); }
+.status-pill-cancelled { background:var(--bg3);            color:var(--muted);   border:1px solid var(--border); }
+
+@media(max-width:768px) {
+  .bookings-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 650px; }
 }
 {% endblock %}
 
 {% block content %}
 <div class="page-hero">
   <div class="container">
-    <span class="badge" style="margin-bottom:12px;"><i class="fa-solid fa-calendar-check"></i> My Account</span>
+    <span class="badge" style="margin-bottom:var(--space-sm);"><i class="fa-solid fa-calendar-check"></i> My Account</span>
     <h1>My Bookings</h1>
     <p>Track all your gaming session reservations in one place</p>
   </div>
 </div>
 
-<div class="container" style="padding-bottom:80px;">
+<div class="container" style="padding-bottom:var(--space-3xl);">
   {% if bookings %}
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:32px;">
-    <p style="color:var(--muted);">
-      <strong style="color:var(--text);">{{ bookings|length }}</strong> booking{{ bookings|length|pluralize }} found
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:var(--space-xl);flex-wrap:wrap;gap:var(--space-sm);">
+    <p style="color:var(--muted);font-size:var(--text-sm);">
+      Showing <strong style="color:var(--text);">{{ bookings|length }}</strong> reservation{{ bookings|length|pluralize }}
     </p>
-    <a href="{% url 'games' %}" class="btn btn-primary" style="padding:10px 22px;font-size:.9rem;">
+    <a href="{% url 'games' %}" class="btn btn-primary btn-sm">
       <i class="fa-solid fa-plus"></i> Book More
     </a>
   </div>
@@ -53,34 +54,34 @@ tr:hover td { background: rgba(124,58,237,.04); }
     <table>
       <thead>
         <tr>
-          <th>#</th>
+          <th style="width:40px;">#</th>
           <th>Game</th>
           <th>Date</th>
-          <th>Time</th>
-          <th>Amount</th>
+          <th>Time Window</th>
+          <th style="text-align:right;">Amount</th>
           <th>Payment</th>
           <th>Status</th>
-          <th>Action</th>
+          <th style="text-align:center;">Action</th>
         </tr>
       </thead>
       <tbody>
         {% for b in bookings %}
         <tr>
-          <td style="color:var(--muted);font-size:.85rem;">{{ forloop.counter }}</td>
+          <td style="color:var(--muted);font-size:var(--text-xs);">{{ forloop.counter }}</td>
           <td>
-            <a href="{% url 'game_detail' b.game.id %}" style="font-weight:600;color:var(--accent2);transition:color .2s;" onmouseover="this.style.color='var(--neon)'" onmouseout="this.style.color='var(--accent2)'">
+            <a href="{% url 'game_detail' b.game.id %}" style="font-weight:600;color:var(--accent2);transition:color var(--transition-fast);" onmouseover="this.style.color='var(--neon)'" onmouseout="this.style.color='var(--accent2)'">
               {{ b.game.name }}
             </a>
-            <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">{{ b.game.category.categoryName }}</div>
+            <div style="font-size:var(--text-xs);color:var(--muted);margin-top:2px;">{{ b.game.category.categoryName }}</div>
           </td>
-          <td style="font-size:.9rem;">{{ b.bookingDate }}</td>
-          <td style="font-size:.9rem;font-family:'Orbitron',monospace;font-size:.82rem;">
+          <td style="font-size:var(--text-sm);">{{ b.bookingDate }}</td>
+          <td style="font-family:'Orbitron',monospace;font-size:var(--text-xs);color:var(--text);">
             {{ b.startTime }} – {{ b.endTime }}
           </td>
-          <td style="font-weight:700;color:var(--neon);font-family:'Orbitron',monospace;font-size:.95rem;">
+          <td style="font-weight:700;color:var(--neon);font-family:'Orbitron',monospace;font-size:var(--text-base);text-align:right;">
             ₹{{ b.totalAmount|floatformat:2 }}
           </td>
-          <td style="font-size:.85rem;color:var(--text);">
+          <td style="font-size:var(--text-sm);color:var(--text);">
             {% if b.payment_info %}
               {% if b.payment_info.paymentMethod == 'credit_card' %}
                 <i class="fa-solid fa-credit-card" style="color:var(--accent2);margin-right:4px;"></i> Credit Card
@@ -97,30 +98,30 @@ tr:hover td { background: rgba(124,58,237,.04); }
           </td>
           <td>
             {% if b.status == 'pending' %}
-              <span style="color:#f59e0b;font-weight:700;font-size:.82rem;padding:4px 10px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:8px;display:inline-block;">
-                <i class="fa-solid fa-hourglass-half"></i> Pending Approval
+              <span class="status-pill status-pill-pending">
+                <i class="fa-solid fa-hourglass-half"></i> Pending
               </span>
             {% elif b.status == 'accepted' or b.status == 'confirmed' %}
-              <span style="color:var(--success);font-weight:700;font-size:.82rem;padding:4px 10px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:8px;display:inline-block;">
+              <span class="status-pill status-pill-confirmed">
                 <i class="fa-solid fa-circle-check"></i> Accepted
               </span>
             {% elif b.status == 'rejected' %}
-              <span style="color:var(--danger);font-weight:700;font-size:.82rem;padding:4px 10px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:8px;display:inline-block;">
+              <span class="status-pill status-pill-rejected">
                 <i class="fa-solid fa-circle-xmark"></i> Rejected
               </span>
             {% else %}
-              <span style="color:var(--muted);font-weight:600;font-size:.82rem;padding:4px 10px;background:var(--bg3);border-radius:8px;display:inline-block;">
+              <span class="status-pill status-pill-cancelled">
                 Cancelled
               </span>
             {% endif %}
           </td>
-          <td>
+          <td style="text-align:center;">
             {% if b.status == 'pending' or b.status == 'accepted' or b.status == 'confirmed' %}
-              <a href="{% url 'cancel_booking' b.id %}" onclick="return confirm('Are you sure you want to cancel this booking request?')" class="btn btn-outline" style="padding:4px 10px;font-size:.78rem;color:var(--danger);border-color:rgba(239,68,68,.3);border-radius:8px;" title="Cancel Request">
+              <a href="{% url 'cancel_booking' b.id %}" onclick="return confirm('Are you sure you want to cancel this booking request?')" class="btn btn-outline btn-sm" style="color:var(--danger);border-color:rgba(239,68,68,.35);" title="Cancel Request">
                 Cancel
               </a>
             {% else %}
-              <span style="color:var(--muted);font-size:.8rem;">-</span>
+              <span style="color:var(--muted);font-size:var(--text-xs);">-</span>
             {% endif %}
           </td>
         </tr>
@@ -129,11 +130,11 @@ tr:hover td { background: rgba(124,58,237,.04); }
     </table>
   </div>
   {% else %}
-  <div class="empty-state">
-    <div><i class="fa-solid fa-calendar-xmark"></i></div>
-    <h3 style="color:var(--text);margin-bottom:10px;">No Bookings Yet</h3>
-    <p>You haven't made any bookings. Browse our games and book your first session!</p>
-    <a href="{% url 'games' %}" class="btn btn-primary" style="margin-top:28px;font-size:1rem;padding:13px 30px;">
+  <div class="empty-state card" style="margin-top:var(--space-2xl);">
+    <i class="fa-solid fa-calendar-xmark"></i>
+    <h3 style="color:var(--text);margin-bottom:var(--space-xs);">No Bookings Yet</h3>
+    <p style="color:var(--muted);max-width:440px;margin:0 auto var(--space-lg);">You haven't made any bookings yet. Browse our games and book your first high-performance gaming session!</p>
+    <a href="{% url 'games' %}" class="btn btn-primary btn-lg">
       <i class="fa-solid fa-gamepad"></i> Browse Games
     </a>
   </div>
