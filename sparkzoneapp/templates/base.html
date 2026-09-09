@@ -812,6 +812,7 @@
           <a href="{% url 'gamer_dashboard' %}" class="btn btn-neon" style="padding:9px 18px;font-size:.85rem;">
             <i class="ti ti-controller" style="margin-right:4px;"></i> Gamer Dashboard
           </a>
+        {% endif %}
         {% if logged_in_user.email == 'admin@sparkzone.in' or logged_in_user.email == 'parshvabsukhadiya@gmail.com' or logged_in_user.email == 'sukhadiyavishvam22@gmail.com' or logged_in_user.role == 'admin' %}
           <a href="{% url 'superadmin_dashboard' %}" class="btn btn-outline" style="padding:9px 14px;font-size:.85rem;border-color:var(--accent);color:var(--accent);" title="Superadmin Portal">
             <i class="ti ti-shield-lock" style="margin-right:4px;"></i> Admin
