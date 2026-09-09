@@ -1,253 +1,279 @@
 {% extends 'dashboard_base.html' %}
-{% block title %}Manage Slots – {{ game.name }}{% endblock %}
+{% block title %}Slot Scheduler – {{ game.name }} – SparkZone{% endblock %}
 
 {% block page_title %}
-  <i class="fa-solid fa-clock" style="color:var(--neon);font-size:1.15rem;"></i>
-  <span>Station Time Slots</span>
+  <i class="ti ti-calendar-time" style="color:var(--accent);font-size:1.15rem;"></i>
+  <span>Station Slot Scheduler</span>
 {% endblock %}
 
 {% block extra_css %}
-.slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 0; }
-.slot-card {
-  background: var(--dash-card); border: 1px solid var(--dash-border);
-  border-radius: 14px; padding: 18px; position: relative;
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
 }
-.slot-time { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: var(--neon); margin-bottom: 4px; }
-.slot-date { font-size: .85rem; color: var(--text); font-weight: 600; }
-.slot-meta { font-size: .78rem; color: var(--muted); margin-top: 8px; display: flex; justify-content: space-between; }
+.slot-card {
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  position: relative;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+.slot-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-border);
+}
+.slot-time {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.slot-date {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.slot-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 {% endblock %}
 
 {% block content %}
-<div style="margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+<!-- Header -->
+<div style="margin-bottom:var(--space-2xl);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md);">
   <div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-      <span class="dash-role-badge role-provider"><i class="fa-solid fa-clock"></i> Time Slots Management</span>
+      <span class="dash-role-badge role-provider"><i class="ti ti-device-desktop"></i> {{ game.name }}</span>
+      <span style="color:var(--muted);font-size:var(--text-xs);">
+        {{ game.city.name }} • ₹{{ game.pricePerHour|floatformat:0 }}/hr • {{ game.totalSystem }} Rigs
+      </span>
     </div>
-    <h1 style="font-family:var(--font-heading);font-size:1.55rem;font-weight:800;color:#fff;margin-bottom:4px;">
-      Slots for {{ game.name }}
+    <h1 style="font-family:var(--font-heading);font-size:1.65rem;font-weight:800;color:#fff;margin-bottom:4px;">
+      Time Slot Scheduler
     </h1>
-    <p style="color:var(--muted);font-size:0.88rem;">{{ game.address }} ({{ game.city.name }}) • Default Price: ₹{{ game.pricePerHour|floatformat:0 }}/hr</p>
+    <p style="color:var(--muted);font-size:var(--text-sm);">
+      Set up bookable gamer time slots or auto-generate weekly schedules in one click.
+    </p>
   </div>
-  <a href="{% url 'provider_dashboard' %}" class="btn btn-outline" style="padding:10px 18px;">
-    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
-  </a>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <button type="button" class="btn btn-primary btn-sm" onclick="openBulkModal()">
+      <i class="ti ti-bolt"></i> Bulk Slot Generator
+    </button>
+    <a href="{% url 'provider_stations' %}" class="btn btn-outline btn-sm">
+      <i class="ti ti-arrow-left"></i> Stations
+    </a>
+  </div>
 </div>
 
-<div>
-  <div style="display:grid;grid-template-columns:1fr 2fr;gap:32px;">
+<div style="display:grid;grid-template-columns:320px 1fr;gap:28px;align-items:start;">
 
-    <!-- Add Slot Form -->
-    <div class="form-card" style="max-width:100%;">
-      <h3 style="font-weight:700;margin-bottom:20px;font-size:1.1rem;">
-        <i class="fa-solid fa-plus" style="color:var(--accent2);margin-right:8px;"></i>
-        Create New Time Slot
-      </h3>
-      <form method="POST">
-        {% csrf_token %}
+  <!-- Left: Single Slot Creator -->
+  <div class="form-card" style="padding:24px;">
+    <h3 style="font-family:var(--font-heading);font-weight:700;font-size:1.05rem;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-plus" style="color:var(--accent);"></i> Add Single Time Slot
+    </h3>
+
+    <form method="POST" action="{% url 'provider_slot_manage' game.id %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="slotDate"><i class="ti ti-calendar"></i> Slot Date</label>
+        <input type="date" name="slotDate" id="slotDate" class="form-control" required />
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="form-group">
-          <label for="s-date"><i class="fa-solid fa-calendar-day"></i> Slot Date</label>
-          <input type="date" name="slotDate" id="s-date" class="form-control" required />
+          <label for="startTime"><i class="ti ti-clock"></i> Start</label>
+          <input type="time" name="startTime" id="startTime" class="form-control" required />
         </div>
-
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label for="s-start"><i class="fa-solid fa-clock"></i> Start Time</label>
-            <input type="time" name="startTime" id="s-start" class="form-control" required />
-          </div>
-          <div class="form-group">
-            <label for="s-end"><i class="fa-solid fa-hourglass-end"></i> End Time</label>
-            <input type="time" name="endTime" id="s-end" class="form-control" required />
-          </div>
+        <div class="form-group">
+          <label for="endTime"><i class="ti ti-clock-stop"></i> End</label>
+          <input type="time" name="endTime" id="endTime" class="form-control" required />
         </div>
+      </div>
 
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label for="s-cap"><i class="fa-solid fa-users"></i> Station Capacity</label>
-            <input type="number" name="capacity" id="s-cap" class="form-control" value="{{ game.totalSystem }}" required />
-          </div>
-          <div class="form-group">
-            <label for="s-price"><i class="fa-solid fa-tag"></i> Slot Price (₹) *</label>
-            <input type="number" step="1" name="price" id="s-price" class="form-control" placeholder="Slot Price" required value="{{ game.pricePerHour|floatformat:0 }}" />
-          </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label for="capacity"><i class="ti ti-device-desktop"></i> Capacity</label>
+          <input type="number" name="capacity" id="capacity" class="form-control" value="{{ game.totalSystem }}" min="1" required />
         </div>
+        <div class="form-group">
+          <label for="price"><i class="ti ti-currency-rupee"></i> Price (₹)</label>
+          <input type="number" name="price" id="price" class="form-control" value="{{ game.pricePerHour|floatformat:0 }}" required />
+        </div>
+      </div>
 
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;margin-top:8px;">
-          <i class="fa-solid fa-calendar-plus"></i> Add Time Slot
-        </button>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px;">
+        <i class="ti ti-calendar-plus"></i> Save Slot
+      </button>
+    </form>
+  </div>
+
+  <!-- Right: Existing Slots Feed -->
+  <div>
+    <!-- Date Filter & Count -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+      <h3 style="font-family:var(--font-heading);font-size:1.15rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
+        <i class="ti ti-list" style="color:var(--accent);"></i>
+        Scheduled Slots ({{ slots|length }})
+      </h3>
+
+      <form method="GET" style="display:flex;gap:8px;align-items:center;">
+        <input type="date" name="date" value="{{ selected_date }}" style="padding:6px 10px;background:var(--dash-sidebar);border:1px solid var(--dash-border);border-radius:6px;color:#fff;font-size:0.82rem;" />
+        <button type="submit" class="btn btn-outline btn-sm" style="height:34px;">Filter</button>
+        {% if selected_date %}
+        <a href="{% url 'provider_slot_manage' game.id %}" class="btn btn-ghost btn-sm" style="height:34px;">Show All</a>
+        {% endif %}
       </form>
     </div>
 
-    <!-- Active Slots Listing -->
-    <div>
-      <h3 style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;">
-        <i class="fa-solid fa-list" style="color:var(--accent2);margin-right:8px;"></i>
-        Existing Time Slots ({{ slots|length }})
-      </h3>
-
-      {% if slots %}
-      <div class="slots-grid">
-        {% for s in slots %}
-        <div class="slot-card">
-          <div class="slot-time">{{ s.startTime|time:"H:i" }} - {{ s.endTime|time:"H:i" }}</div>
-          <div class="slot-date"><i class="fa-solid fa-calendar-day" style="color:var(--accent2);margin-right:6px;"></i>{{ s.slotDate|date:"D, d M Y" }}</div>
-          <div class="slot-meta">
-            <span>Capacity: {{ s.capacity }}</span>
-            <span style="font-weight:700;color:var(--neon);">₹{{ s.get_price|floatformat:0 }}</span>
-          </div>
-          <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:.75rem;padding:3px 8px;border-radius:6px;background:rgba(16,185,129,.15);color:var(--success);border:1px solid rgba(16,185,129,.3);">
-              {{ s.status|capfirst }}
-            </span>
-            <a href="{% url 'provider_slot_delete' s.id %}" onclick="return confirm('Delete this slot?')" style="color:var(--danger);font-size:.85rem;" title="Delete Slot">
-              <i class="fa-solid fa-trash"></i>
-            </a>
-          </div>
-
-          <!-- Embedded Live Unit Seat-Map Expander -->
-          <button type="button" onclick="toggleSlotSeatMap({{ s.id }}, {{ game.id }}, '{{ s.slotDate|date:'Y-m-d' }}', '{{ s.startTime|time:'H:i' }}', '{{ s.endTime|time:'H:i' }}')" class="btn btn-outline" style="width:100%;margin-top:14px;padding:8px 12px;font-size:.82rem;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(0,212,255,.05);border-color:rgba(0,212,255,.25);color:var(--neon);">
-            <i class="fa-solid fa-gamepad"></i> <span id="slot-btn-text-{{ s.id }}">View Live Seat Map</span>
-          </button>
-
-          <div id="slot-seatmap-container-{{ s.id }}" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-            <div style="font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
-              <span><i class="fa-solid fa-desktop" style="color:var(--accent2);margin-right:4px;"></i> Live Unit Status</span>
-              <span style="font-size:.7rem;color:var(--muted);">{{ s.startTime|time:"H:i" }} - {{ s.endTime|time:"H:i" }}</span>
-            </div>
-            
-            <div id="slot-units-grid-{{ s.id }}" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(75px, 1fr));gap:8px;margin-bottom:8px;">
-              <!-- Populated via JS -->
-            </div>
-
-            <div id="slot-inspector-{{ s.id }}" style="display:none;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);border-radius:10px;padding:10px;font-size:.78rem;margin-top:8px;">
-              <!-- Gamer booking details -->
-            </div>
-          </div>
+    {% if slots %}
+    <div class="slots-grid">
+      {% for s in slots %}
+      <div class="slot-card">
+        <div class="slot-time">
+          <i class="ti ti-clock" style="color:var(--accent);font-size:0.95rem;"></i>
+          {{ s.startTime|time:"H:i" }} – {{ s.endTime|time:"H:i" }}
         </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div style="text-align:center;padding:60px 0;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:16px;margin-top:24px;">
-        <i class="fa-solid fa-calendar-xmark" style="font-size:3rem;margin-bottom:16px;opacity:.5;"></i>
-        <p>No time slots created yet for this station.</p>
-      </div>
-      {% endif %}
-    </div>
+        <div class="slot-date">
+          <i class="ti ti-calendar"></i> {{ s.slotDate|date:"D, d M Y" }}
+        </div>
+        <div class="slot-meta">
+          <span>Capacity: <strong>{{ s.bookedCount }}/{{ s.capacity }}</strong></span>
+          <span style="font-family:var(--font-heading);font-weight:800;color:var(--accent);font-size:1rem;">
+            ₹{{ s.get_price|floatformat:0 }}
+          </span>
+        </div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--dash-border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:4px;{% if s.status == 'available' %}background:rgba(34,197,94,0.12);color:var(--success);border:1px solid rgba(34,197,94,0.25);{% elif s.status == 'booked' %}background:rgba(0,240,255,0.12);color:var(--accent);border:1px solid var(--accent-border);{% else %}background:rgba(239,68,68,0.12);color:var(--danger);border:1px solid rgba(239,68,68,0.25);{% endif %}">
+            {{ s.status|upper }}
+          </span>
 
+          <a href="{% url 'provider_slot_delete' s.id %}" onclick="return confirm('Delete this time slot?')" class="btn btn-ghost btn-sm" style="color:var(--danger);padding:4px 8px;font-size:0.75rem;" title="Delete Slot">
+            <i class="ti ti-trash"></i> Delete
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:var(--space-3xl) 0;background:var(--dash-card);border:1px solid var(--dash-border);border-radius:var(--radius-lg);color:var(--muted);">
+      <i class="ti ti-calendar-off" style="font-size:2.8rem;color:var(--accent);margin-bottom:12px;opacity:0.6;"></i>
+      <h4 style="font-family:var(--font-heading);color:#fff;margin-bottom:6px;">No Slots Scheduled</h4>
+      <p style="font-size:0.85rem;max-width:360px;margin:0 auto 16px;">Use the Bulk Generator to automatically create daily slots for the upcoming week.</p>
+      <button type="button" class="btn btn-primary" onclick="openBulkModal()">
+        <i class="ti ti-bolt"></i> Launch Bulk Slot Generator
+      </button>
+    </div>
+    {% endif %}
   </div>
 </div>
 
+<!-- Bulk Slot Generator Modal -->
+<div id="bulk-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);">
+  <div style="background:var(--dash-card);border:1px solid var(--dash-border);border-radius:18px;max-width:520px;width:100%;padding:28px;box-shadow:0 24px 60px rgba(0,0,0,0.9);position:relative;">
+    <button onclick="closeBulkModal()" style="position:absolute;top:20px;right:20px;background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;"><i class="ti ti-x"></i></button>
+
+    <div style="margin-bottom:20px;">
+      <span class="dash-role-badge role-provider" style="margin-bottom:6px;"><i class="ti ti-bolt"></i> Smart Generator</span>
+      <h2 style="font-family:var(--font-heading);font-size:1.3rem;font-weight:800;color:#fff;margin-top:4px;">Bulk Slot Generator</h2>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:2px;">Generate recurring slots across a date range without duplicate slot collisions.</p>
+    </div>
+
+    <form method="POST" action="{% url 'provider_slot_bulk_generate' game.id %}">
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="start_date" style="font-size:0.8rem;"><i class="ti ti-calendar"></i> Start Date</label>
+          <input type="date" name="start_date" id="start_date" class="form-control" required />
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="end_date" style="font-size:0.8rem;"><i class="ti ti-calendar"></i> End Date</label>
+          <input type="date" name="end_date" id="end_date" class="form-control" required />
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="start_hour" style="font-size:0.8rem;"><i class="ti ti-sun"></i> Open (Hour)</label>
+          <select name="start_hour" id="start_hour" class="form-control">
+            <option value="9">09:00 AM</option>
+            <option value="10" selected>10:00 AM</option>
+            <option value="11">11:00 AM</option>
+            <option value="12">12:00 PM</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="end_hour" style="font-size:0.8rem;"><i class="ti ti-moon"></i> Close (Hour)</label>
+          <select name="end_hour" id="end_hour" class="form-control">
+            <option value="21">09:00 PM</option>
+            <option value="22">10:00 PM</option>
+            <option value="23" selected>11:00 PM</option>
+            <option value="24">12:00 AM</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="duration_hours" style="font-size:0.8rem;"><i class="ti ti-hourglass"></i> Duration</label>
+          <select name="duration_hours" id="duration_hours" class="form-control">
+            <option value="1">1 Hour</option>
+            <option value="2" selected>2 Hours</option>
+            <option value="3">3 Hours</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="bulk_price" style="font-size:0.8rem;"><i class="ti ti-currency-rupee"></i> Hourly Price (₹)</label>
+        <input type="number" name="price" id="bulk_price" value="{{ game.pricePerHour|floatformat:0 }}" class="form-control" required />
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button type="button" class="btn btn-outline" onclick="closeBulkModal()" style="flex:1;justify-content:center;">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center;">
+          <i class="ti ti-bolt"></i> Generate Slots
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-  const activeSlotSeatMaps = {};
+  function openBulkModal() {
+    const modal = document.getElementById('bulk-modal');
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const nextWeek = new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000);
+    const nextWeekStr = nextWeek.toISOString().split('T')[0];
 
-  async function toggleSlotSeatMap(slotId, gameId, dateStr, startTimeStr, endTimeStr) {
-    const container = document.getElementById(`slot-seatmap-container-${slotId}`);
-    const btnText = document.getElementById(`slot-btn-text-${slotId}`);
-    if (!container) return;
-
-    if (container.style.display === 'block') {
-      container.style.display = 'none';
-      if (btnText) btnText.textContent = 'View Live Seat Map';
-      delete activeSlotSeatMaps[slotId];
-    } else {
-      container.style.display = 'block';
-      if (btnText) btnText.textContent = 'Hide Seat Map';
-      activeSlotSeatMaps[slotId] = { gameId, dateStr, startTimeStr, endTimeStr };
-      await loadSlotSeatMapData(slotId, gameId, dateStr, startTimeStr, endTimeStr);
-    }
+    document.getElementById('start_date').value = todayStr;
+    document.getElementById('end_date').value = nextWeekStr;
+    modal.style.display = 'flex';
   }
 
-  async function loadSlotSeatMapData(slotId, gameId, dateStr, startTimeStr, endTimeStr) {
-    const grid = document.getElementById(`slot-units-grid-${slotId}`);
-    const inspector = document.getElementById(`slot-inspector-${slotId}`);
-    if (!grid) return;
-
-    if (inspector) inspector.style.display = 'none';
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);font-size:.75rem;padding:10px;">Loading units...</div>';
-
-    try {
-      const res = await fetch(`/api/unit-availability/${gameId}/?date=${encodeURIComponent(dateStr)}&start_time=${encodeURIComponent(startTimeStr)}&end_time=${encodeURIComponent(endTimeStr)}`);
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      const units = data.units || [];
-
-      grid.innerHTML = '';
-      units.forEach(u => {
-        const div = document.createElement('div');
-        div.style.cssText = 'padding:8px 4px;border-radius:8px;text-align:center;font-weight:700;font-size:.75rem;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:2px;user-select:none;';
-
-        if (u.status === 'maintenance') {
-          div.style.background = 'rgba(239,68,68,.15)';
-          div.style.border = '1px solid rgba(239,68,68,.4)';
-          div.style.color = 'var(--danger)';
-          div.title = `Unit ${u.unit_number} is Booked (Manual Block). Click to toggle available.`;
-          div.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.75rem;"></i>U${u.unit_number}<span style="font-size:.62rem;font-weight:600;">Booked</span>`;
-          div.onclick = () => toggleSlotUnitMaintenance(slotId, gameId, u.unit_number);
-        } else if (u.status === 'booked') {
-          div.style.background = 'rgba(0,212,255,.12)';
-          div.style.border = '1px solid var(--neon)';
-          div.style.color = 'var(--neon)';
-          const name = u.details ? u.details.user_name : 'Gamer';
-          div.title = `Unit ${u.unit_number} is Booked by ${name}. Click to view info.`;
-          div.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.75rem;"></i>U${u.unit_number}<span style="font-size:.62rem;font-weight:700;">Booked</span>`;
-          div.onclick = () => {
-            if (u.details && inspector) {
-              inspector.style.display = 'block';
-              inspector.innerHTML = `
-                <div style="font-weight:700;color:var(--neon);margin-bottom:2px;"><i class="fa-solid fa-user"></i> Unit ${u.unit_number} Booking</div>
-                <div><strong>Gamer:</strong> ${u.details.user_name}</div>
-                <div><strong>Slot:</strong> ${u.details.time_slot}</div>
-                <div><strong>Status:</strong> ${u.details.status_display}</div>
-              `;
-            }
-          };
-        } else {
-          div.style.background = 'var(--bg3)';
-          div.style.border = '1px solid var(--border)';
-          div.style.color = 'var(--text)';
-          div.title = `Unit ${u.unit_number} is Free. Click to toggle Booked.`;
-          div.innerHTML = `<i class="fa-solid fa-desktop" style="color:var(--accent2);font-size:.75rem;"></i>U${u.unit_number}<span style="font-size:.62rem;color:var(--success);">Free</span>`;
-          div.onclick = () => toggleSlotUnitMaintenance(slotId, gameId, u.unit_number);
-        }
-
-        grid.appendChild(div);
-      });
-    } catch (err) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--danger);font-size:.75rem;padding:10px;">Failed to load.</div>';
-    }
+  function closeBulkModal() {
+    document.getElementById('bulk-modal').style.display = 'none';
   }
 
-  async function toggleSlotUnitMaintenance(slotId, gameId, unitNum) {
-    try {
-      const getCookie = (name) => {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';');
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-            }
-          }
-        }
-        return cookieValue;
-      };
-
-      const res = await fetch(`/api/provider/toggle-unit-maintenance/${gameId}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken') || ''
-        },
-        body: JSON.stringify({ unit_number: unitNum })
-      });
-      if (res.ok && activeSlotSeatMaps[slotId]) {
-        const sm = activeSlotSeatMaps[slotId];
-        await loadSlotSeatMapData(slotId, gameId, sm.dateStr, sm.startTimeStr, sm.endTimeStr);
-      }
-    } catch (err) {
-      console.error('Error toggling unit:', err);
-    }
-  }
+  window.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const sDate = document.getElementById('slotDate');
+    if (sDate && !sDate.value) sDate.value = todayStr;
+  });
 </script>
 {% endblock %}

@@ -116,15 +116,48 @@
         </div>
       </div>
 
-      <!-- Section 3: Description & Rig Specifications -->
+      <!-- Section 3: Hardware Specifications & Pricing -->
       <div class="form-section">
         <div class="form-section-header">
-          <i class="fa-solid fa-align-left"></i>
-          <span>Station Description & Rig Specs</span>
+          <i class="ti ti-cpu" style="color:var(--accent);"></i>
+          <span>Hardware Specifications & Pricing</span>
         </div>
+
+        <div class="form-group">
+          <label for="g-price"><i class="ti ti-currency-rupee"></i> Hourly Rate (₹ / hour) *</label>
+          <input type="number" step="1" name="pricePerHour" id="g-price" placeholder="250" required {% if is_edit %}value="{{ game.pricePerHour|floatformat:0 }}"{% else %}value="200"{% endif %} />
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="g-gpu"><i class="ti ti-device-gamepad-2"></i> GPU / Graphics Card</label>
+            <input type="text" name="gpu" id="g-gpu" placeholder="e.g. NVIDIA GeForce RTX 4090 24GB" {% if is_edit and game.gpu %}value="{{ game.gpu }}"{% endif %} />
+          </div>
+          <div class="form-group">
+            <label for="g-cpu"><i class="ti ti-cpu"></i> Processor / CPU</label>
+            <input type="text" name="cpu" id="g-cpu" placeholder="e.g. Intel Core i9-14900K 24-Core 6.0GHz" {% if is_edit and game.cpu %}value="{{ game.cpu }}"{% endif %} />
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="g-ram"><i class="ti ti-circuit-battery"></i> Memory / RAM</label>
+            <input type="text" name="ram" id="g-ram" placeholder="e.g. 32GB DDR5 6000MHz Low Latency" {% if is_edit and game.ram %}value="{{ game.ram }}"{% endif %} />
+          </div>
+          <div class="form-group">
+            <label for="g-display"><i class="ti ti-device-desktop-analytics"></i> Display / Monitor Specs</label>
+            <input type="text" name="display_specs" id="g-display" placeholder="e.g. 27'' ROG Swift 360Hz Fast-IPS 1440p (0.03ms)" {% if is_edit and game.display_specs %}value="{{ game.display_specs }}"{% endif %} />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="g-peripherals"><i class="ti ti-keyboard"></i> Gaming Peripherals & Gear</label>
+          <input type="text" name="peripherals" id="g-peripherals" placeholder="e.g. Wooting 60HE Hall-Effect, Logitech G Pro Superlight 2, Fanatec DD2 Wheelbase" {% if is_edit and game.peripherals %}value="{{ game.peripherals }}"{% endif %} />
+        </div>
+
         <div class="form-group" style="margin-bottom:0;">
-          <label for="g-desc"><i class="fa-solid fa-align-left"></i> Station Description & Hardware Specs *</label>
-          <textarea name="description" id="g-desc" placeholder="Describe the gaming station, GPU specs, monitor refresh rate, controllers, VR gear..." required style="width:100%;min-height:120px;display:block;">{% if is_edit %}{{ game.description }}{% endif %}</textarea>
+          <label for="g-desc"><i class="ti ti-align-left"></i> Station Description & Overview *</label>
+          <textarea name="description" id="g-desc" placeholder="Describe the station experience, acoustic setup, tournament suitability..." required style="width:100%;min-height:100px;display:block;">{% if is_edit %}{{ game.description }}{% endif %}</textarea>
         </div>
       </div>
 

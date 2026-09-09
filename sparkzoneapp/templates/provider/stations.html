@@ -1,0 +1,352 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Stations & Hardware Inventory – Provider Panel{% endblock %}
+
+{% block page_title %}
+  <i class="ti ti-device-desktop" style="color:var(--accent);font-size:1.15rem;"></i>
+  <span>Gaming Stations & Hardware Inventory</span>
+{% endblock %}
+
+{% block extra_css %}
+.station-table-card {
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+}
+table.station-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+table.station-table th {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--dash-border);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  background: rgba(255, 255, 255, 0.02);
+}
+table.station-table td {
+  padding: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: var(--text-sm);
+  vertical-align: middle;
+}
+table.station-table tr:last-child td { border-bottom: none; }
+table.station-table tr:hover td { background: rgba(0, 240, 255, 0.02); }
+
+.spec-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--dash-sidebar);
+  border: 1px solid var(--dash-border);
+  color: var(--text);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.spec-pill i { color: var(--accent); font-size: 0.8rem; }
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div style="margin-bottom:var(--space-2xl);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md);">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <span class="dash-role-badge role-provider"><i class="ti ti-building-store"></i> {{ provider.businessName }}</span>
+      <span style="color:var(--muted);font-size:var(--text-xs);">
+        <i class="ti ti-map-pin" style="color:var(--accent);margin-right:4px;"></i>{{ provider.address }}, {{ provider.city.name }}
+      </span>
+    </div>
+    <h1 style="font-family:var(--font-heading);font-size:1.65rem;font-weight:800;color:#fff;margin-bottom:4px;">
+      Station Rigs & Hardware Inventory
+    </h1>
+    <p style="color:var(--muted);font-size:var(--text-sm);">
+      Manage your esports PCs, console booths, sim-racing cockpits, slots, and maintenance status.
+    </p>
+  </div>
+  <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+    <a href="{% url 'provider_game_add' %}" class="btn btn-primary btn-sm">
+      <i class="ti ti-plus"></i> Add New Station
+    </a>
+  </div>
+</div>
+
+<!-- Inventory Grid / Table -->
+<div class="station-table-card">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:12px;">
+    <h3 style="font-family:var(--font-heading);font-size:1.15rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-devices" style="color:var(--accent);"></i>
+      Active Inventory ({{ games|length }} Station{{ games|length|pluralize }})
+    </h3>
+  </div>
+
+  {% if games %}
+  <table class="station-table">
+    <thead>
+      <tr>
+        <th>Station & Setup</th>
+        <th>Category & Rigs</th>
+        <th>Key Hardware Specifications</th>
+        <th>Pricing</th>
+        <th>Status</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in games %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:14px;">
+            {% if g.get_image_url %}
+              <img src="{{ g.get_image_url }}" alt="{{ g.name }}" style="width:64px;height:46px;border-radius:var(--radius-md);object-fit:cover;border:1px solid var(--dash-border);" onerror="this.onerror=null;this.src='/static/images/stations/esports_station.jpg';" />
+            {% else %}
+              <div style="width:64px;height:46px;border-radius:var(--radius-md);background:var(--dash-sidebar);border:1px solid var(--dash-border);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:1.5rem;"><i class="ti ti-device-desktop"></i></div>
+            {% endif %}
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:0.95rem;">{{ g.name }}</div>
+              <div style="font-size:var(--text-xs);color:var(--muted);margin-top:2px;">
+                {{ g.city.name }} • Hours: {{ g.operating_hours|default:"09:00 - 23:00" }}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <span style="font-size:var(--text-xs);font-weight:700;background:rgba(0,240,255,0.08);color:var(--accent);border:1px solid var(--accent-border);padding:2px 8px;border-radius:4px;width:fit-content;">
+              {{ g.category.categoryName }}
+            </span>
+            <span style="font-size:0.8rem;color:var(--text);">
+              <strong>{{ g.totalSystem }}</strong> Units Total
+            </span>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;max-width:320px;">
+            {% if g.gpu %}
+              <span class="spec-pill" title="GPU"><i class="ti ti-cpu"></i> {{ g.gpu }}</span>
+            {% endif %}
+            {% if g.display_specs %}
+              <span class="spec-pill" title="Display"><i class="ti ti-screen-share"></i> {{ g.display_specs|truncatechars:26 }}</span>
+            {% endif %}
+            {% if g.cpu %}
+              <span class="spec-pill" title="CPU"><i class="ti ti-circuit-cell"></i> {{ g.cpu|truncatechars:22 }}</span>
+            {% endif %}
+          </div>
+        </td>
+        <td>
+          <div style="font-family:var(--font-heading);font-weight:800;color:var(--accent);font-size:1.1rem;">
+            ₹{{ g.pricePerHour|floatformat:0 }}<span style="font-size:0.75rem;color:var(--muted);font-family:var(--font-body);font-weight:400;">/hr</span>
+          </div>
+        </td>
+        <td>
+          {% if g.status == 'active' %}
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:var(--success);background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);padding:3px 8px;border-radius:4px;">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--success);"></span> Active
+            </span>
+          {% else %}
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:var(--danger);background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);padding:3px 8px;border-radius:4px;">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--danger);"></span> Inactive
+            </span>
+          {% endif %}
+        </td>
+        <td style="text-align:right;">
+          <div style="display:inline-flex;gap:8px;align-items:center;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="openLiveUnitModal('{{ g.id }}', '{{ g.name|escapejs }}')" title="Live Unit Maintenance & Grid" style="color:var(--accent);border-color:var(--accent-border);">
+              <i class="ti ti-layout-grid"></i> Units
+            </button>
+            <a href="{% url 'provider_slot_manage' g.id %}" class="btn btn-outline btn-sm" title="Manage Schedule Slots">
+              <i class="ti ti-calendar-time"></i> Slots ({{ g.slots.count }})
+            </a>
+            <a href="{% url 'provider_game_edit' g.id %}" class="btn btn-outline btn-sm" title="Edit Rig Specs">
+              <i class="ti ti-edit"></i>
+            </a>
+            <a href="{% url 'provider_game_delete' g.id %}" class="btn btn-outline btn-sm" onclick="return confirm('Deactivate or delete this station?')" style="color:var(--danger);border-color:rgba(239,68,68,0.3);" title="Delete">
+              <i class="ti ti-trash"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="text-align:center;padding:var(--space-3xl) 0;color:var(--muted);">
+    <i class="ti ti-device-desktop" style="font-size:3rem;margin-bottom:var(--space-md);color:var(--accent);opacity:.5;"></i>
+    <p style="margin-bottom:var(--space-lg);font-size:var(--text-sm);">You haven't listed any gaming setups yet.</p>
+    <a href="{% url 'provider_game_add' %}" class="btn btn-primary btn-lg">+ Add Your First Gaming Rig</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Live Unit & Maintenance Modal -->
+<div id="unit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);">
+  <div style="background:var(--dash-card);border:1px solid var(--dash-border);border-radius:18px;max-width:620px;width:100%;padding:28px;box-shadow:0 24px 60px rgba(0,0,0,0.9);position:relative;max-height:90vh;overflow-y:auto;">
+    <button onclick="closeLiveUnitModal()" style="position:absolute;top:20px;right:20px;background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;"><i class="ti ti-x"></i></button>
+
+    <div style="margin-bottom:20px;">
+      <span class="dash-role-badge role-provider" style="margin-bottom:6px;"><i class="ti ti-adjustments"></i> Operations Matrix</span>
+      <h2 id="modal-title" style="font-family:var(--font-heading);font-size:1.25rem;font-weight:700;color:#fff;margin-top:4px;">Live Unit Grid</h2>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:2px;">Click any unit block to toggle Maintenance (blocks gamer bookings) or inspect active reservations.</p>
+    </div>
+
+    <!-- Date selector -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;border:1px solid var(--dash-border);">
+      <div>
+        <label style="font-size:0.72rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Inspect Date</label>
+        <input type="date" id="modal-date" style="width:100%;padding:6px 10px;background:var(--dash-sidebar);border:1px solid var(--dash-border);border-radius:6px;color:#fff;font-size:0.82rem;" />
+      </div>
+      <div>
+        <label style="font-size:0.72rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Start Time</label>
+        <input type="time" id="modal-time" style="width:100%;padding:6px 10px;background:var(--dash-sidebar);border:1px solid var(--dash-border);border-radius:6px;color:#fff;font-size:0.82rem;" />
+      </div>
+    </div>
+
+    <!-- Unit blocks grid -->
+    <div id="modal-units-container" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));gap:10px;margin-bottom:20px;">
+      <!-- Loaded dynamically via JS -->
+    </div>
+
+    <div id="modal-unit-details" style="display:none;background:rgba(0,240,255,0.06);border:1px solid var(--accent-border);border-radius:10px;padding:12px;margin-bottom:16px;font-size:0.82rem;">
+      <!-- Active reservation details -->
+    </div>
+
+    <!-- Legend -->
+    <div style="display:flex;align-items:center;gap:16px;font-size:0.75rem;color:var(--muted);justify-content:center;padding-top:12px;border-top:1px solid var(--dash-border);flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="width:10px;height:10px;border-radius:3px;border:1px solid var(--dash-border);background:var(--dash-sidebar);display:inline-block;"></span> Available (Online)
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="width:10px;height:10px;border-radius:3px;background:rgba(0,240,255,0.25);border:1px solid var(--accent);display:inline-block;"></span> Booked (Gamer In Session)
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="width:10px;height:10px;border-radius:3px;background:rgba(239,68,68,0.25);border:1px solid var(--danger);display:inline-block;"></span> Maintenance / Blocked
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let currentStationId = null;
+
+  function openLiveUnitModal(gameId, gameName) {
+    currentStationId = gameId;
+    document.getElementById('modal-title').textContent = gameName + ' – Live Unit Grid';
+    document.getElementById('unit-modal').style.display = 'flex';
+
+    const now = new Date();
+    document.getElementById('modal-date').value = now.toISOString().split('T')[0];
+    const curHour = String(now.getHours()).padStart(2, '0');
+    document.getElementById('modal-time').value = `${curHour}:00`;
+
+    loadUnitAvailability();
+  }
+
+  function closeLiveUnitModal() {
+    document.getElementById('unit-modal').style.display = 'none';
+  }
+
+  async function loadUnitAvailability() {
+    if (!currentStationId) return;
+    const dateVal = document.getElementById('modal-date').value;
+    const timeVal = document.getElementById('modal-time').value;
+    const container = document.getElementById('modal-units-container');
+    const details = document.getElementById('modal-unit-details');
+    details.style.display = 'none';
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:16px;">Loading unit statuses...</div>';
+
+    try {
+      const res = await fetch(`/api/unit-availability/${currentStationId}/?date=${encodeURIComponent(dateVal)}&start_time=${encodeURIComponent(timeVal)}`);
+      const data = await res.json();
+      const units = data.units || [];
+      container.innerHTML = '';
+
+      units.forEach(u => {
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:12px 8px;border-radius:10px;text-align:center;font-weight:700;font-size:0.82rem;cursor:pointer;transition:all 0.18s;display:flex;flex-direction:column;align-items:center;gap:4px;';
+
+        if (u.status === 'maintenance') {
+          div.style.background = 'rgba(239,68,68,0.12)';
+          div.style.border = '1px solid rgba(239,68,68,0.4)';
+          div.style.color = 'var(--danger)';
+          div.title = 'In Maintenance. Click to mark Available.';
+          div.innerHTML = `<i class="ti ti-tool" style="font-size:1.1rem;"></i>Unit ${u.unit_number}<span style="font-size:0.68rem;font-weight:600;">Maintenance</span>`;
+          div.onclick = () => toggleUnitMaintenance(u.unit_number);
+        } else if (u.status === 'booked') {
+          div.style.background = 'rgba(0,240,255,0.12)';
+          div.style.border = '1px solid var(--accent)';
+          div.style.color = 'var(--accent)';
+          div.title = 'In Session. Click to view reservation.';
+          div.innerHTML = `<i class="ti ti-player-play" style="font-size:1.1rem;"></i>Unit ${u.unit_number}<span style="font-size:0.68rem;">Booked</span>`;
+          div.onclick = () => {
+            if (u.details) {
+              details.style.display = 'block';
+              details.innerHTML = `
+                <div style="font-weight:700;color:var(--accent);margin-bottom:4px;"><i class="ti ti-user-check"></i> Unit ${u.unit_number} Reservation</div>
+                <div><strong>Gamer:</strong> ${u.details.user_name} (${u.details.user_email})</div>
+                <div><strong>Session Time:</strong> ${u.details.time_slot}</div>
+                <div><strong>Status:</strong> ${u.details.status_display}</div>
+              `;
+            }
+          };
+        } else {
+          div.style.background = 'rgba(255,255,255,0.02)';
+          div.style.border = '1px solid var(--dash-border)';
+          div.style.color = 'var(--text)';
+          div.title = 'Online & Available. Click to put into Maintenance.';
+          div.innerHTML = `<i class="ti ti-device-desktop" style="font-size:1.1rem;color:var(--success);"></i>Unit ${u.unit_number}<span style="font-size:0.68rem;color:var(--success);">Available</span>`;
+          div.onclick = () => toggleUnitMaintenance(u.unit_number);
+        }
+
+        container.appendChild(div);
+      });
+    } catch (e) {
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--danger);">Error loading units.</div>';
+    }
+  }
+
+  async function toggleUnitMaintenance(unitNum) {
+    if (!currentStationId) return;
+    try {
+      const getCookie = (name) => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      };
+
+      const res = await fetch(`/api/provider/toggle-unit-maintenance/${currentStationId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken') || ''
+        },
+        body: JSON.stringify({ unit_number: unitNum })
+      });
+      if (res.ok) {
+        loadUnitAvailability();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  document.getElementById('modal-date').addEventListener('change', loadUnitAvailability);
+  document.getElementById('modal-time').addEventListener('change', loadUnitAvailability);
+</script>
+{% endblock %}

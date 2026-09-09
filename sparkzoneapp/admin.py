@@ -40,10 +40,10 @@ class ShowCategory(ModelAdmin):
 
 @admin.register(Game)
 class ShowGame(ModelAdmin):
-    list_display = ["name", "provider", "category", "available_games", "city", "pricePerHour", "totalSystem", "availableSystems", "status", "timestamp"]
-    list_filter = ["status", "category__categoryName", "city"]
-    list_editable = ["status", "availableSystems"]
-    search_fields = ["name", "available_games", "address"]
+    list_display = ["name", "provider", "category", "gpu", "featured", "pricePerHour", "totalSystem", "availableSystems", "status", "timestamp"]
+    list_filter = ["status", "featured", "category__categoryName", "city"]
+    list_editable = ["status", "featured", "availableSystems"]
+    search_fields = ["name", "available_games", "address", "gpu"]
 
 @admin.register(Slot)
 class ShowSlot(ModelAdmin):
@@ -57,8 +57,9 @@ class ShowGameImages(ModelAdmin):
 
 @admin.register(Booking)
 class ShowBooking(ModelAdmin):
-    list_display = ["user", "game", "slot", "bookingDate", "startTime", "endTime", "totalAmount", "status", "requested_at", "responded_at"]
-    list_filter = ["status", "bookingDate"]
+    list_display = ["user", "game", "slot", "bookingDate", "startTime", "endTime", "totalAmount", "status", "payment_status", "unit_numbers", "requested_at"]
+    list_filter = ["status", "payment_status", "bookingDate"]
+    list_editable = ["status", "payment_status"]
 
 @admin.register(Notification)
 class ShowNotification(ModelAdmin):
@@ -67,12 +68,18 @@ class ShowNotification(ModelAdmin):
 
 @admin.register(Payment)
 class ShowPayments(ModelAdmin):
-    list_display = ["user", "booking", "amount", "paymentMethod", "paymentStatus", "paymentDate"]
+    list_display = ["user", "booking", "amount", "paymentMethod", "paymentStatus", "razorpay_order_id", "razorpay_payment_id", "paymentDate"]
     list_filter = ["paymentMethod", "paymentStatus"]
 
 @admin.register(Reviews)
 class ShowReviews(ModelAdmin):
-    list_display = ["user", "game", "rating", "comment", "timestamp"]
+    list_display = ["user", "game", "rating", "is_verified_booking", "comment", "timestamp"]
+    list_filter = ["rating", "is_verified_booking"]
+
+@admin.register(FavoriteVenue)
+class ShowFavoriteVenue(ModelAdmin):
+    list_display = ["user", "game", "timestamp"]
+    search_fields = ["user__email", "game__name"]
 
 @admin.register(ContactUs)
 class ShowContacts(ModelAdmin):

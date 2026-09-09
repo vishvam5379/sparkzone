@@ -1,629 +1,372 @@
 {% extends 'base.html' %}
-{% block title %}Booking – {{ game.name }} – SparkZone{% endblock %}
+{% block title %}Instant Checkout – {{ game.name }} – SparkZone{% endblock %}
 
 {% block extra_css %}
-.booking-wrap {
-  max-width: 720px; margin: 0 auto; padding: 48px 24px 80px;
+.checkout-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 44px 20px 80px;
 }
-.booking-game-preview {
-  display: flex; gap: 20px; align-items: center;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 20px; margin-bottom: 28px;
+.station-preview-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
 }
-.booking-game-preview img {
-  width: 100px; height: 70px; object-fit: cover; border-radius: var(--radius-sm); flex-shrink: 0;
+.station-preview-box img {
+  width: 90px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  border: 1px solid var(--border);
 }
-.booking-game-preview .name { font-weight: 800; font-size: 1.1rem; color: #fff; }
-.booking-game-preview .meta { color: var(--muted); font-size: .85rem; margin-top: 4px; }
-.time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.payment-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px;
-}
-.payment-card {
-  position: relative;
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-md); padding: 16px 12px; text-align: center;
-  cursor: pointer; transition: all var(--transition-fast); display: flex;
-  flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-}
-.payment-card:hover {
-  border-color: rgba(255, 255, 255, 0.16); background: #2a2a2a;
-}
-.payment-card input[type="radio"] {
-  position: absolute; opacity: 0; pointer-events: none;
-}
-.payment-card.active {
-  border-color: var(--accent); background: var(--accent-light);
-}
-.payment-card i { font-size: 1.3rem; color: var(--muted); }
-.payment-card.active i { color: var(--accent); }
-.payment-card .title { font-weight: 700; font-size: .88rem; color: var(--text); }
 
-.price-calc {
+.payment-toggle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 10px;
+}
+.payment-toggle-card {
   background: var(--bg3);
-  border: 1px solid var(--accent-border);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 16px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.payment-toggle-card:hover {
+  border-color: var(--accent);
+}
+.payment-toggle-card.active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.payment-toggle-card input[type="radio"] {
+  display: none;
+}
+
+.price-summary-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 18px 22px;
+  margin-top: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.price-calc .est {
-  font-weight: 700;
-  color: var(--text);
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.price-calc .val {
+.price-summary-box .amount {
   font-family: var(--font-heading);
-  font-size: 1.55rem;
+  font-size: 1.6rem;
   font-weight: 900;
   color: var(--accent);
-}
-
-@media(max-width: 550px) {
-  .payment-grid { grid-template-columns: 1fr; }
 }
 {% endblock %}
 
 {% block content %}
 <div style="margin-top:68px;"></div>
-<div class="booking-wrap">
-  <div style="margin-bottom:24px;">
-    <a href="{% url 'game_detail' game.id %}" style="color:var(--muted);font-size:.88rem;display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;font-weight:600;">
-      <i class="fa-solid fa-arrow-left"></i> Back to {{ game.name }}
+<div class="checkout-wrap">
+  <!-- Back Link & Title -->
+  <div style="margin-bottom:20px;">
+    <a href="{% url 'game_detail' game.id %}" style="color:var(--muted);font-size:0.85rem;display:inline-flex;align-items:center;gap:6px;margin-bottom:12px;">
+      <i class="ti ti-arrow-left"></i> Back to {{ game.name }}
     </a>
-    <h1 style="font-family:var(--font-heading);font-size:clamp(1.5rem,3vw,2.2rem);font-weight:900;color:#fff;letter-spacing:-0.01em;">
-      Reserve Station Session
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <span class="badge badge-accent"><i class="ti ti-bolt"></i> INSTANT BOOKING LOCK</span>
+      <span style="font-size:0.75rem;color:var(--success);">Zero Wait • Guaranteed Unit Lock</span>
+    </div>
+    <h1 style="font-family:var(--font-heading);font-size:clamp(1.6rem, 3.5vw, 2.2rem);font-weight:800;color:#fff;text-transform:uppercase;">
+      Reserve Gaming Station
     </h1>
-    <p style="color:var(--muted);margin-top:4px;font-size:0.95rem;">Select your preferred date, time, seat, and payment method</p>
+    <p style="color:var(--muted);font-size:0.92rem;">Your chosen seat and time slot will be instantly reserved without venue wait-time.</p>
   </div>
 
-  <!-- Game Preview -->
-  <div class="booking-game-preview">
+  <!-- Station Summary Header -->
+  <div class="station-preview-box">
     {% if game.get_image_url %}
-      <img src="{{ game.get_image_url }}" alt="{{ game.name }}" />
+      <img src="{{ game.get_image_url }}" alt="{{ game.name }}" onerror="this.onerror=null;this.src='/static/images/stations/esports_station.jpg';" />
     {% else %}
-      <div style="width:100px;height:70px;background:#141b27;border:1px solid #1e293b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#00f0ff;flex-shrink:0;"><i class="ti ti-device-gamepad-2"></i></div>
+      <div style="width:90px;height:64px;border-radius:var(--radius-md);background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:1.8rem;"><i class="ti ti-device-desktop"></i></div>
     {% endif %}
-    <div>
-      <div class="name">{{ game.name }}</div>
-      <div class="meta">
-        <i class="fa-solid fa-tag" style="color:var(--accent2);margin-right:4px;"></i>{{ game.category.categoryName }} &nbsp;|&nbsp;
-        <i class="fa-solid fa-location-dot" style="color:var(--accent2);margin-right:4px;"></i>{{ game.city.name }}
+    <div style="flex:1;">
+      <div style="font-weight:800;font-size:1.05rem;color:#fff;">{{ game.name }}</div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-top:2px;">
+        <i class="ti ti-building-store" style="color:var(--accent);"></i> {{ game.provider.businessName|default:game.city.name }} • {{ game.category.categoryName }}
       </div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-family:var(--font-heading);font-weight:800;font-size:1.2rem;color:var(--accent);">₹{{ game.pricePerHour|floatformat:0 }}</div>
+      <div style="font-size:0.72rem;color:var(--muted);">per hour</div>
     </div>
   </div>
 
-  <!-- Booking Form -->
+  <!-- Checkout Form -->
   <div class="form-card" style="max-width:100%;">
-    <form method="POST" id="booking-form">
+    <form method="POST" id="checkout-form" action="{% url 'gamer_checkout' game.id %}">
       {% csrf_token %}
-      {% if available_slots %}
-      <div class="form-group" style="margin-bottom:var(--space-lg);">
-        <label class="form-label"><i class="fa-solid fa-clock-rotate-left"></i> Available Provider Slots (Click to Auto-fill)</label>
-        <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;">
-          {% for s in available_slots %}
-          <div onclick="selectSlot('{{ s.id }}', '{{ s.slotDate|date:'Y-m-d' }}', '{{ s.startTime|time:'H:i' }}', '{{ s.endTime|time:'H:i' }}', '{{ s.get_price }}')" style="padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;flex-shrink:0;transition:all var(--transition-fast);" onmouseover="this.style.borderColor='var(--neon)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div style="font-weight:700;font-size:.85rem;color:var(--neon);">{{ s.startTime|time:"H:i" }} - {{ s.endTime|time:"H:i" }}</div>
-            <div style="font-size:.75rem;color:var(--muted);">{{ s.slotDate|date:"D, d M" }} • ₹{{ s.get_price|floatformat:0 }}/hr</div>
-          </div>
-          {% endfor %}
-        </div>
-        <input type="hidden" name="slot_id" id="selected-slot-id" value="" />
-      </div>
-      {% endif %}
 
+      <!-- Hidden slot and unit inputs -->
+      <input type="hidden" name="slot_id" id="checkout-slot-id" value="{{ selected_slot.id|default:'' }}" />
+      <input type="hidden" name="unit_number" id="checkout-unit-number" value="{{ selected_unit|default:'1' }}" />
+
+      <!-- Date & Times -->
       <div class="form-group">
-        <label for="bookingDate" class="form-label"><i class="fa-solid fa-calendar"></i> Booking Date</label>
-        <input type="date" name="bookingDate" id="bookingDate" class="form-control" required min="{{ today }}" />
-      </div>
-      <div class="grid-2">
-        <div class="form-group">
-          <label for="startTime" class="form-label"><i class="fa-solid fa-clock"></i> Start Time</label>
-          <input type="time" name="startTime" id="startTime" class="form-control" required />
-        </div>
-        <div class="form-group">
-          <label for="endTime" class="form-label"><i class="fa-solid fa-hourglass-end"></i> End Time</label>
-          <input type="time" name="endTime" id="endTime" class="form-control" required />
-        </div>
+        <label for="bookingDate"><i class="ti ti-calendar"></i> Session Date *</label>
+        <input type="date" name="bookingDate" id="bookingDate" class="form-control" required min="{{ today }}" value="{{ initial_date|default:today }}" />
       </div>
 
-      <!-- Real-Time Unit / Console Seat-Map Selection -->
-      <div class="form-group" style="margin-top:var(--space-lg);background:rgba(124,58,237,.06);border:1px dashed rgba(124,58,237,.35);border-radius:var(--radius-lg);padding:var(--space-lg);">
-        <label style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;color:var(--neon);font-weight:700;font-size:.95rem;">
-          <span><i class="fa-solid fa-gamepad" style="color:var(--accent2);margin-right:6px;"></i> Select Gaming Console / Unit</span>
-          <span id="selected-unit-badge" style="font-size:.78rem;background:var(--accent);color:#fff;padding:3px 10px;border-radius:12px;font-weight:600;">No Unit Selected</span>
-        </label>
-        <span style="font-size:.82rem;color:var(--muted);display:block;margin-bottom:16px;line-height:1.6;">
-          Click an available unit block below to select your seat. Occupied units for your chosen date & time slot are greyed out.
-        </span>
-
-        <input type="hidden" name="unit_numbers" id="selected-units-input" value="" required />
-        <input type="hidden" name="unit_number" id="selected-unit-number" value="" />
-
-        <!-- Interactive Grid Map -->
-        <div id="unit-seat-map" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(95px, 1fr));gap:12px;margin-bottom:16px;">
-          <!-- Dynamically populated via JS fetchUnitAvailability() -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-group">
+          <label for="startTime"><i class="ti ti-clock"></i> Start Time *</label>
+          <input type="time" name="startTime" id="startTime" class="form-control" required value="{{ initial_start_time|default:'12:00' }}" />
         </div>
+        <div class="form-group">
+          <label for="endTime"><i class="ti ti-clock-stop"></i> End Time *</label>
+          <input type="time" name="endTime" id="endTime" class="form-control" required value="{{ initial_end_time|default:'14:00' }}" />
+        </div>
+      </div>
 
-        <!-- Legend -->
-        <div style="display:flex;align-items:center;gap:16px;font-size:.8rem;color:var(--muted);justify-content:center;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--border);background:var(--bg3);display:inline-block;"></span> Available
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="width:12px;height:12px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--neon));display:inline-block;"></span> Selected
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="width:12px;height:12px;border-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);display:inline-block;"></span> Booked
-          </div>
+      <!-- Unit / Seat Selector Grid -->
+      <div class="form-group" style="margin-top:16px;background:var(--bg3);padding:16px;border-radius:var(--radius-md);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:0.85rem;font-weight:700;color:#fff;">
+            <i class="ti ti-device-gamepad" style="color:var(--accent);margin-right:6px;"></i> Selected Gaming Console / Rig
+          </span>
+          <span id="unit-badge-pill" style="font-size:0.75rem;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border);font-weight:700;">
+            Unit #{{ selected_unit|default:'1' }}
+          </span>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:12px;">Click your preferred unit below. Occupied rigs for your chosen time are greyed out.</p>
+
+        <div id="checkout-seat-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(80px, 1fr));gap:8px;">
+          <!-- Loaded via JS -->
         </div>
       </div>
 
       <!-- Payment Method Selection -->
-      <div class="form-group" style="margin-top:var(--space-lg);">
-        <label class="form-label"><i class="fa-solid fa-wallet"></i> Select Payment Method</label>
-        <div class="payment-grid">
-          <label class="payment-card active" onclick="selectPayment('credit_card', this)">
-            <input type="radio" name="paymentMethod" value="credit_card" checked />
-            <i class="fa-solid fa-credit-card"></i>
-            <span class="title">Credit Card</span>
-          </label>
-          <label class="payment-card" onclick="selectPayment('upi', this)">
-            <input type="radio" name="paymentMethod" value="upi" />
-            <i class="fa-solid fa-qrcode"></i>
-            <span class="title">UPI / QR</span>
-          </label>
-          <label class="payment-card" onclick="selectPayment('bank_transfer', this)">
-            <input type="radio" name="paymentMethod" value="bank_transfer" />
-            <i class="fa-solid fa-building-columns"></i>
-            <span class="title">Bank Transfer</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Payment Details Boxes -->
-      <div id="credit_card_details" class="payment-details-box">
-        <div style="margin-top:14px;padding:var(--space-md);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);">
-          <div style="font-weight:600;font-size:.9rem;margin-bottom:12px;color:#fff;">
-            <i class="fa-solid fa-credit-card" style="color:var(--accent2);margin-right:6px;"></i> Enter Card Information
-          </div>
-          
-          <div style="margin-bottom:12px;">
-            <label class="form-label" style="font-size:.8rem;color:var(--muted);margin-bottom:4px;">Card Number</label>
-            <input type="text" id="card_number" name="card_number" placeholder="4532 8901 2345 8921" maxlength="19" class="form-control card-input" />
-            <div id="err_card_number" class="card-err-msg" style="color:#ef4444;font-size:.78rem;margin-top:4px;display:none;font-weight:600;"></div>
-          </div>
-          
-          <div class="grid-2">
-            <div>
-              <label class="form-label" style="font-size:.8rem;color:var(--muted);margin-bottom:4px;">Expiry Date (MM/YY)</label>
-              <input type="text" id="card_expiry" name="card_expiry" placeholder="12/28" maxlength="5" class="form-control card-input" />
-              <div id="err_card_expiry" class="card-err-msg" style="color:#ef4444;font-size:.78rem;margin-top:4px;display:none;font-weight:600;"></div>
+      <div class="form-group" style="margin-top:20px;">
+        <label><i class="ti ti-wallet"></i> Choose Payment Method *</label>
+        <div class="payment-toggle-grid">
+          <!-- Razorpay Online Prepayment -->
+          <label class="payment-toggle-card active" onclick="selectPaymentMethod('razorpay', this)">
+            <input type="radio" name="payment_method" value="razorpay" checked />
+            <div style="display:flex;align-items:center;gap:8px;font-weight:700;color:#fff;font-size:0.92rem;">
+              <i class="ti ti-credit-card" style="color:var(--accent);font-size:1.2rem;"></i>
+              <span>Razorpay Online</span>
             </div>
-            <div>
-              <label class="form-label" style="font-size:.8rem;color:var(--muted);margin-bottom:4px;">CVV</label>
-              <input type="password" id="card_cvv" name="card_cvv" placeholder="123" maxlength="4" class="form-control card-input" />
-              <div id="err_card_cvv" class="card-err-msg" style="color:#ef4444;font-size:.78rem;margin-top:4px;display:none;font-weight:600;"></div>
+            <div style="font-size:0.75rem;color:var(--muted);line-height:1.4;">
+              UPI, Google Pay, PhonePe, Cards, NetBanking. Instant digital pass confirmation.
             </div>
-          </div>
+          </label>
+
+          <!-- Pay at Venue Option -->
+          <label class="payment-toggle-card" onclick="selectPaymentMethod('pay_at_venue', this)">
+            <input type="radio" name="payment_method" value="pay_at_venue" />
+            <div style="display:flex;align-items:center;gap:8px;font-weight:700;color:#fff;font-size:0.92rem;">
+              <i class="ti ti-cash" style="color:#fbbf24;font-size:1.2rem;"></i>
+              <span>Pay at Venue</span>
+            </div>
+            <div style="font-size:0.75rem;color:var(--muted);line-height:1.4;">
+              Reserve and lock your rig now. Pay at lounge counter via cash or UPI upon check-in.
+            </div>
+          </label>
         </div>
       </div>
 
-      <div id="upi_details" class="payment-details-box" style="display:none;">
-        <div style="margin-top:14px;padding:20px;background:var(--bg3);border:1px dashed var(--neon);border-radius:14px;text-align:center;">
-          <div style="font-weight:700;font-size:.95rem;color:var(--neon);margin-bottom:6px;">
-            <i class="fa-solid fa-qrcode"></i> Scan QR Code to Pay via UPI
-          </div>
-          <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">Scan with Google Pay, PhonePe, Paytm, or any UPI App</p>
-
-          <!-- Estimated Total Amount Banner -->
-          <div style="background:rgba(0,212,255,.1);border:1px solid var(--neon);border-radius:10px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;max-width:300px;margin-left:auto;margin-right:auto;">
-            <span style="font-weight:600;color:var(--text);font-size:.85rem;"><i class="fa-solid fa-receipt" style="color:var(--neon);margin-right:6px;"></i> Total Amount:</span>
-            <span id="upi-total-amount" style="font-family:'Orbitron',monospace;font-weight:700;color:var(--neon);font-size:1.15rem;">₹0.00</span>
-          </div>
-          
-          <!-- Dynamic QR Code Container -->
-          <div style="background:#fff;padding:12px;display:inline-block;border-radius:14px;box-shadow:0 0 20px rgba(124,58,237,.3);">
-            <img id="upi-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=sparkzone@upi%26pn=SparkZone%20Gaming%26cu=INR" alt="UPI QR Code" style="width:180px;height:180px;display:block;border-radius:8px;" />
-          </div>
-
-          <!-- UPI ID Copy Row -->
-          <div style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:10px;">
-            <span style="font-family:'Orbitron',monospace;font-size:.88rem;color:var(--text);background:var(--card);padding:6px 14px;border-radius:8px;border:1px solid var(--border);">
-              sparkzone@upi
-            </span>
-            <button type="button" onclick="copyUpiId()" style="padding:6px 12px;font-size:.8rem;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;">
-              <i class="fa-solid fa-copy"></i> Copy UPI
-            </button>
-          </div>
-          <div id="copy-toast" style="font-size:.78rem;color:var(--success);margin-top:6px;display:none;">UPI ID copied to clipboard!</div>
+      <!-- Price Calculation Summary -->
+      <div class="price-summary-box">
+        <div>
+          <div style="font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Total Session Fee</div>
+          <div id="hours-display" style="font-size:0.75rem;color:var(--accent);margin-top:2px;">2 Hours @ ₹{{ game.pricePerHour|floatformat:0 }}/hr</div>
         </div>
+        <div class="amount" id="total-amount-display">₹{{ game.pricePerHour|default:200|floatformat:0 }}</div>
       </div>
 
-      <div id="bank_transfer_details" class="payment-details-box" style="display:none;">
-        <div style="margin-top:14px;padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;">
-          <div style="font-weight:600;font-size:.9rem;margin-bottom:10px;color:var(--text);">
-            <i class="fa-solid fa-building-columns" style="color:var(--accent2);margin-right:6px;"></i> Bank Account Details
-          </div>
-          <div style="font-size:.85rem;color:var(--muted);line-height:1.8;">
-            <div><strong>Bank Name:</strong> HDFC Bank</div>
-            <div><strong>Account Name:</strong> SparkZone Gaming Station</div>
-            <div><strong>Account No:</strong> 50100298374102</div>
-            <div><strong>IFSC Code:</strong> HDFC0001234</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Live price calc -->
-      <div class="price-calc" id="price-calc" style="display:none;margin-top:20px;">
-        <span class="est"><i class="fa-solid fa-indian-rupee-sign"></i> Estimated Total</span>
-        <span class="val" id="est-price">₹0</span>
-      </div>
-
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:14px;margin-top:24px;">
-        <i class="fa-solid fa-calendar-check"></i> Confirm Booking & Pay
+      <!-- Submit Button -->
+      <button type="submit" id="checkout-submit-btn" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:24px;">
+        <i class="ti ti-lock"></i> Confirm & Lock Session
       </button>
     </form>
   </div>
-
-  <!-- Info -->
-  <div style="margin-top:24px;padding:18px 20px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:12px;font-size:.85rem;color:var(--muted);line-height:1.7;">
-    <i class="fa-solid fa-circle-info" style="color:var(--accent2);margin-right:6px;"></i>
-    Your booking will be in <strong style="color:var(--text);">Pending</strong> status until confirmed by the venue. You'll receive a notification once confirmed.
-  </div>
 </div>
 
+<!-- Razorpay Checkout SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
-  const basePricePerHour = {{ game.get_hourly_rate }};
-  let currentPricePerHour = basePricePerHour;
-  const gameName = "{{ game.name|escapejs }}";
-  const startInp = document.getElementById('startTime');
-  const endInp   = document.getElementById('endTime');
-  const calcBox  = document.getElementById('price-calc');
-  const estPrice = document.getElementById('est-price');
-  const cardNumInp = document.getElementById('card_number');
-  const cardExpInp = document.getElementById('card_expiry');
-  const cardCvvInp = document.getElementById('card_cvv');
-  const bookingForm = document.getElementById('booking-form');
+  const hourlyRate = {{ game.pricePerHour|default:200 }};
+  const gameId = {{ game.id }};
+  let currentUnit = {{ selected_unit|default:1 }};
 
-  function clearCardErrors() {
-    ['card_number', 'card_expiry', 'card_cvv'].forEach(id => {
-      const inp = document.getElementById(id);
-      const err = document.getElementById('err_' + id);
-      if (inp) inp.style.borderColor = 'var(--border)';
-      if (err) { err.textContent = ''; err.style.display = 'none'; }
-    });
-  }
-
-  // Format Card Number (adds space every 4 digits)
-  if (cardNumInp) {
-    cardNumInp.addEventListener('input', function(e) {
-      let val = e.target.value.replace(/\D/g, '').substring(0, 16);
-      val = val.replace(/(.{4})/g, '$1 ').trim();
-      e.target.value = val;
-      const err = document.getElementById('err_card_number');
-      if (err) err.style.display = 'none';
-      e.target.style.borderColor = 'var(--border)';
-    });
-  }
-
-  // Format Expiry Date MM/YY (adds slash after 2 digits)
-  if (cardExpInp) {
-    cardExpInp.addEventListener('input', function(e) {
-      let val = e.target.value.replace(/\D/g, '').substring(0, 4);
-      if (val.length >= 3) {
-        val = val.substring(0, 2) + '/' + val.substring(2);
-      }
-      e.target.value = val;
-      const err = document.getElementById('err_card_expiry');
-      if (err) err.style.display = 'none';
-      e.target.style.borderColor = 'var(--border)';
-    });
-  }
-
-  // Format CVV (digits only)
-  if (cardCvvInp) {
-    cardCvvInp.addEventListener('input', function(e) {
-      e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
-      const err = document.getElementById('err_card_cvv');
-      if (err) err.style.display = 'none';
-      e.target.style.borderColor = 'var(--border)';
-    });
-  }
-
-  function validateCreditCard() {
-    clearCardErrors();
-    let isValid = true;
-    let firstErrorField = null;
-
-    function setError(id, msg) {
-      const inp = document.getElementById(id);
-      const err = document.getElementById('err_' + id);
-      if (inp) inp.style.borderColor = '#ef4444';
-      if (err) {
-        err.textContent = msg;
-        err.style.display = 'block';
-      }
-      if (!firstErrorField && inp) firstErrorField = inp;
-      isValid = false;
-    }
-
-    // 1. Card Number Validation
-    const rawNum = cardNumInp ? cardNumInp.value.replace(/\s+/g, '') : '';
-    if (!rawNum) {
-      setError('card_number', 'Card number is required');
-    } else if (!/^\d{15,16}$/.test(rawNum)) {
-      setError('card_number', 'Enter a valid 15 or 16 digit card number');
-    }
-
-    // 2. Expiry MM/YY Validation
-    const rawExp = cardExpInp ? cardExpInp.value.trim() : '';
-    if (!rawExp) {
-      setError('card_expiry', 'Expiry date is required');
-    } else {
-      const expMatch = rawExp.match(/^(0[1-9]|1[0-2])\/([0-9]{2})$/);
-      if (!expMatch) {
-        setError('card_expiry', 'Use format MM/YY (e.g. 08/26)');
-      } else {
-        const expMonth = parseInt(expMatch[1], 10);
-        const expYear = 2000 + parseInt(expMatch[2], 10);
-        const now = new Date();
-        const curYear = now.getFullYear();
-        const curMonth = now.getMonth() + 1;
-
-        if (expYear < curYear || (expYear === curYear && expMonth < curMonth)) {
-          setError('card_expiry', 'Card has expired');
-        }
-      }
-    }
-
-    // 3. CVV Validation
-    const rawCvv = cardCvvInp ? cardCvvInp.value.trim() : '';
-    if (!rawCvv) {
-      setError('card_cvv', 'CVV code is required');
-    } else if (!/^\d{3,4}$/.test(rawCvv)) {
-      setError('card_cvv', 'CVV must be 3 or 4 digits');
-    }
-
-    if (!isValid && firstErrorField) {
-      window.requestAnimationFrame(function() {
-        firstErrorField.focus();
-        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    }
-
-    return isValid;
-  }
-
-  function selectPayment(method, element) {
-    document.querySelectorAll('.payment-card').forEach(card => card.classList.remove('active'));
-    element.classList.add('active');
-    const radio = element.querySelector('input[type="radio"]');
+  function selectPaymentMethod(mode, cardEl) {
+    document.querySelectorAll('.payment-toggle-card').forEach(c => c.classList.remove('active'));
+    cardEl.classList.add('active');
+    const radio = cardEl.querySelector('input[type="radio"]');
     if (radio) radio.checked = true;
 
-    // Show selected details box
-    document.querySelectorAll('.payment-details-box').forEach(box => box.style.display = 'none');
-    const selectedBox = document.getElementById(method + '_details');
-    if (selectedBox) selectedBox.style.display = 'block';
-
-    if (method !== 'credit_card') {
-      clearCardErrors();
+    const btn = document.getElementById('checkout-submit-btn');
+    if (mode === 'razorpay') {
+      btn.innerHTML = '<i class="ti ti-credit-card"></i> Pay Online with Razorpay';
+    } else {
+      btn.innerHTML = '<i class="ti ti-calendar-check"></i> Confirm Reservation (Pay at Venue)';
     }
-
-    updateUpiQr();
   }
 
-  const gameId = {{ game.id }};
-  const totalSystems = {{ game.totalSystem }};
-  let selectedUnitsSet = new Set();
+  function updatePrice() {
+    const sTime = document.getElementById('startTime').value;
+    const eTime = document.getElementById('endTime').value;
+    if (!sTime || !eTime) return;
 
-  async function fetchUnitAvailability() {
-    const dateVal = document.getElementById('bookingDate').value;
-    const startVal = document.getElementById('startTime').value;
-    const endVal = document.getElementById('endTime').value;
-    const container = document.getElementById('unit-seat-map');
+    const [sh, sm] = sTime.split(':').map(Number);
+    const [eh, em] = eTime.split(':').map(Number);
+    let diffHours = (eh + em / 60) - (sh + sm / 60);
+    if (diffHours <= 0) diffHours = 1;
 
-    if (!container) return;
+    const total = Math.max(diffHours * hourlyRate, hourlyRate);
+    document.getElementById('total-amount-display').textContent = `₹${Math.round(total)}`;
+    document.getElementById('hours-display').textContent = `${diffHours.toFixed(1)} Hours @ ₹${Math.round(hourlyRate)}/hr`;
+  }
 
-    let unitsData = [];
-    if (dateVal && startVal && endVal) {
+  async function loadCheckoutUnits() {
+    const sDate = document.getElementById('bookingDate').value;
+    const sTime = document.getElementById('startTime').value;
+    const container = document.getElementById('checkout-seat-grid');
+    if (!container || !sDate) return;
+
+    try {
+      const res = await fetch(`/api/unit-availability/${gameId}/?date=${encodeURIComponent(sDate)}&start_time=${encodeURIComponent(sTime)}`);
+      const data = await res.json();
+      const units = data.units || [];
+      container.innerHTML = '';
+
+      units.forEach(u => {
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:10px 6px;border-radius:6px;text-align:center;font-size:0.75rem;font-weight:700;cursor:pointer;transition:all 0.15s;user-select:none;';
+
+        if (u.status === 'available') {
+          if (u.unit_number === currentUnit) {
+            div.style.background = 'rgba(0,240,255,0.2)';
+            div.style.border = '2px solid var(--accent)';
+            div.style.color = 'var(--accent)';
+          } else {
+            div.style.background = 'var(--bg2)';
+            div.style.border = '1px solid var(--border)';
+            div.style.color = 'var(--text)';
+          }
+          div.innerHTML = `Unit ${u.unit_number}<span style="font-size:0.65rem;color:var(--success);display:block;">Free</span>`;
+          div.onclick = () => {
+            currentUnit = u.unit_number;
+            document.getElementById('checkout-unit-number').value = currentUnit;
+            document.getElementById('unit-badge-pill').textContent = `Unit #${currentUnit}`;
+            loadCheckoutUnits();
+          };
+        } else {
+          div.style.background = 'rgba(255,255,255,0.02)';
+          div.style.border = '1px solid rgba(255,255,255,0.05)';
+          div.style.color = 'var(--muted)';
+          div.style.cursor = 'not-allowed';
+          div.innerHTML = `Unit ${u.unit_number}<span style="font-size:0.65rem;color:var(--muted);display:block;">Booked</span>`;
+        }
+        container.appendChild(div);
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  // Handle Form Submission: Razorpay modal or Pay-at-Venue direct
+  document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+    const paymentMode = document.querySelector('input[name="payment_method"]:checked').value;
+    if (paymentMode === 'razorpay') {
+      e.preventDefault();
+      const submitBtn = document.getElementById('checkout-submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="ti ti-loader"></i> Creating Razorpay Order...';
+
+      const formData = new FormData(this);
+
       try {
-        const res = await fetch(`/api/unit-availability/${gameId}/?date=${encodeURIComponent(dateVal)}&start_time=${encodeURIComponent(startVal)}&end_time=${encodeURIComponent(endVal)}`);
-        if (res.ok) {
-          const data = await res.json();
-          unitsData = data.units || [];
+        const res = await fetch(this.action, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        if (data.status === 'razorpay_checkout') {
+          const options = {
+            key: data.razorpay_key,
+            amount: data.amount * 100,
+            currency: 'INR',
+            name: 'SparkZone Gaming',
+            description: `Session Lock - ${data.game_name} (Unit #${data.unit_number})`,
+            order_id: data.razorpay_order_id,
+            handler: async function (response) {
+              // Verify signature
+              const verifyRes = await fetch('/payment/verify/', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                  booking_id: data.booking_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature
+                })
+              });
+              const verifyData = await verifyRes.json();
+              if (verifyData.status === 'ok') {
+                window.location.href = '/dashboard/gamer/?booking_success=true';
+              } else {
+                alert('Payment verification failed. Please contact support.');
+                submitBtn.disabled = false;
+              }
+            },
+            modal: {
+              ondismiss: function() {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="ti ti-credit-card"></i> Pay Online with Razorpay';
+              }
+            },
+            theme: {
+              color: '#00f0ff'
+            }
+          };
+          const rzp = new Razorpay(options);
+          rzp.open();
+        } else if (data.redirect_url) {
+          window.location.href = data.redirect_url;
+        } else if (data.error) {
+          alert(data.error);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="ti ti-credit-card"></i> Pay Online with Razorpay';
         }
       } catch (err) {
-        console.error('Error fetching unit availability:', err);
+        console.error(err);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="ti ti-credit-card"></i> Pay Online with Razorpay';
       }
     }
+    // If pay_at_venue, the standard form POST executes directly!
+  });
 
-    if (unitsData.length === 0) {
-      for (let u = 1; u <= totalSystems; u++) {
-        unitsData.push({ unit_number: u, status: 'available' });
-      }
-    }
+  document.getElementById('bookingDate').addEventListener('change', () => { updatePrice(); loadCheckoutUnits(); });
+  document.getElementById('startTime').addEventListener('change', () => { updatePrice(); loadCheckoutUnits(); });
+  document.getElementById('endTime').addEventListener('change', () => { updatePrice(); loadCheckoutUnits(); });
 
-    // Remove any units that are now booked or in maintenance for the selected time slot
-    unitsData.forEach(u => {
-      if ((u.status === 'booked' || u.status === 'maintenance') && selectedUnitsSet.has(u.unit_number)) {
-        selectedUnitsSet.delete(u.unit_number);
-      }
-    });
-
-    updateSelectedInputsAndBadge();
-
-    container.innerHTML = '';
-    unitsData.forEach(u => {
-      const isBooked = u.status === 'booked';
-      const isMaintenance = u.status === 'maintenance';
-      const isSelected = selectedUnitsSet.has(u.unit_number);
-
-      const btn = document.createElement('div');
-      btn.className = 'unit-seat-btn';
-      btn.dataset.unit = u.unit_number;
-      
-      let baseStyle = 'padding:12px 8px;border-radius:12px;text-align:center;font-weight:700;font-size:.85rem;transition:all .2s ease;user-select:none;display:flex;flex-direction:column;align-items:center;gap:4px;';
-
-      if (isMaintenance || isBooked) {
-        btn.title = `Unit ${u.unit_number} (Booked)`;
-        baseStyle += 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:var(--muted);cursor:not-allowed;opacity:.55;';
-        btn.innerHTML = `<i class="fa-solid fa-lock" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:600;">Booked</span>`;
-      } else if (isSelected) {
-        btn.title = `Unit ${u.unit_number} (Selected - Click to deselect)`;
-        baseStyle += 'background:linear-gradient(135deg,var(--accent),var(--neon));border:2px solid var(--neon);color:#fff;box-shadow:0 0 15px rgba(0,212,255,.4);transform:scale(1.04);cursor:pointer;';
-        btn.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;font-weight:700;">Selected</span>`;
-        btn.onclick = function() { toggleUnitNumber(u.unit_number); };
-      } else {
-        btn.title = `Click to select Unit ${u.unit_number}`;
-        baseStyle += 'background:var(--bg3);border:2px solid var(--border);color:var(--text);cursor:pointer;';
-        btn.innerHTML = `<i class="fa-solid fa-desktop" style="color:var(--accent2);font-size:.9rem;margin-bottom:2px;"></i>Unit ${u.unit_number}<span style="font-size:.68rem;color:var(--neon);">Free</span>`;
-        btn.onmouseover = function() { if (!selectedUnitsSet.has(u.unit_number)) this.style.borderColor = 'var(--neon)'; };
-        btn.onmouseout = function() { if (!selectedUnitsSet.has(u.unit_number)) this.style.borderColor = 'var(--border)'; };
-        btn.onclick = function() { toggleUnitNumber(u.unit_number); };
-      }
-
-      btn.style.cssText = baseStyle;
-      container.appendChild(btn);
-    });
-
-    calcPrice();
-  }
-
-  function getActivePrice() {
-    return (currentPricePerHour > 0) ? currentPricePerHour : (basePricePerHour > 0 ? basePricePerHour : 200);
-  }
-
-  function toggleUnitNumber(unitNum) {
-    if (selectedUnitsSet.has(unitNum)) {
-      selectedUnitsSet.delete(unitNum);
-    } else {
-      selectedUnitsSet.add(unitNum);
-    }
-    updateSelectedInputsAndBadge();
-    calcPrice();
-    fetchUnitAvailability();
-  }
-
-  function updateSelectedInputsAndBadge() {
-    const badge = document.getElementById('selected-unit-badge');
-    const unitsInput = document.getElementById('selected-units-input');
-    const unitSingleInput = document.getElementById('selected-unit-number');
-
-    const sortedArray = Array.from(selectedUnitsSet).sort((a, b) => a - b);
-    const joinedStr = sortedArray.join(', ');
-
-    if (unitsInput) unitsInput.value = joinedStr;
-    if (unitSingleInput) unitSingleInput.value = sortedArray.length > 0 ? sortedArray[0] : '';
-
-    if (badge) {
-      if (sortedArray.length === 0) {
-        badge.textContent = 'No Unit Selected';
-        badge.style.background = 'var(--accent)';
-      } else if (sortedArray.length === 1) {
-        badge.textContent = `Unit ${sortedArray[0]} Selected`;
-        badge.style.background = 'var(--success)';
-      } else {
-        badge.textContent = `${sortedArray.length} Units Selected (Units ${joinedStr})`;
-        badge.style.background = 'var(--success)';
-      }
-    }
-  }
-
-  function selectSlot(id, date, start, end, slotPrice) {
-    document.getElementById('selected-slot-id').value = id;
-    document.getElementById('bookingDate').value = date;
-    document.getElementById('startTime').value = start;
-    document.getElementById('endTime').value = end;
-    if (slotPrice && parseFloat(slotPrice) > 0) {
-      currentPricePerHour = parseFloat(slotPrice);
-    }
-    calcPrice();
-    fetchUnitAvailability();
-  }
-
-  function updateUpiQr() {
-    let amount = "0.00";
-    const unitCount = selectedUnitsSet.size > 0 ? selectedUnitsSet.size : 1;
-    if (startInp.value && endInp.value) {
-      const [sh,sm] = startInp.value.split(':').map(Number);
-      const [eh,em] = endInp.value.split(':').map(Number);
-      const hours = ((eh*60+em) - (sh*60+sm)) / 60;
-      const activePrice = getActivePrice();
-      if (hours > 0) {
-        amount = (hours * activePrice * unitCount).toFixed(2);
-      }
-    }
-
-    const upiTotal = document.getElementById('upi-total-amount');
-    if (upiTotal) {
-      upiTotal.textContent = '₹' + amount + (unitCount > 1 ? ` (${unitCount} units)` : '');
-    }
-
-    const upiUri = `upi://pay?pa=sparkzone@upi&pn=SparkZone Gaming&am=${amount}&cu=INR&tn=${encodeURIComponent('Booking for ' + gameName)}`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUri)}`;
-    const qrImg = document.getElementById('upi-qr-img');
-    if (qrImg) qrImg.src = qrUrl;
-  }
-
-  function copyUpiId() {
-    navigator.clipboard.writeText('sparkzone@upi');
-    const toast = document.getElementById('copy-toast');
-    if (toast) {
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 2500);
-    }
-  }
-
-  function calcPrice() {
-    if (!startInp.value || !endInp.value) return;
-    const [sh,sm] = startInp.value.split(':').map(Number);
-    const [eh,em] = endInp.value.split(':').map(Number);
-    const hours = ((eh*60+em) - (sh*60+sm)) / 60;
-    const unitCount = selectedUnitsSet.size > 0 ? selectedUnitsSet.size : 1;
-    const activePrice = getActivePrice();
-    if (hours > 0) {
-      calcBox.style.display = 'flex';
-      const total = hours * activePrice * unitCount;
-      estPrice.textContent = '₹' + total.toFixed(2) + (unitCount > 1 ? ` (${unitCount} units)` : '');
-    } else {
-      calcBox.style.display = 'none';
-    }
-    updateUpiQr();
-  }
-
-  startInp.addEventListener('change', function() { calcPrice(); fetchUnitAvailability(); });
-  endInp.addEventListener('change', function() { calcPrice(); fetchUnitAvailability(); });
-  document.getElementById('bookingDate').addEventListener('change', fetchUnitAvailability);
-
-  if (bookingForm) {
-    bookingForm.addEventListener('submit', function(e) {
-      const selectedUnitsVal = document.getElementById('selected-units-input').value;
-      if (!selectedUnitsVal) {
-        e.preventDefault();
-        alert('Please select at least one available Gaming Console / Unit (e.g. Unit 1) from the seat map before confirming your booking.');
-        document.getElementById('unit-seat-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-
-      const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked')?.value;
-      if (selectedPayment === 'credit_card') {
-        if (!validateCreditCard()) {
-          e.preventDefault();
-        }
-      } else {
-        clearCardErrors();
-      }
-    });
-  }
-
-  // Set min date to today and initialize seat map
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('bookingDate').min = today;
-  fetchUnitAvailability();
+  window.addEventListener('DOMContentLoaded', () => {
+    updatePrice();
+    loadCheckoutUnits();
+  });
 </script>
 {% endblock %}

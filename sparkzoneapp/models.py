@@ -158,10 +158,26 @@ class Game(models.Model):
     available_games = models.TextField(null=True, blank=True, help_text="Comma-separated names of games available at this station")
     operating_hours = models.CharField(max_length=100, default="09:00 AM - 10:00 PM", null=True, blank=True)
     out_of_service_units = models.CharField(max_length=255, null=True, blank=True, help_text="Comma-separated unit numbers out of service e.g. 2,5")
+    gpu = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. NVIDIA RTX 4090 24GB")
+    cpu = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. Intel Core i9-14900K / Ryzen 7 7800X3D")
+    ram = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. 32GB DDR5 6000MHz")
+    display_specs = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. 27-inch 360Hz Fast-IPS / 4K 120Hz OLED")
+    peripherals = models.TextField(blank=True, null=True, help_text="Headsets, keyboards, mice, steering wheels, sim pedals")
+    featured = models.BooleanField(default=False, db_index=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
         return self.name
+
+    def get_avg_rating(self):
+        revs = self.reviews.all()
+        if not revs.exists():
+            return 4.9
+        total = sum(r.rating for r in revs)
+        return round(total / len(revs), 1)
+
+    def get_review_count(self):
+        return self.reviews.count()
 
     def get_hourly_rate(self):
         first_slot = self.slots.filter(status='available').order_by('price').first()
@@ -225,6 +241,7 @@ class Slot(models.Model):
     STATUS_CHOICES = [
         ('available', 'Available'),
         ('booked', 'Fully Booked'),
+        ('blocked', 'Blocked / Maintenance'),
         ('cancelled', 'Cancelled')
     ]
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='slots')
@@ -246,11 +263,11 @@ class Slot(models.Model):
         return self.game.pricePerHour
 
     def is_full(self, start_time=None, end_time=None):
-        if self.status == 'cancelled':
+        if self.status in ['cancelled', 'blocked']:
             return True
         if start_time and end_time:
             overlapping_count = self.bookings.filter(
-                status__in=['pending', 'accepted', 'confirmed'],
+                status__in=['confirmed', 'pending', 'accepted'],
                 startTime__lt=end_time,
                 endTime__gt=start_time
             ).count()
@@ -270,10 +287,17 @@ class GameImages(models.Model):
 
 class Booking(models.Model):
     STATUS_CHOICES = [
+        ('confirmed', 'Confirmed (Instant Lock)'),
         ('pending', 'Pending Approval'),
-        ('accepted', 'Accepted'),
-        ('rejected', 'Rejected'),
-        ('cancelled', 'Cancelled')
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('no_show', 'No-Show'),
+    ]
+    PAYMENT_STATUS_CHOICES = [
+        ('paid_online', 'Paid Online'),
+        ('pay_at_venue', 'Pay at Venue'),
+        ('refunded', 'Refunded'),
+        ('pending', 'Pending Payment')
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='bookings')
@@ -282,11 +306,15 @@ class Booking(models.Model):
     startTime = models.TimeField()
     endTime = models.TimeField()
     totalAmount = models.FloatField()
-    status = models.CharField(max_length=60, choices=STATUS_CHOICES, default='pending', db_index=True)
+    status = models.CharField(max_length=60, choices=STATUS_CHOICES, default='confirmed', db_index=True)
+    payment_status = models.CharField(max_length=30, choices=PAYMENT_STATUS_CHOICES, default='paid_online', db_index=True)
     unit_number = models.IntegerField(null=True, blank=True, help_text="Specific unit/console number (1..N)")
     unit_numbers = models.CharField(max_length=255, null=True, blank=True, help_text="Comma-separated unit numbers e.g. 4,5")
     requested_at = models.DateTimeField(auto_now_add=True, db_index=True, null=True, blank=True)
     responded_at = models.DateTimeField(null=True, blank=True)
+    check_in_time = models.DateTimeField(null=True, blank=True)
+    cancellation_reason = models.TextField(null=True, blank=True)
+    refund_id = models.CharField(max_length=100, null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
 
@@ -319,31 +347,57 @@ class Notification(models.Model):
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
+        ('razorpay', 'Razorpay Online'),
+        ('pay_at_venue', 'Pay at Venue (Cash/Card)'),
         ('credit_card', 'Credit Card'),
         ('upi', 'UPI'),
         ('bank_transfer', 'Bank Transfer'),
         ('debit_card', 'Debit Card'),
-        ('paypal', 'PayPal'),
         ('other', 'Other')
     ]
     PAYMENT_STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('completed', 'Completed'),
-        ('failed', 'Failed')
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded')
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='payments')
     amount = models.FloatField()
-    paymentMethod = models.CharField(max_length=60, choices=PAYMENT_METHOD_CHOICES, db_index=True)
+    paymentMethod = models.CharField(max_length=60, choices=PAYMENT_METHOD_CHOICES, default='razorpay', db_index=True)
     paymentStatus = models.CharField(max_length=60, choices=PAYMENT_STATUS_CHOICES, default='completed', db_index=True)
+    razorpay_order_id = models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    razorpay_payment_id = models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    razorpay_signature = models.CharField(max_length=255, null=True, blank=True)
+    refund_id = models.CharField(max_length=100, null=True, blank=True)
+    refund_status = models.CharField(max_length=50, null=True, blank=True)
     paymentDate = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        return f"Payment #{self.id} - {self.amount} ({self.paymentStatus})"
 
 class Reviews(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='reviews')
+    booking = models.OneToOneField(Booking, on_delete=models.SET_NULL, null=True, blank=True, related_name='review')
+    is_verified_booking = models.BooleanField(default=True)
     rating = models.FloatField(db_index=True)
     comment = models.TextField()
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        return f"{self.user.firstName} - {self.game.name} ({self.rating}/5)"
+
+class FavoriteVenue(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_stations')
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='favorited_by')
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        unique_together = ('user', 'game')
+
+    def __str__(self):
+        return f"{self.user.firstName} -> {self.game.name}"
 
 class ContactUs(models.Model):
     name = models.CharField(max_length=60)
@@ -351,3 +405,4 @@ class ContactUs(models.Model):
     phone = models.BigIntegerField()
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now=True, db_index=True)
+

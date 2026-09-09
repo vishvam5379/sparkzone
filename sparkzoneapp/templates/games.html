@@ -1,63 +1,220 @@
 {% extends 'base.html' %}
-{% block title %}All Gaming Stations & Rigs – SparkZone{% endblock %}
+{% block title %}All Gaming Stations & Esports Rigs – SparkZone{% endblock %}
+{% block meta_desc %}Browse and book high-end gaming stations, RTX 4090 tournament battle-stations, PS5 VIP lounges, and Fanatec direct-drive motion simulators.{% endblock %}
 
 {% block extra_css %}
-.filters {
+.marketplace-hero {
+  margin-top: 68px;
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
-  padding: var(--space-md) 0;
+  padding: 44px 0 28px;
+}
+.filter-container {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
   position: sticky;
   top: 68px;
   z-index: 100;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 }
-.filters-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.filter-search {
-  position: relative; flex: 1; min-width: 240px;
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-.filter-search input {
-  width: 100%; height: 42px; padding: 0 16px 0 42px;
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-md); color: #fff; font-size: 0.9rem; outline: none;
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+}
+.search-box input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px 0 42px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
-.filter-search input:focus {
+.search-box input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.15);
 }
-.filter-search i {
-  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-  color: var(--muted); font-size: 1.1rem;
+.search-box i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 1.15rem;
 }
-.filter-select {
-  height: 42px; padding: 0 16px; background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-md); color: var(--text); font-size: 0.9rem; font-family: inherit;
-  outline: none; cursor: pointer; transition: border-color var(--transition-fast);
+.filter-dropdown {
+  height: 44px;
+  padding: 0 16px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 0.88rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
 }
-.filter-select:focus {
+.filter-dropdown:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.15);
 }
-.games-count { color: var(--muted); font-size: 0.9rem; }
+
+.tier-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 0 4px;
+  scrollbar-width: none;
+}
+.tier-pills::-webkit-scrollbar { display: none; }
+.tier-pill {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tier-pill:hover, .tier-pill.active {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Card Styling */
+.game-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+}
+.game-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+.game-card-img {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--bg2);
+  overflow: hidden;
+}
+.game-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-smooth);
+}
+.game-card:hover .game-card-img img {
+  transform: scale(1.04);
+}
+.game-card-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(13,14,18,0) 40%, rgba(13,14,18,0.85) 100%);
+  pointer-events: none;
+}
+.favorite-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(13, 14, 18, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.favorite-btn:hover, .favorite-btn.favorited {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.spec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.spec-badge i { color: var(--accent); font-size: 0.75rem; }
 {% endblock %}
 
 {% block content %}
-<div class="page-hero" style="margin-bottom:0;">
+<!-- Marketplace Header -->
+<section class="marketplace-hero">
   <div class="container">
-    <span class="badge badge-accent" style="margin-bottom:12px;"><i class="ti ti-device-desktop"></i> VENUE STATIONS</span>
-    <h1>All Gaming Stations</h1>
-    <p>Discover and book high-end PC setups, PS5 booths, and Fanatec sim racing cockpits</p>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <span class="badge badge-accent"><i class="ti ti-device-desktop"></i> VERIFIED ESPORTS LOUNGES</span>
+      <span style="font-size:0.75rem;color:var(--muted);">Live Units & Instant Lock</span>
+    </div>
+    <h1 style="font-family:var(--font-heading);font-size:clamp(1.8rem, 4vw, 2.6rem);font-weight:800;color:#fff;margin-bottom:8px;text-transform:uppercase;letter-spacing:-0.01em;">
+      Gaming Stations & Cockpits
+    </h1>
+    <p style="color:var(--muted);font-size:0.95rem;max-width:580px;">
+      Book tournament-grade liquid-cooled RTX 4090 rigs, PlayStation 5 OLED VIP lounges, and Fanatec direct-drive motion simulators near you.
+    </p>
   </div>
-</div>
+</section>
 
-<div class="filters">
+<!-- Sticky Filter Toolbar -->
+<div class="filter-container">
   <div class="container">
     <form method="GET" action="{% url 'games' %}">
-      <div class="filters-inner">
-        <div class="filter-search">
+      <div class="filter-row">
+        <!-- Search Input -->
+        <div class="search-box">
           <i class="ti ti-search"></i>
-          <input type="text" name="search" value="{{ search }}" placeholder="Search stations, games, or specs…" id="search-input" />
+          <input type="text" name="search" value="{{ search }}" placeholder="Search rigs, RTX 4090, PS5, Fanatec, Valorant..." id="search-input" />
         </div>
-        <select name="category" class="filter-select" id="category-filter">
+
+        <!-- City Dropdown -->
+        <select name="city" class="filter-dropdown" onchange="this.form.submit()">
+          <option value="">All Cities</option>
+          <option value="Ahmedabad" {% if selected_city == 'Ahmedabad' %}selected{% endif %}>Ahmedabad</option>
+          <option value="Mumbai" {% if selected_city == 'Mumbai' %}selected{% endif %}>Mumbai</option>
+          <option value="Bengaluru" {% if selected_city == 'Bengaluru' %}selected{% endif %}>Bengaluru</option>
+        </select>
+
+        <!-- Category Dropdown -->
+        <select name="category" class="filter-dropdown" onchange="this.form.submit()">
           <option value="">All Categories</option>
           {% for cat in categories %}
           <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
@@ -65,69 +222,136 @@
           </option>
           {% endfor %}
         </select>
-        <button type="submit" class="btn btn-primary" style="height:42px;">
-          <i class="ti ti-filter"></i> Filter
+
+        <button type="submit" class="btn btn-primary" style="height:44px;">
+          <i class="ti ti-filter"></i> Apply
         </button>
-        <a href="{% url 'games' %}" class="btn btn-secondary" style="height:42px;">
-          <i class="ti ti-rotate-clockwise"></i> Reset
+
+        {% if search or selected_category or selected_city %}
+        <a href="{% url 'games' %}" class="btn btn-secondary" style="height:44px;" title="Reset filters">
+          <i class="ti ti-rotate"></i>
+        </a>
+        {% endif %}
+      </div>
+
+      <!-- Quick GPU / Rig Tier Filter Pills -->
+      <div class="tier-pills">
+        <a href="{% url 'games' %}" class="tier-pill {% if not search %}active{% endif %}">
+          <i class="ti ti-apps"></i> All Rigs
+        </a>
+        <a href="{% url 'games' %}?search=RTX+4090" class="tier-pill {% if '4090' in search %}active{% endif %}">
+          <i class="ti ti-cpu"></i> RTX 4090 Rigs
+        </a>
+        <a href="{% url 'games' %}?search=PlayStation" class="tier-pill {% if 'PlayStation' in search %}active{% endif %}">
+          <i class="ti ti-device-gamepad"></i> PS5 OLED Lounges
+        </a>
+        <a href="{% url 'games' %}?search=Fanatec" class="tier-pill {% if 'Fanatec' in search %}active{% endif %}">
+          <i class="ti ti-steering-wheel"></i> Motion Sim Cockpits
+        </a>
+        <a href="{% url 'games' %}?search=360Hz" class="tier-pill {% if '360Hz' in search %}active{% endif %}">
+          <i class="ti ti-device-desktop-analytics"></i> 360Hz Esports
         </a>
       </div>
     </form>
   </div>
 </div>
 
-<section style="padding: var(--space-2xl) 0 var(--space-4xl);" class="reveal">
+<!-- Rigs Grid -->
+<section style="padding: var(--space-2xl) 0 var(--space-4xl);">
   <div class="container">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:12px;">
-      <p class="games-count">
-        Showing <strong style="color:#fff;">{{ games|length }}</strong> gaming station{{ games|length|pluralize }}
-        {% if search %} for "<strong style="color:var(--accent)">{{ search }}</strong>"{% endif %}
+      <p style="color:var(--muted);font-size:0.9rem;">
+        Showing <strong style="color:#fff;">{{ games|length }}</strong> gaming setup{{ games|length|pluralize }}
+        {% if selected_city %} in <strong style="color:var(--accent)">{{ selected_city }}</strong>{% endif %}
+        {% if search %} matching "<strong style="color:var(--accent)">{{ search }}</strong>"{% endif %}
       </p>
+
+      <div style="font-size:0.8rem;color:var(--muted);display:flex;align-items:center;gap:8px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+        <span>Instant Booking Lock Active</span>
+      </div>
     </div>
+
     {% if games %}
     <div class="grid-3">
       {% for game in games %}
       <div class="game-card">
+        <!-- Station Cover & Availability -->
         <div class="game-card-img">
+          <!-- Favorite Bookmark Button -->
+          <button type="button" class="favorite-btn" onclick="toggleFavorite('{{ game.id }}', this)" title="Save to Favorites" aria-label="Favorite">
+            <i class="ti ti-heart"></i>
+          </button>
+
           {% if game.get_image_url %}
-            <img src="{{ game.get_image_url }}" {% if game.get_image_srcset %}srcset="{{ game.get_image_srcset }}" sizes="(max-width: 600px) 400px, 640px"{% endif %} alt="{{ game.name }}" width="400" height="240" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/images/stations/esports_station.jpg';" />
+            <img src="{{ game.get_image_url }}" alt="{{ game.name }}" width="400" height="240" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/images/stations/esports_station.jpg';" />
           {% else %}
-            <div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--accent);"><i class="ti ti-controller" style="font-size:3rem;"></i></div>
+            <div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:2.5rem;"><i class="ti ti-device-desktop"></i></div>
           {% endif %}
+
           <span class="availability {% if game.availableSystems > 0 %}avail-yes{% else %}avail-no{% endif %}">
-            {% if game.availableSystems > 0 %}{{ game.availableSystems }} Available{% else %}Fully Booked{% endif %}
+            {% if game.availableSystems > 0 %}
+              {{ game.availableSystems }} Rig{{ game.availableSystems|pluralize }} Free
+            {% else %}
+              Fully Booked
+            {% endif %}
           </span>
         </div>
+
+        <!-- Station Body -->
         <div class="game-card-body">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <div class="game-card-title">{{ game.name }}</div>
-            <span style="font-family:var(--font-heading);font-size:1.15rem;font-weight:800;color:var(--accent);white-space:nowrap;">₹{{ game.pricePerHour|floatformat:0 }}<span style="font-size:.72rem;color:var(--muted);font-family:var(--font-body);font-weight:400;">/hr</span></span>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div>
+              <div style="font-size:0.75rem;color:var(--muted);display:flex;align-items:center;gap:4px;margin-bottom:2px;">
+                <i class="ti ti-building-store" style="color:var(--accent);"></i> {{ game.provider.businessName|default:game.city.name }}
+              </div>
+              <h3 class="game-card-title">{{ game.name }}</h3>
+            </div>
+            <div style="text-align:right;">
+              <span class="game-price">₹{{ game.pricePerHour|floatformat:0 }}</span>
+              <span style="font-size:0.72rem;color:var(--muted);display:block;">/ hour</span>
+            </div>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <span style="font-size:.75rem;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border);padding:2px 8px;border-radius:4px;white-space:nowrap;font-weight:700;">{{ game.category.categoryName }}</span>
-            <span style="font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:5px;"><i class="ti ti-map-pin" style="color:var(--accent);"></i> {{ game.city.name }}</span>
-            <span style="font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:5px;"><i class="ti ti-device-desktop" style="color:var(--accent);"></i> {{ game.totalSystem }} Rigs</span>
+
+          <!-- Specs Badges -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+            <span class="spec-badge"><i class="ti ti-map-pin"></i> {{ game.city.name }}</span>
+            <span class="spec-badge"><i class="ti ti-tag"></i> {{ game.category.categoryName }}</span>
+            {% if game.gpu %}
+              <span class="spec-badge" style="border-color:var(--accent-border);color:var(--accent);"><i class="ti ti-cpu"></i> {{ game.gpu|truncatechars:18 }}</span>
+            {% endif %}
+            {% if game.display_specs %}
+              <span class="spec-badge"><i class="ti ti-screen-share"></i> {{ game.display_specs|truncatechars:18 }}</span>
+            {% endif %}
           </div>
-          <p style="color:var(--muted);font-size:.85rem;line-height:1.6;flex:1;">{{ game.description|truncatechars:110 }}</p>
+
+          <!-- Description -->
+          <p style="color:var(--muted);font-size:0.84rem;line-height:1.55;flex:1;margin-top:6px;">
+            {{ game.description|truncatechars:105 }}
+          </p>
+
+          <!-- Pre-installed Games -->
           {% if game.get_games_list %}
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;margin-bottom:4px;">
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;">
             {% for gtitle in game.get_games_list|slice:":3" %}
-            <span style="font-size:.72rem;background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:3px 8px;border-radius:4px;display:inline-flex;align-items:center;gap:4px;">
-              <i class="ti ti-device-gamepad-2" style="color:var(--accent);"></i> {{ gtitle }}
+            <span style="font-size:0.7rem;background:var(--bg3);color:var(--muted);border:1px solid var(--border);padding:2px 7px;border-radius:4px;display:inline-flex;align-items:center;gap:4px;">
+              <i class="ti ti-device-gamepad" style="color:var(--accent);font-size:0.75rem;"></i> {{ gtitle }}
             </span>
             {% endfor %}
             {% if game.get_games_list|length > 3 %}
-            <span style="font-size:.72rem;color:var(--muted);padding:2px 6px;">+{{ game.get_games_list|length|add:"-3" }} more</span>
+            <span style="font-size:0.7rem;color:var(--muted);padding:2px 4px;">+{{ game.get_games_list|length|add:"-3" }} more</span>
             {% endif %}
           </div>
           {% endif %}
         </div>
+
+        <!-- Footer Actions -->
         <div class="game-card-footer" style="display:flex;gap:10px;">
-          <a href="{% url 'game_detail' game.id %}" class="btn btn-secondary" style="flex:1;justify-content:center;">
-            Setup Details
+          <a href="{% url 'game_detail' game.id %}" class="btn btn-secondary" style="flex:1;justify-content:center;font-size:0.85rem;">
+            Specs & Units
           </a>
-          <a href="{% url 'booking' game.id %}" class="btn btn-primary" style="flex:1;justify-content:center;">
-            Book Rig
+          <a href="{% url 'booking' game.id %}" class="btn btn-primary" style="flex:1;justify-content:center;font-size:0.85rem;">
+            <i class="ti ti-bolt"></i> Instant Book
           </a>
         </div>
       </div>
@@ -137,12 +361,55 @@
     <div class="empty-state">
       <div class="empty-state-icon"><i class="ti ti-search-off" style="font-size:3rem;color:var(--accent);"></i></div>
       <h3>No Gaming Stations Found</h3>
-      <p>Try adjusting your search terms or choose a different category to view available setups.</p>
+      <p>No stations match your filter criteria. Try clearing search filters or selecting another city.</p>
       <a href="{% url 'games' %}" class="btn btn-primary">
-        <i class="ti ti-rotate-clockwise"></i> Reset All Filters
+        <i class="ti ti-rotate"></i> Reset All Filters
       </a>
     </div>
     {% endif %}
   </div>
 </section>
+
+<script>
+  async function toggleFavorite(gameId, btn) {
+    try {
+      const getCookie = (name) => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      };
+
+      const res = await fetch(`/favorites/toggle/${gameId}/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken') || '',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (res.status === 401) {
+        window.location.href = '/login/';
+        return;
+      }
+      const data = await res.json();
+      if (data.is_favorite) {
+        btn.classList.add('favorited');
+        btn.innerHTML = '<i class="ti ti-heart-filled" style="color:#ef4444;"></i>';
+      } else {
+        btn.classList.remove('favorited');
+        btn.innerHTML = '<i class="ti ti-heart"></i>';
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+</script>
 {% endblock %}

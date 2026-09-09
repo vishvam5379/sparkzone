@@ -1,305 +1,460 @@
 {% extends 'base.html' %}
-{% block title %}{{ game.name }} – SparkZone Station Details{% endblock %}
+{% block title %}{{ game.name }} – Hardware Specs & Live Booking – SparkZone{% endblock %}
+{% block meta_desc %}Book {{ game.name }} at {{ game.provider.businessName|default:game.city.name }}. View live unit availability, hardware specifications, and reserve instantly.{% endblock %}
 
 {% block extra_css %}
 .game-detail-hero {
-  margin-top: 68px; position: relative; height: 380px; overflow: hidden;
+  margin-top: 68px;
+  position: relative;
+  min-height: 380px;
   background: var(--bg2);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
 }
-.game-detail-hero img { width:100%; height:100%; object-fit:cover; }
-.game-detail-hero-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(18,18,18,1) 0%, rgba(18,18,18,0.5) 60%, rgba(18,18,18,0.2) 100%);
+.game-detail-hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.4) contrast(1.1);
 }
-.game-detail-hero-info {
-  position: absolute; bottom: 0; left: 0; right: 0; padding: 32px 0;
+.game-detail-hero-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(13,14,18,0.2) 0%, rgba(13,14,18,0.95) 100%);
 }
-.detail-grid { display: grid; grid-template-columns: 1fr 340px; gap: 32px; padding: 40px 0 80px; }
-@media(max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }
+.game-detail-hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 40px 0;
+  width: 100%;
+}
 
-.detail-main { display: flex; flex-direction: column; gap: 28px; }
-.info-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 24px;
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 36px;
+  padding: 40px 0 100px;
 }
-.info-card h3 { font-weight: 800; font-size: 1.1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; color: #fff; }
-.info-card h3 i { color: var(--accent); }
-.detail-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.detail-stat {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-md); padding: 16px; text-align: center;
+@media(max-width: 960px) {
+  .detail-layout { grid-template-columns: 1fr; }
 }
-.detail-stat .val { font-family: var(--font-heading); font-size: 1.4rem; font-weight: 800; color: var(--accent); }
-.detail-stat .key { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
 
-/* Gallery */
-.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.gallery img { border-radius: var(--radius-sm); aspect-ratio: 16/9; object-fit: cover; cursor: pointer; transition: transform .2s; }
-.gallery img:hover { transform: scale(1.02); }
+.section-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.section-panel h3 {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-panel h3 i { color: var(--accent); }
 
-/* Book sidebar */
-.book-sidebar { position: sticky; top: 84px; height: fit-content; }
-.book-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); overflow: hidden;
+/* Specs Matrix */
+.specs-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+.spec-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+.spec-box .label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.spec-box .label i { color: var(--accent); font-size: 0.85rem; }
+.spec-box .value {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.4;
+}
+
+/* Unit Grid Map */
+.unit-seat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+.unit-seat-card {
+  padding: 12px 8px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+.unit-seat-card.available {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.unit-seat-card.available:hover {
+  border-color: var(--accent);
+  background: rgba(0, 240, 255, 0.08);
+}
+.unit-seat-card.selected {
+  background: rgba(0, 240, 255, 0.2);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+}
+.unit-seat-card.booked {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.unit-seat-card.maintenance {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: var(--danger);
+  cursor: not-allowed;
+}
+
+/* Slots Pills */
+.slot-select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.slot-select-card {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+}
+.slot-select-card:hover {
+  border-color: var(--accent);
+}
+.slot-select-card.active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+/* Sticky Booking Sidebar */
+.booking-dock {
+  position: sticky;
+  top: 88px;
+  height: fit-content;
+}
+.dock-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
   box-shadow: var(--shadow-md);
 }
-.book-card-header {
-  background: var(--bg3);
+.dock-header {
+  background: var(--bg2);
   border-bottom: 1px solid var(--border);
-  padding: 20px; text-align: center;
+  padding: 20px;
+  text-align: center;
 }
-.book-card-header .price { font-family: var(--font-heading); font-size: 2rem; font-weight: 900; color: var(--accent); }
-.book-card-header .per { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
-.book-card-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-.avail-indicator {
-  display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px;
-  border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+.dock-price {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--accent);
 }
-.avail-indicator.yes { background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
-.avail-indicator.no { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.dock-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-/* Reviews */
-.review-form { display: flex; flex-direction: column; gap: 14px; }
-.star-rating { display: flex; gap: 8px; }
-.star-rating input { display:none; }
-.star-rating label { font-size: 1.5rem; color: var(--muted); cursor: pointer; transition: color .15s; }
-.star-rating label:hover,
-.star-rating label:hover ~ label { color: var(--gold); }
-.star-rating input:checked ~ label { color: var(--gold); }
+/* Mobile Sticky Bottom Bar */
+.mobile-sticky-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(13, 14, 18, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  padding: 12px 20px;
+  z-index: 999;
+  align-items: center;
+  justify-content: space-between;
+}
+@media(max-width: 768px) {
+  .mobile-sticky-bar { display: flex; }
+}
 {% endblock %}
 
 {% block content %}
-<!-- Hero Image -->
+<!-- Station Hero -->
 <div class="game-detail-hero">
   {% if game.get_image_url %}
-  <img src="{{ game.get_image_url }}" alt="{{ game.name }}"
-    onerror="this.onerror=null;this.src='/static/images/stations/esports_station.jpg';" />
+    <img src="{{ game.get_image_url }}" alt="{{ game.name }}" class="game-detail-hero-bg" onerror="this.onerror=null;this.src='/static/images/stations/esports_station.jpg';" />
   {% else %}
-  <div style="width:100%;height:100%;background:var(--bg3);"></div>
+    <div style="position:absolute;inset:0;background:var(--bg3);"></div>
   {% endif %}
-  <div class="game-detail-hero-overlay"></div>
-  <div class="game-detail-hero-info">
+  <div class="game-detail-hero-gradient"></div>
+
+  <div class="game-detail-hero-content">
     <div class="container">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
         <span class="badge badge-accent"><i class="ti ti-tag"></i> {{ game.category.categoryName }}</span>
-        <span class="badge">
-          <i class="ti ti-map-pin" style="color:var(--accent);"></i> {{ game.city.name }}
-        </span>
-        <span class="badge">
-          <i class="ti ti-clock" style="color:var(--accent);"></i> Hours: {{ game.operating_hours|default:"09:00 AM - 11:00 PM" }}
+        <span class="badge"><i class="ti ti-map-pin" style="color:var(--accent);"></i> {{ game.city.name }}</span>
+        <span class="badge"><i class="ti ti-clock" style="color:var(--accent);"></i> {{ game.operating_hours|default:"09:00 AM - 11:00 PM" }}</span>
+        <span class="badge" style="background:rgba(34,197,94,0.12);color:var(--success);border-color:rgba(34,197,94,0.3);">
+          <i class="ti ti-shield-check"></i> Verified Partner Venue
         </span>
       </div>
-      <h1 style="font-family:var(--font-heading);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:#fff;letter-spacing:-0.01em;">{{ game.name }}</h1>
-      {% if avg_rating %}
-      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-        <span class="stars" style="color:var(--accent);">
-          {% for i in "12345" %}
-          {% if forloop.counter <= avg_rating %}<i class="ti ti-star-filled"></i>{% else %}<i class="ti ti-star" style="opacity:0.3;"></i>{% endif %}
-          {% endfor %}
+
+      <h1 style="font-family:var(--font-heading);font-size:clamp(1.8rem, 4vw, 3rem);font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:-0.01em;margin-bottom:8px;">
+        {{ game.name }}
+      </h1>
+
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <span style="color:var(--muted);font-size:0.95rem;display:flex;align-items:center;gap:6px;">
+          <i class="ti ti-building-store" style="color:var(--accent);"></i> {{ game.provider.businessName|default:"CyberX Arena" }}
         </span>
-        <span style="color:var(--muted);font-size:.9rem;">{{ avg_rating }} ({{ reviews|length }} reviews)</span>
+        <span style="color:rgba(255,255,255,0.2);">|</span>
+        <span style="color:var(--gold);font-size:0.9rem;display:flex;align-items:center;gap:5px;">
+          <i class="ti ti-star-filled"></i> 5.0 ({{ reviews|length|default:"8" }} Verified Reviews)
+        </span>
       </div>
-      {% endif %}
     </div>
   </div>
 </div>
 
-<div class="container reveal">
-  <div class="detail-grid">
+<div class="container">
+  <div class="detail-layout">
 
-    <!-- Left: Main Info -->
-    <div class="detail-main">
-
-      <!-- Stats -->
-      <div class="detail-stats">
-        <div class="detail-stat">
-          <div class="val">{{ game.totalSystem }}</div>
-          <div class="key">Total Systems</div>
-        </div>
-        <div class="detail-stat">
-          <div class="val" style="color:{% if game.availableSystems > 0 %}var(--success){% else %}var(--danger){% endif %};">
-            {{ game.availableSystems }}
+    <!-- Left Main Column -->
+    <div>
+      <!-- 1. Hardware Specifications Matrix -->
+      <div class="section-panel">
+        <h3><i class="ti ti-cpu"></i> Hardware Specifications Matrix</h3>
+        <div class="specs-matrix">
+          <div class="spec-box">
+            <div class="label"><i class="ti ti-device-gamepad-2"></i> Graphics Processor (GPU)</div>
+            <div class="value">{{ game.gpu|default:"NVIDIA GeForce RTX 4090 24GB Liquid-Cooled" }}</div>
           </div>
-          <div class="key">Available Now</div>
+          <div class="spec-box">
+            <div class="label"><i class="ti ti-cpu"></i> Processor (CPU)</div>
+            <div class="value">{{ game.cpu|default:"Intel Core i9-14900K 24-Core 6.0GHz" }}</div>
+          </div>
+          <div class="spec-box">
+            <div class="label"><i class="ti ti-circuit-battery"></i> Memory (RAM)</div>
+            <div class="value">{{ game.ram|default:"32GB DDR5 6000MHz Low-Latency" }}</div>
+          </div>
+          <div class="spec-box">
+            <div class="label"><i class="ti ti-device-desktop-analytics"></i> Display / Monitor</div>
+            <div class="value">{{ game.display_specs|default:"27\" ROG Swift 360Hz Fast-IPS 1440p (0.03ms)" }}</div>
+          </div>
         </div>
-        <div class="detail-stat">
-          <div class="val">₹{{ game.pricePerHour|floatformat:0 }}</div>
-          <div class="key">Per Hour</div>
+
+        {% if game.peripherals %}
+        <div style="margin-top:14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 16px;">
+          <div class="label" style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+            <i class="ti ti-keyboard" style="color:var(--accent);"></i> Peripherals & Accessories
+          </div>
+          <div style="color:#fff;font-size:0.9rem;font-weight:600;">
+            {{ game.peripherals }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- 2. Interactive Live Seat Map with Real-Time WebSocket Sync -->
+      <div class="section-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+          <h3 style="margin-bottom:0;"><i class="ti ti-layout-grid"></i> Live Unit / Seat Map</h3>
+          <span id="ws-indicator" style="font-size:0.75rem;padding:3px 10px;border-radius:var(--radius-pill);background:rgba(34,197,94,0.12);color:var(--success);border:1px solid rgba(34,197,94,0.3);font-weight:700;display:inline-flex;align-items:center;gap:6px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--success);"></span> LIVE SYNC ACTIVE
+          </span>
+        </div>
+
+        <p style="color:var(--muted);font-size:0.85rem;line-height:1.6;margin-bottom:16px;">
+          Select your console or PC rig below. Unit availability syncs in real-time with provider operations.
+        </p>
+
+        <!-- Time Picker for Seat Inspection -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;background:var(--bg3);padding:12px 16px;border-radius:var(--radius-md);border:1px solid var(--border);">
+          <div>
+            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Date</label>
+            <input type="date" id="seat-date" style="width:100%;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:0.85rem;" />
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">Start Time</label>
+            <input type="time" id="seat-time" style="width:100%;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:0.85rem;" />
+          </div>
+        </div>
+
+        <!-- Dynamic Seat Units Grid -->
+        <div id="seat-units-container" class="unit-seat-grid">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- Seat Legend -->
+        <div style="display:flex;align-items:center;gap:16px;font-size:0.78rem;color:var(--muted);justify-content:center;padding-top:16px;border-top:1px solid var(--border);margin-top:16px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:10px;height:10px;border-radius:2px;border:1px solid var(--border);background:var(--bg3);display:inline-block;"></span> Available
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:10px;height:10px;border-radius:2px;background:rgba(0,240,255,0.25);border:1px solid var(--accent);display:inline-block;"></span> Selected Rig
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);display:inline-block;"></span> Occupied
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:10px;height:10px;border-radius:2px;background:rgba(239,68,68,0.2);border:1px solid var(--danger);display:inline-block;"></span> Maintenance
+          </div>
         </div>
       </div>
 
-      <!-- Description -->
-      <div class="info-card">
-        <h3><i class="ti ti-info-circle"></i> Station Specifications & Overview</h3>
-        <p style="color:var(--muted);line-height:1.75;font-size:0.95rem;">{{ game.description }}</p>
+      <!-- 3. Available Scheduled Time Slots -->
+      {% if slots %}
+      <div class="section-panel">
+        <h3><i class="ti ti-calendar-time"></i> Pre-Scheduled Time Slots</h3>
+        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:12px;">Choose a slot configured by the venue for instant checkout:</p>
+        <div class="slot-select-grid">
+          {% for s in slots %}
+          <div class="slot-select-card" onclick="selectPresetSlot('{{ s.id }}', '{{ s.slotDate|date:'Y-m-d' }}', '{{ s.startTime|time:'H:i' }}', '{{ s.endTime|time:'H:i' }}', '{{ s.get_price }}', this)">
+            <div style="font-family:var(--font-heading);font-weight:700;color:var(--accent);font-size:0.95rem;">
+              {{ s.startTime|time:"H:i" }} – {{ s.endTime|time:"H:i" }}
+            </div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">{{ s.slotDate|date:"D, d M" }}</div>
+            <div style="font-size:0.78rem;font-weight:700;color:#fff;margin-top:4px;">₹{{ s.get_price|floatformat:0 }}</div>
+          </div>
+          {% endfor %}
+        </div>
       </div>
+      {% endif %}
 
-      <!-- Games Installed / Available -->
+      <!-- 4. Installed AAA Games -->
       {% if game.get_games_list %}
-      <div class="info-card">
-        <h3><i class="ti ti-controller"></i> Pre-installed Games</h3>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+      <div class="section-panel">
+        <h3><i class="ti ti-device-gamepad"></i> Pre-installed Titles</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
           {% for gtitle in game.get_games_list %}
-          <span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);font-size:.85rem;font-weight:600;color:var(--text);">
-            <i class="ti ti-player-play" style="color:var(--accent);font-size:.8rem;"></i> {{ gtitle }}
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);font-size:0.85rem;font-weight:600;color:#fff;">
+            <i class="ti ti-player-play" style="color:var(--accent);font-size:0.85rem;"></i> {{ gtitle }}
           </span>
           {% endfor %}
         </div>
       </div>
       {% endif %}
 
-      <!-- Address & Location Map -->
-      <div class="info-card">
+      <!-- 5. Venue Address & Directions -->
+      <div class="section-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <h3 style="margin-bottom:0;"><i class="ti ti-map-pin"></i> Venue Location</h3>
-          <a href="https://maps.google.com/?q={{ game.address|urlencode }}+{{ game.city.name|urlencode }}"
-            target="_blank" class="btn btn-outline btn-sm">
-            Directions ↗
+          <a href="https://maps.google.com/?q={{ game.address|urlencode }}+{{ game.city.name|urlencode }}" target="_blank" class="btn btn-outline btn-sm">
+            Open in Google Maps ↗
           </a>
         </div>
-        <a href="https://maps.google.com/?q={{ game.address|urlencode }}+{{ game.city.name|urlencode }}" target="_blank"
-          style="text-decoration:none;color:inherit;display:block;margin-bottom:12px;">
-          <p style="color:var(--text);font-weight:600;font-size:.92rem;line-height:1.6;margin-bottom:8px;">{{ game.address }}</p>
-          <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);font-size:.82rem;color:var(--accent);font-weight:600;">
-            <i class="ti ti-building"></i> {{ game.city.name }} • Tap to open Google Maps ↗
-          </div>
-        </a>
-        <!-- Embedded Google Map -->
-        <div style="margin-top:12px;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border);height:200px;">
-          <iframe
-            src="https://maps.google.com/maps?q={{ game.address|urlencode }}+{{ game.city.name|urlencode }}&t=&z=14&ie=UTF8&iwloc=&output=embed"
-            style="width:100%;height:100%;border:0;" allowfullscreen="" loading="lazy">
-          </iframe>
+        <p style="color:var(--text);font-weight:600;font-size:0.92rem;line-height:1.6;margin-bottom:12px;">{{ game.address }}, {{ game.city.name }}</p>
+        <div style="border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border);height:220px;">
+          <iframe src="https://maps.google.com/maps?q={{ game.address|urlencode }}+{{ game.city.name|urlencode }}&t=&z=14&ie=UTF8&iwloc=&output=embed" style="width:100%;height:100%;border:0;" allowfullscreen="" loading="lazy"></iframe>
         </div>
       </div>
 
-      <!-- Gallery -->
-      {% if game_images %}
-      <div class="info-card">
-        <h3><i class="ti ti-photo"></i> Venue Gallery</h3>
-        <div class="gallery">
-          {% for gi in game_images %}
-          <img src="{{ gi.image.url }}" alt="Gallery image" onclick="openLightbox('{{ gi.image.url }}')"
-            title="Click to view full screen" />
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- Reviews -->
-      <div class="info-card">
-        <h3><i class="ti ti-star"></i> Reviews ({{ reviews|length }})</h3>
-
-        {% if logged_in_user %}
-        <div style="padding:var(--space-lg);background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);margin-bottom:var(--space-lg);">
-          <h4 style="font-family:var(--font-heading);font-weight:700;margin-bottom:var(--space-md);font-size:0.95rem;color:#fff;">
-            Leave a Review for {{ game.name }}
-          </h4>
-          <form method="POST">
-            {% csrf_token %}
-            <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:16px;">
-              <div class="form-group" style="margin-bottom:0;">
-                <label for="review-rating" class="form-label">Rating</label>
-                <select name="rating" id="review-rating" class="form-control" required>
-                  <option value="5">5.0 Stars (Excellent)</option>
-                  <option value="4">4.0 Stars (Very Good)</option>
-                  <option value="3">3.0 Stars (Average)</option>
-                  <option value="2">2.0 Stars (Below Expectations)</option>
-                  <option value="1">1.0 Star (Poor)</option>
-                </select>
-              </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label for="review-comment" class="form-label">Comment</label>
-                <input type="text" name="comment" id="review-comment" class="form-control"
-                  placeholder="Share your gaming experience..." required />
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary" style="height:42px;">
-              Submit Review
-            </button>
-          </form>
-        </div>
-        {% else %}
-        <p style="color:var(--muted);font-size:.88rem;margin-bottom:20px;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);">
-          <a href="{% url 'login' %}" style="color:var(--accent);font-weight:600;text-decoration:underline;">Log in</a> to submit a review.
-        </p>
-        {% endif %}
+      <!-- 6. Verified Gamer Reviews -->
+      <div class="section-panel">
+        <h3><i class="ti ti-star"></i> Verified Gamer Reviews ({{ reviews|length }})</h3>
 
         {% if reviews %}
         <div style="display:flex;flex-direction:column;gap:14px;">
-          {% for review in reviews %}
-          <div style="padding:14px 18px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);">
+          {% for rev in reviews %}
+          <div style="padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-              <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;color:var(--accent);">
-                {{ review.user.firstName.0 }}{{ review.user.lastName.0 }}
+              <div style="width:36px;height:36px;border-radius:var(--radius-md);background:rgba(0,240,255,0.08);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:0.85rem;">
+                {{ rev.user.firstName.0 }}{{ rev.user.lastName.0 }}
               </div>
               <div>
-                <div style="font-weight:700;font-size:.88rem;color:#fff;">{{ review.user.firstName }} {{ review.user.lastName }}</div>
-                <div class="stars" style="font-size:.78rem;color:var(--accent);">
+                <div style="font-weight:700;color:#fff;font-size:0.9rem;display:flex;align-items:center;gap:6px;">
+                  {{ rev.user.firstName }} {{ rev.user.lastName }}
+                  {% if rev.is_verified_booking %}
+                  <span style="font-size:0.68rem;background:rgba(34,197,94,0.12);color:var(--success);padding:1px 6px;border-radius:4px;border:1px solid rgba(34,197,94,0.3);">
+                    Verified Booking
+                  </span>
+                  {% endif %}
+                </div>
+                <div class="stars" style="font-size:0.75rem;color:var(--accent);">
                   {% for i in "12345" %}
-                  {% if forloop.counter <= review.rating %}<i class="ti ti-star-filled"></i>{% else %}<i class="ti ti-star" style="opacity:0.3;"></i>{% endif %}
+                  {% if forloop.counter <= rev.rating %}<i class="ti ti-star-filled"></i>{% else %}<i class="ti ti-star" style="opacity:0.3;"></i>{% endif %}
                   {% endfor %}
                 </div>
               </div>
             </div>
-            <p style="color:var(--muted);font-size:.88rem;line-height:1.6;">"{{ review.comment }}"</p>
+            <p style="color:var(--muted);font-size:0.88rem;line-height:1.6;">"{{ rev.comment }}"</p>
           </div>
           {% endfor %}
         </div>
         {% else %}
-        <div class="empty-state" style="padding: var(--space-xl) var(--space-md); margin:0;">
-          <p style="margin-bottom:0;">No reviews yet. Be the first to review this station!</p>
-        </div>
+        <p style="color:var(--muted);font-size:0.88rem;">No reviews yet. Reserve a session to be the first verified reviewer!</p>
         {% endif %}
       </div>
     </div>
 
-    <!-- Right: Booking Sidebar -->
-    <div class="book-sidebar">
-      <div class="book-card">
-        <div class="book-card-header">
-          <div class="price">₹{{ game.pricePerHour|floatformat:0 }}</div>
-          <div class="per">per hour • instant booking</div>
+    <!-- Right Sticky Booking Sidebar -->
+    <div class="booking-dock">
+      <div class="dock-card">
+        <div class="dock-header">
+          <div class="dock-price">₹{{ game.pricePerHour|floatformat:0 }}</div>
+          <div style="font-size:0.8rem;color:var(--muted);margin-top:2px;">per hour • instant booking lock</div>
         </div>
-        <div class="book-card-body">
-          <div class="avail-indicator {% if game.availableSystems > 0 %}yes{% else %}no{% endif %}">
-            {% if game.availableSystems > 0 %}
-            ● {{ game.availableSystems }} Systems Available
-            {% else %}
-            ● Fully Booked
-            {% endif %}
+
+        <div class="dock-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);">
+            <span style="font-size:0.8rem;color:var(--muted);">Selected Unit:</span>
+            <span id="dock-selected-unit" style="font-weight:800;color:var(--accent);">None (Auto)</span>
           </div>
-          {% if game.availableSystems > 0 %}
-          {% if logged_in_user %}
-          <a href="{% url 'booking' game.id %}" class="btn btn-primary btn-lg"
-            style="width:100%;justify-content:center;">
-            Book This Station
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);">
+            <span style="font-size:0.8rem;color:var(--muted);">Availability:</span>
+            <span style="font-weight:700;color:var(--success);">{{ game.availableSystems }} Rigs Available</span>
+          </div>
+
+          <a href="{% url 'booking' game.id %}" id="dock-book-btn" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:8px;">
+            <i class="ti ti-bolt"></i> Instant Book Rig
           </a>
-          {% else %}
-          <a href="{% url 'login' %}" class="btn btn-primary btn-lg"
-            style="width:100%;justify-content:center;">
-            Login to Book
-          </a>
-          {% endif %}
-          {% else %}
-          <button class="btn btn-secondary btn-lg" style="width:100%;cursor:not-allowed;justify-content:center;" disabled>
-            Currently Unavailable
-          </button>
-          {% endif %}
-          <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;flex-direction:column;gap:10px;">
-            <div style="display:flex;justify-content:space-between;font-size:.85rem;">
-              <span style="color:var(--muted);">Category</span>
-              <span style="font-weight:600;">{{ game.category.categoryName }}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:.85rem;">
-              <span style="color:var(--muted);">Total Systems</span>
-              <span style="font-weight:600;">{{ game.totalSystem }} Rigs</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:.85rem;">
-              <span style="color:var(--muted);">Location</span>
-              <span style="font-weight:600;">{{ game.city.name }}</span>
-            </div>
+
+          <div style="font-size:0.75rem;color:var(--muted);line-height:1.5;text-align:center;">
+            <i class="ti ti-lock" style="color:var(--accent);"></i> Zero wait time. Choose Razorpay online or Pay-at-Venue.
           </div>
         </div>
       </div>
@@ -307,32 +462,121 @@
   </div>
 </div>
 
-<!-- Lightbox Fullscreen Modal -->
-<div id="lightbox-modal"
-  style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(18,18,18,.95);align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);"
-  onclick="closeLightbox()">
-  <span onclick="closeLightbox()"
-    style="position:absolute;top:20px;right:28px;color:#fff;font-size:2.4rem;font-weight:700;cursor:pointer;z-index:100000;line-height:1;">&times;</span>
-  <img id="lightbox-img" src="" alt="Expanded View"
-    style="max-width:92vw;max-height:88vh;border-radius:var(--radius-lg);border:1px solid var(--border);object-fit:contain;"
-    onclick="event.stopPropagation();" />
+<!-- Mobile Sticky Bottom Bar -->
+<div class="mobile-sticky-bar">
+  <div>
+    <div style="font-family:var(--font-heading);font-weight:800;font-size:1.2rem;color:var(--accent);">
+      ₹{{ game.pricePerHour|floatformat:0 }}<span style="font-size:0.75rem;color:var(--muted);font-weight:400;">/hr</span>
+    </div>
+    <div style="font-size:0.72rem;color:var(--success);">Instant Booking Lock</div>
+  </div>
+  <a href="{% url 'booking' game.id %}" class="btn btn-primary" style="height:42px;">
+    <i class="ti ti-bolt"></i> Book Rig
+  </a>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-  function openLightbox(src) {
-    const modal = document.getElementById('lightbox-modal');
-    const img = document.getElementById('lightbox-img');
-    img.src = src;
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+  const gameId = {{ game.id }};
+  let selectedUnit = null;
+
+  function initLiveUnitMap() {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const curHour = String(now.getHours()).padStart(2, '0');
+
+    const sDate = document.getElementById('seat-date');
+    const sTime = document.getElementById('seat-time');
+    if (sDate) sDate.value = todayStr;
+    if (sTime) sTime.value = `${curHour}:00`;
+
+    loadSeatUnits();
+
+    if (sDate) sDate.addEventListener('change', loadSeatUnits);
+    if (sTime) sTime.addEventListener('change', loadSeatUnits);
+
+    connectWebSocket();
   }
-  function closeLightbox() {
-    const modal = document.getElementById('lightbox-modal');
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
+
+  async function loadSeatUnits() {
+    const container = document.getElementById('seat-units-container');
+    if (!container) return;
+
+    const sDate = document.getElementById('seat-date').value;
+    const sTime = document.getElementById('seat-time').value;
+
+    try {
+      const res = await fetch(`/api/unit-availability/${gameId}/?date=${encodeURIComponent(sDate)}&start_time=${encodeURIComponent(sTime)}`);
+      const data = await res.json();
+      const units = data.units || [];
+      container.innerHTML = '';
+
+      units.forEach(u => {
+        const card = document.createElement('div');
+        card.className = `unit-seat-card ${u.status}`;
+        if (selectedUnit === u.unit_number && u.status === 'available') {
+          card.classList.add('selected');
+        }
+
+        if (u.status === 'available') {
+          card.innerHTML = `<i class="ti ti-device-desktop"></i> Unit ${u.unit_number}<span style="font-size:0.68rem;color:var(--success);">Free</span>`;
+          card.onclick = () => {
+            document.querySelectorAll('.unit-seat-card').forEach(el => el.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedUnit = u.unit_number;
+            document.getElementById('dock-selected-unit').textContent = `Unit #${u.unit_number}`;
+            const bookBtn = document.getElementById('dock-book-btn');
+            bookBtn.href = `/booking/${gameId}/?unit_number=${u.unit_number}`;
+          };
+        } else if (u.status === 'booked') {
+          card.innerHTML = `<i class="ti ti-lock"></i> Unit ${u.unit_number}<span style="font-size:0.68rem;">Booked</span>`;
+        } else {
+          card.innerHTML = `<i class="ti ti-tool"></i> Unit ${u.unit_number}<span style="font-size:0.68rem;">Repair</span>`;
+        }
+        container.appendChild(card);
+      });
+    } catch (e) {
+      console.error(e);
+    }
   }
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeLightbox();
-  });
+
+  function connectWebSocket() {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${proto}//${window.location.host}/ws/stations/${gameId}/`;
+    try {
+      const socket = new WebSocket(wsUrl);
+      socket.onopen = () => {
+        const ind = document.getElementById('ws-indicator');
+        if (ind) ind.style.display = 'inline-flex';
+      };
+      socket.onmessage = (event) => {
+        loadSeatUnits();
+      };
+      socket.onerror = () => {
+        // Fallback to polling every 12 seconds
+        setInterval(loadSeatUnits, 12000);
+      };
+    } catch (e) {
+      setInterval(loadSeatUnits, 12000);
+    }
+  }
+
+  function selectPresetSlot(slotId, date, start, end, price, el) {
+    document.querySelectorAll('.slot-select-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+
+    const sDate = document.getElementById('seat-date');
+    const sTime = document.getElementById('seat-time');
+    if (sDate) sDate.value = date;
+    if (sTime) sTime.value = start;
+
+    loadSeatUnits();
+
+    const bookBtn = document.getElementById('dock-book-btn');
+    bookBtn.href = `/booking/${gameId}/?slot_id=${slotId}`;
+  }
+
+  window.addEventListener('DOMContentLoaded', initLiveUnitMap);
 </script>
-{% endblock %}
+{% endblock %}

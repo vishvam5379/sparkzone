@@ -1,0 +1,269 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Superadmin Platform Portal – SparkZone{% endblock %}
+
+{% block page_title %}
+  <i class="ti ti-shield-lock" style="color:var(--accent);font-size:1.15rem;"></i>
+  <span>Superadmin Platform Oversight</span>
+{% endblock %}
+
+{% block extra_css %}
+.admin-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+.admin-metric-card {
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+.admin-metric-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-border);
+}
+.admin-metric-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+.admin-metric-value {
+  font-family: var(--font-heading);
+  font-size: 1.85rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 6px 0 2px;
+}
+.admin-metric-sub {
+  font-size: 0.78rem;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-card {
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+table.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+table.admin-table th {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--dash-border);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  background: rgba(255, 255, 255, 0.02);
+}
+table.admin-table td {
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: var(--text-sm);
+  vertical-align: middle;
+}
+table.admin-table tr:last-child td { border-bottom: none; }
+table.admin-table tr:hover td { background: rgba(0, 240, 255, 0.02); }
+{% endblock %}
+
+{% block content %}
+<!-- Superadmin Header -->
+<div style="margin-bottom:var(--space-2xl);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md);">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <span class="dash-role-badge role-provider" style="background:rgba(0,240,255,0.12);color:var(--accent);border-color:var(--accent-border);">
+        <i class="ti ti-crown"></i> Platform Superadmin
+      </span>
+      <span style="color:var(--muted);font-size:var(--text-xs);">Multi-Tenant Lounges, Commission, & Onboarding</span>
+    </div>
+    <h1 style="font-family:var(--font-heading);font-size:1.65rem;font-weight:800;color:#fff;margin-bottom:4px;">
+      Platform Operations & Financial Oversight
+    </h1>
+    <p style="color:var(--muted);font-size:var(--text-sm);">
+      Aggregate platform Gross Merchandise Value (GMV), 10% commission take-rate, venue verification status, and disputes.
+    </p>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <a href="/admin/" class="btn btn-outline btn-sm" target="_blank" title="Django Unfold Admin">
+      <i class="ti ti-settings"></i> Django Admin ↗
+    </a>
+  </div>
+</div>
+
+<!-- Platform Metric Cards -->
+<div class="admin-metric-grid">
+  <div class="admin-metric-card">
+    <div class="admin-metric-label">Platform GMV (Gross Bookings)</div>
+    <div class="admin-metric-value">₹{{ total_gmv|floatformat:0 }}</div>
+    <div class="admin-metric-sub"><i class="ti ti-chart-arrows"></i> Total consumer spend across all lounges</div>
+  </div>
+
+  <div class="admin-metric-card">
+    <div class="admin-metric-label">Platform Net Revenue (10% Take)</div>
+    <div class="admin-metric-value" style="color:var(--accent);">₹{{ platform_revenue|floatformat:0 }}</div>
+    <div class="admin-metric-sub" style="color:var(--success);"><i class="ti ti-coins"></i> SparkZone marketplace commission</div>
+  </div>
+
+  <div class="admin-metric-card">
+    <div class="admin-metric-label">Gaming Lounges & Cafes</div>
+    <div class="admin-metric-value">{{ total_venues }}</div>
+    <div class="admin-metric-sub"><i class="ti ti-check"></i> {{ verified_venues }} verified partner venues</div>
+  </div>
+
+  <div class="admin-metric-card">
+    <div class="admin-metric-label">Gamers & Bookings</div>
+    <div class="admin-metric-value">{{ total_bookings }}</div>
+    <div class="admin-metric-sub"><i class="ti ti-users"></i> {{ total_gamers }} registered consumers</div>
+  </div>
+</div>
+
+<!-- Partner Lounges Onboarding & Verification Table -->
+<div class="admin-card">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:12px;">
+    <h3 style="font-family:var(--font-heading);font-size:1.15rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-building-store" style="color:var(--accent);"></i>
+      Partner Lounges & Cafe Onboarding ({{ providers|length }})
+    </h3>
+  </div>
+
+  {% if providers %}
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Venue Business Name</th>
+        <th>Owner / Contact</th>
+        <th>City & Address</th>
+        <th>Registered</th>
+        <th>Verification Status</th>
+        <th style="text-align:right;">Admin Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in providers %}
+      <tr>
+        <td>
+          <div style="font-weight:700;color:#fff;font-size:0.95rem;">{{ p.businessName }}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">ID: #{{ p.id }}</div>
+        </td>
+        <td>
+          <div style="font-weight:600;color:var(--text);">{{ p.user.firstName }} {{ p.user.lastName }}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">{{ p.user.email }} • +91 {{ p.phone }}</div>
+        </td>
+        <td>
+          <div style="font-size:0.85rem;color:var(--text);">{{ p.city.name }}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">{{ p.address|truncatechars:35 }}</div>
+        </td>
+        <td style="font-size:0.82rem;color:var(--muted);">
+          {{ p.timestamp|date:"d M Y" }}
+        </td>
+        <td>
+          {% if p.is_verified %}
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:var(--success);background:rgba(34,197,94,0.12);padding:3px 8px;border-radius:4px;border:1px solid rgba(34,197,94,0.3);">
+              <i class="ti ti-circle-check"></i> Verified Partner
+            </span>
+          {% else %}
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:var(--gold);background:rgba(245,158,11,0.12);padding:3px 8px;border-radius:4px;border:1px solid rgba(245,158,11,0.3);">
+              <i class="ti ti-clock"></i> Verification Pending
+            </span>
+          {% endif %}
+        </td>
+        <td style="text-align:right;">
+          <form method="POST" action="{% url 'superadmin_toggle_verify' p.id %}" style="display:inline;">
+            {% csrf_token %}
+            {% if p.is_verified %}
+              <button type="submit" class="btn btn-outline btn-sm" style="color:var(--danger);border-color:rgba(239,68,68,0.3);" onclick="return confirm('Revoke verification for {{ p.businessName }}?')">
+                <i class="ti ti-ban"></i> Revoke
+              </button>
+            {% else %}
+              <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Approve and verify {{ p.businessName }}?')">
+                <i class="ti ti-check"></i> Verify Venue
+              </button>
+            {% endif %}
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="text-align:center;padding:var(--space-2xl) 0;color:var(--muted);">No provider lounges registered yet.</div>
+  {% endif %}
+</div>
+
+<!-- Platform Live Transactions Feed -->
+<div class="admin-card">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:12px;">
+    <h3 style="font-family:var(--font-heading);font-size:1.15rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-receipt" style="color:var(--accent);"></i>
+      Recent Platform Bookings & Commission Ledger
+    </h3>
+  </div>
+
+  {% if recent_bookings %}
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Booking #</th>
+        <th>Venue Cafe</th>
+        <th>Gamer</th>
+        <th>Slot Date & Time</th>
+        <th>Total GMV</th>
+        <th>Platform Take (10%)</th>
+        <th>Payment</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in recent_bookings %}
+      <tr>
+        <td style="font-weight:700;color:var(--accent);">#{{ b.id }}</td>
+        <td>
+          <div style="font-weight:600;color:#fff;">{{ b.game.provider.businessName|default:b.game.name }}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">{{ b.game.city.name }}</div>
+        </td>
+        <td>
+          <div style="color:var(--text);">{{ b.user.firstName }} {{ b.user.lastName }}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">{{ b.user.email }}</div>
+        </td>
+        <td>
+          <div style="color:#fff;">{{ b.bookingDate|date:"d M Y" }}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">{{ b.startTime|time:"H:i" }} – {{ b.endTime|time:"H:i" }}</div>
+        </td>
+        <td style="font-family:var(--font-heading);font-weight:800;color:#fff;">
+          ₹{{ b.totalAmount|floatformat:0 }}
+        </td>
+        <td style="font-family:var(--font-heading);font-weight:700;color:var(--success);">
+          ₹{{ b.totalAmount|default:0|floatformat:0 }} (10%)
+        </td>
+        <td>
+          <span style="font-size:0.75rem;font-weight:600;color:var(--text);">{{ b.get_payment_status_display }}</span>
+        </td>
+        <td>
+          <span style="font-size:0.75rem;font-weight:700;padding:2px 6px;border-radius:4px;{% if b.status == 'confirmed' or b.status == 'completed' %}color:var(--success);background:rgba(34,197,94,0.1);{% else %}color:var(--muted);background:var(--dash-sidebar);{% endif %}">
+            {{ b.get_status_display }}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="text-align:center;padding:var(--space-2xl) 0;color:var(--muted);">No bookings recorded on the platform yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

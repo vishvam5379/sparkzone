@@ -39,6 +39,7 @@ if railway_domain:
     CSRF_TRUSTED_ORIGINS.extend([f"https://{clean_domain}", f"http://{clean_domain}"])
 
 INSTALLED_APPS = [
+    "daphne",
     "unfold",
     "unfold.contrib.filters",
     "unfold.contrib.forms",
@@ -51,8 +52,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "cloudinary_storage",
     "cloudinary",
+    "channels",
     "sparkzoneapp"
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -84,6 +87,26 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'sparkzoneproject.wsgi.application'
+ASGI_APPLICATION = 'sparkzoneproject.asgi.application'
+
+# Django Channels WebSocket Layer
+REDIS_URL = os.getenv('REDIS_URL')
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [REDIS_URL],
+            },
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
+
 
 # Session & Cookie Security Configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
